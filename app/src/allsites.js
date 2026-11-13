@@ -6,15 +6,18 @@ import { judgeAt } from './verdict.js';
 const I = globalThis.I18n, L = (k, v) => I.t(k, v), DAY = 86400;
 const MUST = ['night', 'radio', 'light', 'slope'];
 const cap = (s) => s[0].toUpperCase() + s.slice(1);
-const OK = [63, 191, 127], BAD = [200, 69, 74];
+// Not by colour alone: lost is darker than survives, and where days are separate blocks a lost day is a shorter block.
+const OK = [95, 211, 141], BAD = [150, 50, 58], LOW = 0.4;
 const iso = (t) => new Date(t * 1000).toISOString().slice(0, 10);
 
-/** One byte per landing day of the whole period: 0 survives, otherwise 1 + index in MUST of the first failed check. */
+/** One byte per landing day of the whole period: 0 survives, otherwise 1 + index in MUST of the first failed check.
+ *  out.val[d]: the hours behind that failed check (longest night or longest radio silence), for the hover line. */
 export function dayVerdicts(sky, slope, evaSlope, days) {
   const W = days * 24, nd = Math.floor((sky.n - W) / 24) + 1, out = new Uint8Array(nd);
+  out.val = new Uint16Array(nd);
   for (let d = 0; d < nd; d++) {
     const x = judgeAt(sky, d * 24, W, slope, evaSlope);
-    if (!x.ok) out[d] = 1 + MUST.indexOf(x.rows.find((r) => r.pri === 'must' && r.ok === false).id);
+    if (!x.ok) { const r = x.rows.find((r) => r.pri === 'must' && r.ok === false); out[d] = 1 + MUST.indexOf(r.id); out.val[d] = Math.min(r.v, 65535) || 0; }
   }
   return out;
 }
@@ -34,11 +37,12 @@ export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}
       <label><span></span> <input type="date" id="a-from" min="${iso(p0)}" max="${iso(p0 + (nd - 1) * DAY)}"></label>
       <label><span></span> <input type="date" id="a-to" min="${iso(p0 + DAY)}" max="${iso(p0 + nd * DAY)}"></label>
       <button data-y="2w"></button><button data-y="1m"></button><button data-y="0.25"></button><button data-y="1"></button><button data-y="5"></button><button data-y="0"></button></div></div>
-    <div class="a-mission"><span class="tip" tabindex="0">ⓘ</span> <label><span></span> <input id="a-night" type="number" min="0" max="30" step="0.5"></label><label><span></span> <input id="a-radio" type="number" min="0" max="30" step="0.5"></label><button id="a-reset"></button><span class="a-add"><select id="a-famous"></select><input id="a-lat" type="number" min="-90" max="90" step="any"><input id="a-lon" type="number" min="-180" max="360" step="any"><button id="a-addbtn"></button></span></div>
+    <details class="a-more"><summary></summary><div class="a-mission"><span class="tip" tabindex="0">ⓘ</span> <label><span></span> <input id="a-night" type="number" min="0" max="30" step="0.5"></label><label><span></span> <input id="a-radio" type="number" min="0" max="30" step="0.5"></label><button id="a-reset"></button><span class="a-add"><select id="a-famous"></select><input id="a-lat" type="number" min="-90" max="90" step="any"><input id="a-lon" type="number" min="-180" max="360" step="any"><button id="a-addbtn"></button></span></div></details>
     <div class="a-row a-axis"><span></span><canvas></canvas><span></span></div>
     <ol id="sites"><div id="a-headline"></div></ol>
     <p class="v-key"><i class="ok"></i><span></span> <i class="bad"></i><span></span> <i class="cur"></i><span></span> <span class="tip" tabindex="0">ⓘ</span> <span class="a-hint"></span></p>
     <div id="a-tip"></div>`;
+  root.querySelector('.a-more').open = window.innerWidth > 700;
   const ol = root.querySelector('#sites'), tip = root.querySelector('#a-tip'), axis = root.querySelector('.a-axis canvas');
   const from = root.querySelector('#a-from'), to = root.querySelector('#a-to');
 
@@ -55,7 +59,8 @@ export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}
       const d = dayAt(e), why = s.v[d];
       onTime(p0 + d * DAY + DAY / 2); // the Moon above shows the sunlight at noon of the day under the pointer
       const date = new Date((p0 + d * DAY) * 1000).toLocaleDateString(I.lang, { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
-      tip.textContent = `${s.name} · ${date}: ${why ? L('mLostShort') + ' (' + L('r' + cap(MUST[why - 1])) + ')' : L('mOkShort')}`;
+      const num = why === 1 || why === 2 ? ' ' + L('vDays', { t: (s.v.val[d] / 24).toFixed(1) }) + ', ' + L(why === 1 ? 'lNight' : 'lRadio', { n: +((why === 1 ? Mi.limits.nightH : Mi.limits.silenceH) / 24).toFixed(1) }) : '';
+      tip.textContent = `${s.name} · ${date}: ${why ? L('mLostShort') + ' (' + L('r' + cap(MUST[why - 1])) + num + ')' : L('mOkShort')}`;
       tip.style.display = 'block';
       tip.style.left = Math.min(e.clientX + 12, window.innerWidth - tip.offsetWidth - 8) + 'px';
       tip.style.top = e.clientY - 34 + 'px';
@@ -84,8 +89,9 @@ export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}
       g.clearRect(0, 0, w, h);
       for (let d = st.a; d < st.b; d++) {
         const x0 = Math.round(xOf(d, w)), x1 = Math.round(xOf(d + 1, w)) - gap;
-        g.fillStyle = `rgb(${(s.v[d] === 0 ? OK : BAD).join(',')})`; g.fillRect(x0, 0, x1 - x0, h);
-        if (d === td) { g.strokeStyle = '#fff'; const t = 1.5 * dpr; g.lineWidth = t; g.strokeRect(x0 + t / 2, t / 2, x1 - x0 - t, h - t); }
+        const y0 = s.v[d] === 0 ? 0 : Math.round(h * LOW);
+        g.fillStyle = `rgb(${(s.v[d] === 0 ? OK : BAD).join(',')})`; g.fillRect(x0, y0, x1 - x0, h - y0);
+        if (d === td) { g.strokeStyle = '#fff'; const t = 1.5 * dpr; g.lineWidth = t; g.strokeRect(x0 + t / 2, y0 + t / 2, x1 - x0 - t, h - y0 - t); }
       }
       return good;
     }
@@ -153,6 +159,7 @@ export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}
     fam.innerHTML = `<option value="">${L('aAddSite')}</option>` + famous.map((f, i) => `<option value="${i}">${f.name}</option>`).join('');
     root.querySelector('#a-lat').placeholder = L('aLat'); root.querySelector('#a-lon').placeholder = L('aLon');
     const ab = root.querySelector('#a-addbtn'); ab.textContent = L('aAddBtn'); ab.title = L('aAddTip');
+    root.querySelector('.a-more > summary').textContent = L('aMore');
     paintAxis();
     for (const s of sites) {
       s.good = paintRow(s);

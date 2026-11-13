@@ -271,14 +271,15 @@ html.min #h-variant-note { display: block !important; font-size: 12px; color: va
   .a-row > :last-child, #sites li button small, .a-hint { display: none; }
 }
 body.mode-overview #more { display: none; }
-#sitelist .v-key i.ok { background: rgb(63,191,127); } #sitelist .v-key i.bad { background: rgb(200,69,74); }
+#sitelist .v-key i.ok { background: rgb(95,211,141); } #sitelist .v-key i.bad { background: rgb(150,50,58); height: 6px; }
 .pin, #sitelist h2, .a-row button { user-select: none; -webkit-user-select: none; }
 #sites { gap: 1px; } #sites li button { padding: 0; font-size: 12.5px; } .a-row canvas { height: 12px; }
 .a-axis canvas { height: 22px; }
 /* site labels on the Moon: a quiet pill with a status dot (green: a safe landing day exists in the chosen period) */
 .pin { font-size: 11.5px; font-weight: 500; padding: 2px 8px 2px 6px; border-radius: 10px; border: 1px solid rgba(150,170,200,.22); background: rgba(8,11,16,.72); color: #dfe6f2; }
 .pin::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; background: rgb(160,170,190); }
-.pin[data-s="ok"]::before { background: rgb(63,191,127); } .pin[data-s="bad"]::before { background: rgb(226,84,90); }
+/* not by colour alone: safe is a filled dot, no safe day is a hollow ring */
+.pin[data-s="ok"]::before { background: rgb(95,211,141); } .pin[data-s="bad"]::before { background: none; box-shadow: inset 0 0 0 1.5px rgb(226,84,90); }
 .pin:hover, .pin.hot { background: rgba(8,11,16,.95); color: #fff; border-color: var(--teal); z-index: 2; }
 #sites li.hot button { color: var(--teal); } #sites li.hot { background: rgba(70,224,200,.07); }
 /* language: three buttons, the current one lit */
@@ -332,3 +333,6 @@ body.mode-surface .skymark { display: none !important; }
 .a-add select, .a-add button { background: rgba(255,255,255,.03); border: 1px solid var(--line-2); border-radius: 3px; padding: 3px 8px; color: var(--text); font: inherit; cursor: pointer; color-scheme: dark; }
 .a-add input { width: 86px; } .a-add input.bad { border-color: var(--bad); }
 .a-add button { border-color: var(--teal); color: var(--teal); }
+/* phone: mission limits and add-site fold into one line; desktop: always open, no extra line */
+.a-more > summary { cursor: pointer; font-size: 12px; color: var(--teal); margin: 0 0 6px; }
+@media (min-width: 701px) { .a-more > summary { display: none; } }

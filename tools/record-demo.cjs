@@ -32,17 +32,25 @@ const SECONDS = 29;
     }
   })();
   const until = async (sec) => { const wait = sec * 1000 - (Date.now() - t0); if (wait > 0) await page.waitForTimeout(wait); };
-  const say = (text) => page.evaluate((t) => { window.__cap.textContent = t; }, text);
+  // On the map screen the caption sits at the top, clear of the timeline it talks about; on the site screen it sits above the time bar.
+  const say = (text, top = false) => page.evaluate(([t, up]) => { const c = window.__cap; c.textContent = t; c.style.top = up ? '120px' : 'auto'; c.style.bottom = up ? 'auto' : '230px'; c.style.left = up ? '50%' : '60%'; c.style.maxWidth = up ? '1500px' : '1300px'; }, [text, top]);
 
-  await say('Team 404 agents, Naryn. Lunar Landing Site Navigator'); await until(3);
-  await say("At the Moon's south pole, one hill can hide the Sun or Earth for days.");
+  await say('Team 404 agents, Naryn. Lunar Landing Site Navigator', true); await until(3);
+  await say("At the Moon's south pole, one hill can hide the Sun or Earth for days.", true);
   await page.mouse.move(800, 260); await page.mouse.down(); await page.mouse.move(1150, 300, { steps: 40 }); await page.mouse.up(); await until(5);
-  await say('Fifteen sites, every landing day: green survives, red is lost. Real sunlight sweeps the pole.');
+  await say('Fifteen sites, or add your own. Every landing day: green survives, red is lost.', true);
   await page.click('#a-play'); await until(9); await page.click('#a-play'); await until(9.5);
-  await say('Pick a landing site. Fly down. Stand on real NASA terrain.');
-  await page.locator('#sites li button', { hasText: 'Peak near Shackleton' }).click();
+  await say('Click a green day. Fly down. Stand on real NASA terrain.', true);
+  // The best site's first green day after today: the film lands where the robot survives.
+  const cell = await page.evaluate(() => {
+    const li = document.querySelector('#sites li.a-row'), cv = li.querySelector('canvas'), b = cv.getBoundingClientRect(), n = __all.b - __all.a;
+    const day = (d) => new Date(Date.parse(__all.from + 'T00:00:00Z') + d * 864e5).toISOString().slice(0, 10);
+    let d = 1; while (d < n - 1 && !__all.at(li.dataset.id, day(d))) d++;
+    return { x: b.left + ((d + 0.5) / n) * b.width, y: b.top + b.height / 2 };
+  });
+  await page.mouse.move(cell.x, cell.y, { steps: 12 }); await page.waitForTimeout(500); await page.mouse.click(cell.x, cell.y);
   await page.waitForFunction(() => window.__verdict && document.body.classList.contains('mode-surface'), null, { timeout: 60000 });
-  await until(13.5);
+  await page.click('#look-sun'); await until(13.5);
   await say('Would a solar robot survive 14 days here? One answer, eleven checks.'); await until(16.5);
   await say('Press play: the Sun slides along the horizon, Earth dips behind a ridge.');
   await page.click('#play'); await until(20.5);

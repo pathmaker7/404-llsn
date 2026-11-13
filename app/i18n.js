@@ -3,6 +3,7 @@
 (function (root) {
   const S = {
   "en": {
+    "aMore": "Your mission limits, add your own site",
     "aAddSite": "Add a known landing site…",
     "aLat": "latitude",
     "aLon": "longitude",
@@ -98,6 +99,7 @@
     "vYear": "year"
   },
   "ru": {
+    "aMore": "Пределы вашей миссии, добавить своё место",
     "aAddSite": "Добавить известное место посадки…",
     "aLat": "широта",
     "aLon": "долгота",
@@ -193,6 +195,7 @@
     "vYear": "год"
   },
   "ky": {
+    "aMore": "Миссияңыздын чектери, өз жериңизди кошуу",
     "aAddSite": "Белгилүү конуу жерин кошуу…",
     "aLat": "кеңдик",
     "aLon": "узундук",

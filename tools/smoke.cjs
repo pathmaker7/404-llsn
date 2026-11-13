@@ -54,6 +54,16 @@ if (require.main !== module) return;
     let gaps = 0; for (let x = 1; x < cv.width; x++) if (px[x * 4 + 3] === 0 && px[(x - 1) * 4 + 3] !== 0) gaps++;
     return { gaps, days: __all.rows[0].total, langs: document.querySelectorAll('#lang button').length, lit: document.querySelectorAll('#lang button.on').length };
   });
+  // Not by colour alone (about one man in twelve cannot tell red from green): a lost day is a shorter block, so along the
+  // top edge of a row only the surviving days are filled.
+  const shape = await page.evaluate(() => {
+    const li = [...document.querySelectorAll('#sites li.a-row')].find((l) => { const r = __all.rows.find((x) => x.id === l.dataset.id); return r.good > 0 && r.good < r.total; });
+    const cv = li.querySelector('canvas'), px = cv.getContext('2d').getImageData(0, 1, cv.width, 1).data, r = __all.rows.find((x) => x.id === li.dataset.id);
+    let tall = 0; for (let x = 1; x < cv.width; x++) if (px[x * 4 + 3] !== 0 && px[(x - 1) * 4 + 3] === 0) tall++;
+    if (px[3] !== 0) tall++;
+    return { tall, good: r.good, total: r.total };
+  });
+  if (shape.tall !== shape.good) errors.push('lost and surviving days differ by colour only: ' + JSON.stringify(shape));
   if (clear.gaps !== clear.days || clear.langs !== 3 || clear.lit !== 1) errors.push('days are not separate blocks, or the language buttons are not clear: ' + JSON.stringify(clear));
   // The Moon's own clock: play moves the time, the line on the rows and the Sun that casts the shadows.
   const t0 = await page.evaluate(() => __app.S.mapT);
