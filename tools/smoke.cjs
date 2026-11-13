@@ -32,12 +32,19 @@ const { chromium } = require('playwright-core');
   const same = await page.evaluate(() => { const s = __app.sites[__app.focus - 1], k0 = __app.landing; return [__mission.checks[0].v, Analysis.metrics(s.track, k0, k0 + 14 * 24 / __app.stepH, __app.stepH).longestDarkH]; });
   if (same[0] !== same[1]) errors.push(`mission night ${same[0]} != planner night ${same[1]}`);
   // The mission report: eleven rows, each with a hover explanation; the four "must" rows decide the verdict.
-  const rep = await page.evaluate(() => ({ rows: document.querySelectorAll('table.report tr').length - 1, tips: [...document.querySelectorAll('.tip')].map((t) => t.dataset.tip), must: document.querySelectorAll('table.report tr.must').length }));
+  const rep = await page.evaluate(() => ({ rows: document.querySelectorAll('table.report tr').length - 1, tips: [...document.querySelectorAll('table.report .tip')].map((t) => t.dataset.tip), must: document.querySelectorAll('table.report tr.must').length }));
   if (rep.rows !== 11 || rep.must !== 4 || rep.tips.length !== 11 || rep.tips.some((t) => t.length < 30)) errors.push('mission report incomplete: ' + JSON.stringify(rep));
+  // The answer must be in view without opening anything (owner, 2026-11-14): the four deciding numbers and the strip of
+  // landing days, whose colours are the verdicts of the same engine.
+  const inView = await page.evaluate(() => { const days = [...document.querySelectorAll('.days .day')], perDay = 24 / __app.stepH;
+    return { chips: document.querySelectorAll('.chips .chip').length, days: days.length, now: document.querySelector('.day.now')?.dataset.cal, ok: days.filter((d) => d.classList.contains('ok')).length,
+      wrong: days.filter((d, i) => d.classList.contains('ok') !== Mission.evaluate(__app.sites[__app.focus - 1], i * perDay, Math.round(14 * 24 / __app.stepH) + 1, __app.stepH).ok).length, head: document.querySelector('.calhead').innerText }; });
+  console.log('in view:', JSON.stringify(inView));
+  if (inView.chips !== 4 || inView.days < 60 || inView.now !== '2027-07-22' || inView.wrong || !inView.ok || /undefined|NaN|\{/.test(inView.head)) errors.push('the verdict screen does not show the numbers and landing days: ' + JSON.stringify(inView));
   // Minimal by default (owner, 2026-11-14): the report stays folded until the user opens it.
   if (await page.evaluate(() => [...document.querySelectorAll('#missionBody details.more')].some((d) => d.open))) errors.push('the mission report is shown before the user asks for it');
-  await page.click('details.more summary'); await page.hover('.tip');
-  if ((await page.evaluate(() => getComputedStyle(document.querySelector('.tip'), '::after').content)).length < 30) errors.push('the hover explanation does not show');
+  await page.click('details.more summary'); await page.hover('table.report .tip');
+  if ((await page.evaluate(() => getComputedStyle(document.querySelector('table.report .tip'), '::after').content)).length < 30) errors.push('the hover explanation does not show');
   await page.screenshot({ path: path.join(out, 'app-mission-verdict.png'), fullPage: true });
   // ...then the 12 day delay moves the landing day, the mountain top fails and the two rims pass.
   await page.click('#mNext');
@@ -100,7 +107,7 @@ const { chromium } = require('playwright-core');
     if (await p3.evaluate(() => getComputedStyle(document.querySelector('.sky')).display !== 'none')) errors.push('2D sky still shown next to the 3D view');
     await p3.waitForTimeout(2500);
     await p3.screenshot({ path: path.join(out, 'app-mission-3d.png') });
-    await fr.locator('#play').click(); await p3.waitForTimeout(3000);
+    await p3.locator('iframe.stand').scrollIntoViewIfNeeded(); await fr.locator('#play').click(); await p3.waitForTimeout(3000);
     await p3.screenshot({ path: path.join(out, 'app-mission-3d-playing.png') });
     await p3.setViewportSize({ width: 390, height: 844 }); await p3.waitForTimeout(800);
     await p3.screenshot({ path: path.join(out, 'app-mission-3d-390.png') });

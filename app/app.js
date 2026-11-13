@@ -607,12 +607,33 @@
   const canStand = (k) => location.protocol !== 'file:' && isoOf(k) >= Mission.VIEW_FROM && isoOf(k) <= Mission.VIEW_TO;
   const standHtml = (s, k) => { const [site, v] = spotOf(s).view, t = isoOf(k) + 'T00:00';
     return `<p class="hint">${L('m3d')}</p><iframe class="stand" title="${L('m3dTitle')}" src="surface/index.html#site=${site}&v=${v}&land=${t}&days=${Mission.STAY_DAYS}&t=${t}&min=1"></iframe>`; };
+  // The four checks that decide the verdict, always in view: the number, a tick or a cross, the limit on hover.
+  const chipsHtml = (e) => '<div class="chips">' + e.checks.map((r) => { const [v, lim] = rowCells(r);
+    return `<span class="chip ${r.ok ? 'ok' : 'bad'} tip" tabindex="0" data-tip="${L('colLimit')}: ${lim}. ${L('r' + cap(r.id) + 'Tip')}">${r.ok ? '✔' : '✘'} ${L('r' + cap(r.id))}: <b>${v}</b></span>`; }).join('') + '</div>';
+  // Which landing days work for this spot: one cell per day of the computed span, green survives, red is lost.
+  // Hover a day to read why, click it to land on that day.
+  function calendarHtml(s, k) {
+    const perDay = 24 / state.stepH, last = Math.floor((state.times.length - staySamples()) / perDay), today = Math.round(k / perDay), cells = [];
+    let good = 0, next = -1, until = -1;
+    for (let d = 0; d <= last; d++) {
+      const e = judgeAt(s, d * perDay), date = state.times[d * perDay], iso = date.toISOString().slice(0, 10);
+      const badRow = e.checks.find((c) => !c.ok), label = longDate(d * perDay) + ': ' + (e.ok ? L('mOkShort') : L('mLostShort') + ' (' + L('r' + cap(badRow.id)) + ')');
+      good += e.ok;
+      if (d > today && e.ok && next < 0) next = d;
+      if (d >= today && !e.ok && until < 0) until = d;
+      cells.push(`<button class="day ${e.ok ? 'ok' : 'bad'}${d === today ? ' now' : ''}" data-cal="${iso}" title="${label}" aria-label="${label}">${date.getUTCDate() === 1 || d === 0 ? `<i>${date.toLocaleDateString(I18n.lang, { month: 'short', day: 'numeric', timeZone: 'UTC' })}</i>` : ''}</button>`);
+    }
+    const ok = judgeAt(s, k).ok;
+    const sum = ok ? (until < 0 ? L('calAllOk') : L('calUntil', { date: longDate((until - 1) * perDay) })) : next < 0 ? L('calNone') : L('calNext', { date: longDate(next * perDay) });
+    return `<div class="cal"><p class="calhead"><b>${L('calTitle', { spot: spotName(s) })}</b> ${L('calSum', { n: good, m: last + 1 })} ${sum}</p><div class="days">${cells.join('')}</div>` +
+      `<p class="hint"><i class="key ok"></i>${L('mOkShort')} <i class="key bad"></i>${L('mLostShort')} <i class="key now"></i>${L('calNow')} · ${L('calHint')}</p></div>`;
+  }
   function verdictHtml() {
     const s = focusSite(), k = state.landing, e = judgeAt(s, k), bad = e.checks.filter((c) => !c.ok).map((c) => c.id);
     window.__mission = { spot: s.key, site: spotOf(s).name, date: isoOf(k), ok: e.ok, checks: e.checks, rows: e.rows, delayed: M.delayed, passing: state.sites.filter((x) => judgeAt(x, k).ok).map((x) => x.key) };
     const why = e.ok ? 'mWhyOk' : bad.includes('night') && bad.includes('radio') ? 'mWhyBoth' : bad.includes('night') ? 'mWhyPower' : bad.includes('radio') ? 'mWhyRadio' : bad.includes('light') ? 'mWhyLight' : 'mWhySlope';
     return `<div class="verdict ${e.ok ? '' : 'bad'}"><b>${L(e.ok ? 'mPass' : 'mFail')}</b>${L('mAt', { spot: spotName(s), date: longDate(k) })}</div>` +
-      `<p class="why">${L(why)}</p>` + (canStand(k) ? standHtml(s, k) : `<div class="explainbox">${L('mSky')} <button id="mWatch">▶ ${L('mWatch')}</button></div>`) + reportHtml(e);
+      `<p class="why">${L(why)}</p>${chipsHtml(e)}${calendarHtml(s, k)}` + (canStand(k) ? standHtml(s, k) : `<div class="explainbox">${L('mSky')} <button id="mWatch">▶ ${L('mWatch')}</button></div>`) + reportHtml(e);
   }
   function renderMission() {
     const body = $('missionBody'), st = M.step;
@@ -649,6 +670,7 @@
     on('mWatch', () => { $('play').click(); document.querySelector('.sky').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); });
     for (const b of body.querySelectorAll('[data-spot]')) b.onclick = () => land(+b.dataset.spot);
     for (const b of body.querySelectorAll('[data-day]')) b.onclick = () => setDay(b.dataset.day);
+    for (const b of body.querySelectorAll('[data-cal]')) b.onclick = () => setDay(b.dataset.cal);
     if ($('mDay')) $('mDay').onchange = (ev) => setDay(ev.target.value);
   }
 

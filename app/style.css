@@ -168,7 +168,7 @@ body.mission button.primary:hover { background: #ffd564; border-color: #ffd564; 
 .verdict, .verdict.bad { border: 0; padding: 0; margin: 6px 0 10px; color: var(--muted); font-size: 15px; }
 .verdict b { font-size: clamp(30px, 4.6vw, 48px); line-height: 1.05; letter-spacing: -.03em; font-weight: 650; margin-bottom: 6px; text-transform: none; }
 .news { border: 0; padding: 0; color: var(--text); font-size: 17px; max-width: 60ch; }
-iframe.stand { border-radius: 12px; height: min(60vh, 540px); margin: 4px 0 6px; background: #05070a; }
+iframe.stand { border-radius: 12px; height: min(52vh, 480px); margin: 4px 0 6px; background: #05070a; }
 details.more { border-top: 1px solid var(--line); margin-top: 14px; }
 details.more > summary { padding: 12px 0; list-style: none; display: flex; justify-content: space-between; }
 details.more > summary::-webkit-details-marker { display: none; }
@@ -184,3 +184,21 @@ table.report tr.should td, table.report tr.info:first-of-type td { border-top: 0
 #mission a { color: var(--text); text-decoration-color: var(--muted); text-underline-offset: 3px; }
 @media (max-width: 1100px) { body.mission header { padding: 14px 16px 4px; } body.mission main { padding: 6px 16px 20px; grid-template-columns: 1fr; gap: 18px; } .mcards { grid-template-columns: 1fr; } }
 @media (prefers-reduced-motion: reduce) { body.mission button { transition: none; } body.mission button:active { transform: none; } }
+
+/* The answer stays in view: four deciding numbers and a strip of landing days (green survives, red is lost). */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; }
+.chip { font-size: 14px; padding: 6px 10px; border-radius: 8px; background: var(--panel); color: var(--muted); cursor: help; }
+.chip b { color: var(--text); font-weight: 600; }
+.chip.ok { box-shadow: inset 2px 0 0 var(--both); } .chip.bad { box-shadow: inset 2px 0 0 var(--bad); }
+.chip.bad b { color: var(--bad); }
+.cal { margin: 0 0 18px; }
+#mission .calhead { font-size: 15px; color: var(--muted); margin: 0 0 8px; } .calhead b { color: var(--text); font-weight: 600; }
+.days { display: flex; gap: 2px; padding-bottom: 18px; }
+body.mission .days .day { flex: 1 1 0; min-width: 0; height: 26px; padding: 0; border: 0; border-radius: 3px; position: relative; opacity: .8; }
+body.mission .days .day.ok { background: var(--both); } body.mission .days .day.bad { background: #6b2f36; }
+body.mission .days .day:hover { opacity: 1; transform: scaleY(1.2); }
+body.mission .days .day.now { opacity: 1; outline: 2px solid var(--text); outline-offset: 1px; z-index: 1; }
+.days .day i { position: absolute; top: 30px; left: 0; font-style: normal; font-size: 11px; color: var(--muted); white-space: nowrap; pointer-events: none; }
+.cal .key { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin: 0 4px 0 10px; vertical-align: -1px; } .cal .key:first-child { margin-left: 0; }
+.key.ok { background: var(--both); } .key.bad { background: #6b2f36; } .key.now { outline: 2px solid var(--text); outline-offset: -2px; }
+#mission .verdict b { font-size: clamp(26px, 3.6vw, 40px); } #mission .why { margin-bottom: 12px; }
