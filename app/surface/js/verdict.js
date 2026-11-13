@@ -55,7 +55,8 @@ export function renderVerdict(el, ctx) {
     `<p class="v-why">${L(why)}</p>` +
     `<div class="v-date"><button data-t="${shift(-1, 0)}" title="${L('m5Prev')}">◀</button><input id="v-day" type="date" min="${iso(ctx.p0)}" max="${iso(ctx.p1 - days * DAY)}" value="${iso(t)}" aria-label="${L('m5Title')}"><button data-t="${shift(1, 0)}" title="${L('m5Next')}">▶</button>` +
     `<button data-t="${shift(0, -12)}">−1 ${L('vYear')}</button><button data-t="${shift(0, -1)}">−1 ${L('vMonth')}</button><button data-t="${shift(0, 1)}">+1 ${L('vMonth')}</button><button data-t="${shift(0, 12)}">+1 ${L('vYear')}</button><button data-t="${today}">${L('m5Today')}</button></div>` +
-    `<p class="v-cal"><b>${L('calSum', { n: good, m: last + 1 })}</b> ${sum}</p><div class="days">${strip.join('')}</div>` +
+    `<div class="v-count"><b>${good}</b><span>/ ${last + 1}</span><em>${L('calSum', { n: good, m: last + 1 })} ${sum}</em></div><div class="days">${strip.join('')}</div>` +
+    `<p class="v-key"><i class="ok"></i>${L('mOkShort')} <i class="bad"></i>${L('mLostShort')} <i class="cur"></i>${L('calNow')}</p>` +
     `<table class="v-rows">${e.rows.map((r) => { const [v, lim] = cells(r);
       return `<tr class="${r.pri} ${r.ok === false ? 'fail' : ''}"><td><span class="tip" tabindex="0" data-tip="${lim ? L('colLimit') + ': ' + lim + '. ' : ''}${L('r' + cap(r.id) + 'Tip')}">${L('r' + cap(r.id))}</span></td><td>${v}</td><td>${r.ok === undefined ? '' : r.ok ? '✔' : '✘'}</td></tr>`; }).join('')}</table>` +
     `<p class="v-note"><span class="tip" tabindex="0" data-tip="${L('mNote')} ${L('m5Note')}">ⓘ</span> ${L('vHint')}</p>`;

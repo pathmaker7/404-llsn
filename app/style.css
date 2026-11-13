@@ -202,3 +202,4 @@ body.mission .days .day.now { opacity: 1; outline: 2px solid var(--text); outlin
 .cal .key { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin: 0 4px 0 10px; vertical-align: -1px; } .cal .key:first-child { margin-left: 0; }
 .key.ok { background: var(--both); } .key.bad { background: #6b2f36; } .key.now { outline: 2px solid var(--text); outline-offset: -2px; }
 #mission .verdict b { font-size: clamp(26px, 3.6vw, 40px); } #mission .why { margin-bottom: 12px; }
+html.hosted #modeBtn { display: none; } /* hosted: one product, the 3D app; the guided story stays in the offline copy only */
