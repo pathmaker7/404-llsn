@@ -12,7 +12,7 @@ NASA Space Apps Challenge 2026, challenge "Lunar Landing Site Navigator". Team *
 ## What it does
 
 1. **A 3D map of the Moon's south pole** that you can drag to turn, with fifteen sites: six from NASA's Lunar Surface Data Book and nine picked by the team on LOLA terrain (crater rims and shadowed floors).
-   Under it, **one row per site and one column per landing day**: green survives, red is lost. It opens on the next two weeks, with buttons for three months, a year, five years and the whole period; set the period yourself, from any day to any day in 2021 to 2031; the best site for that period is listed first. Click a cell to land on that site on that day.
+   Under it, **one row per site and one column per landing day**: green survives, red is lost. It opens on the next month, with buttons for two weeks, three months, a year, five years and the whole period; set the period yourself, from any day to any day in 2021 to 2031; the best site for that period is listed first. Click a cell to land on that site on that day.
 2. **You fly down and stand on it**, 2 m above the real LOLA terrain. The Sun and Earth sit at their true positions. Press ▶ to watch 14 days pass.
 3. **One panel gives the answer** for a landing on the chosen day:
    - THE ROBOT SURVIVED or THE ROBOT WAS LOST, and one sentence of why;
