@@ -240,3 +240,7 @@ html.min:not(.embed) .hud-block, html.min .mission label:first-child { display: 
 .verdict .v-key { font-size: 12px; color: var(--muted); margin: 0 0 8px; }
 .v-key i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin: 0 4px 0 10px; vertical-align: -1px; } .v-key i:first-child { margin-left: 0; }
 .v-key i.ok { background: #5fd38d; } .v-key i.bad { background: #6b2f36; } .v-key i.cur { outline: 2px solid #fff; outline-offset: -2px; }
+/* One product, calm by default: the point switch, the stay length and the map footnote live behind "Details". */
+html.min #h-variant, html.min .mission, html.min #sitelist .tiny { display: none !important; }
+html.min #h-variant-note { display: block !important; font-size: 12px; color: var(--muted); margin-top: 4px; }
+#sites li button { display: flex; justify-content: space-between; align-items: baseline; width: 100%; }

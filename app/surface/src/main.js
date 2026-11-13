@@ -50,10 +50,11 @@ const periodEnd = () => Date.parse(S.index.period.end) / 1000;
 const missionEnd = () => Math.min(S.missionStart + S.missionDays * 86400, periodEnd());
 
 function setHash() {
+  // One short address: the site and the landing day. Expert state (stay length, clock time, centre point) is not kept in it.
   const p = new URLSearchParams();
-  if (S.mode === 'surface') { p.set('site', S.siteId); p.set('v', S.variant); }
-  p.set('land', isoLocal(S.missionStart)); p.set('days', S.missionDays); p.set('t', isoLocal(S.t));
-  history.replaceState(null, '', '#' + p.toString());
+  if (S.mode === 'surface') p.set('site', S.siteId);
+  p.set('land', isoLocal(S.missionStart).slice(0, 10));
+  history.replaceState(null, '', location.pathname + '#' + p.toString());
 }
 
 // ------------------------------------------------------------- overview UI
@@ -65,13 +66,7 @@ function buildSiteList() {
     const sm = v.summary_full_period;
     const li = document.createElement('li');
     const bs = b?.summary_full_period;
-    li.innerHTML = `<button>
-      <span class="nm">${s.name}</span><span class="rf">${s.ref}</span>
-      <span class="st"><span class="s">Sun <b>${sm.pct_sunlit_any.toFixed(0)}%</b></span>
-      <span class="e">Earth <b>${sm.pct_earth.toFixed(0)}%</b></span>
-      <span>Longest night <b>${sm.longest_dark_h} h</b></span></span>
-      <span class="alt">${bs ? `≤500 m away: sun <b>${bs.pct_sunlit_any.toFixed(0)}%</b>, night <b>${bs.longest_dark_h} h</b>` : 'No ≤10° slope within 500 m at 80 m res.'}</span>
-    </button>`;
+    li.innerHTML = `<button><span class="nm">${s.name}</span><span class="rf">${s.ref}</span></button>`;
     li.querySelector('button').onclick = () => enterSite(s.id, s.variants.best ? 'best' : 'databook') /* land on the best-lit point near the centre when there is one */;
     ol.appendChild(li);
   }
@@ -186,9 +181,9 @@ function renderHudStatic() {
     if (b.dataset.v === 'best' && !e.variants.best) b.title = 'No DEM pixel with slope ≤ 10° within 500 m';
   }
   $('h-variant-note').textContent = S.variant === 'best'
-    ? `Best-lit DEM pixel ${m.offset_m.toFixed(0)} m from the Data Book centre with slope ≤ ${m.search.slope_limit_deg}° (our illustrative limit).`
-    : e.variants.best ? 'Region centre from the Data Book (not a landing point).'
-      : 'Region centre from the Data Book. No pixel ≤ 10° slope within 500 m at 80 m resolution.';
+    ? `You stand on the best-lit flat point, ${m.offset_m.toFixed(0)} m from the centre of this region.`
+    : e.variants.best ? 'You stand on the centre of this region (NASA Data Book). It is a region marker, not a chosen landing point.'
+      : 'You stand on the centre of this region (NASA Data Book). No flat, better-lit point was found within 500 m.';
 }
 
 function renderHud(s) {
@@ -587,16 +582,16 @@ function frame(now) {
     // Embedded in the guided mission (team 404 agents merge): start minimal, one button brings every number back.
     document.documentElement.classList.add('min'); document.documentElement.classList.toggle('embed', p.get('min') === '1'); // embed: inside the guided mission, which shows its own verdict // on <html>: the app replaces body.className
     $('more').onclick = () => { document.documentElement.classList.toggle('min'); resize(); };
-    const landing = p.get('land') ? Date.parse(p.get('land') + ':00Z') / 1000 : Math.floor(Date.now() / 86400000) * 86400; // default: land today
+    const landing = p.get('land') ? Date.parse(p.get('land').slice(0, 10) + 'T00:00:00Z') / 1000 : Math.floor(Date.now() / 86400000) * 86400; // default: land today
     S.missionStart = Number.isFinite(landing) ? landing : periodStart();
-    S.missionDays = +(p.get('days') || 14);
-    const t = p.get('t') ? Date.parse(p.get('t') + ':00Z') / 1000 : S.missionStart;
+    S.missionDays = 14; // the survival limits are set for a 14 day stay; "Details" can change it
+    const t = S.missionStart;
     S.t = Number.isFinite(t) ? t : S.missionStart;
     $('speed').value = String(S.speedH);
     resize();
     requestAnimationFrame(frame);
     if (p.get('site') && siteEntry(p.get('site'))) {
-      await enterSite(p.get('site'), p.get('v') || 'databook', { fly: false, keepTime: true });
+      await enterSite(p.get('site'), p.get('min') === '1' ? p.get('v') || 'databook' : siteEntry(p.get('site')).variants.best ? 'best' : 'databook', { fly: false, keepTime: true });
       const s0 = sample(S.site, S.t); surface.yaw = s0.sunAz; surface.pitch = 1;
     }
     if (p.get('panel')) openPanel(p.get('panel'));

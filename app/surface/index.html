@@ -28,7 +28,6 @@
   <button id="back" class="ghost surface-only" title="Back to the south-pole map">◂ South pole</button>
   <nav>
     <select id="lang" aria-label="Language"></select>
-    <a class="ghost navlink" href="../index.html#mode=planner">Any site on the Moon</a>
     <button data-panel="compare">Compare sites</button>
     <button data-panel="validation">How do we know?</button>
     <button data-panel="about">About &amp; data</button>
@@ -37,7 +36,7 @@
 
 <aside id="sitelist" class="overview-only">
   <h2>Candidate sites</h2>
-  <p class="muted small"><b>Pick a site on the map or in this list</b> to fly down and stand on it. You will see if a solar robot survives a landing there, on any day from 2021 to 2031. Coordinates from NASA's <em>Lunar Surface Data Book</em> (M2M-30044, 2025).</p>
+  <p class="muted small"><b>Click a site</b>, here or on the map, to stand on it and see if a solar robot survives a landing there.</p>
   <ol id="sites"></ol>
   <p class="muted tiny">Map: LOLA LDEM_80S_80M averaged to 1.28 km, vertical exaggeration ×2, lighting illustrative. Up = 0° E (Earth-facing side).</p>
 </aside>
@@ -48,8 +47,8 @@
     <div class="site-name" id="h-name">—</div>
     <div class="coords" id="h-coords">—</div>
     <div class="seg" id="h-variant" role="tablist" aria-label="Evaluated point">
-      <button data-v="databook" role="tab">Data Book centre</button>
-      <button data-v="best" role="tab">Best within 500 m</button>
+      <button data-v="databook" role="tab" title="The centre of the region, as listed in NASA's Lunar Surface Data Book. A marker for the region, not a chosen landing point.">Region centre</button>
+      <button data-v="best" role="tab" title="The flat point with the most sunlight within 500 m of the region centre. This is where you would actually land.">Best spot nearby</button>
     </div>
     <div class="tiny muted" id="h-variant-note"></div>
   </div>
