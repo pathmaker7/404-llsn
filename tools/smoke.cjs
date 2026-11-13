@@ -117,6 +117,14 @@ if (require.main !== module) return;
   await page.click('#back'); await page.waitForTimeout(600);
   await page.reload();
   await page.waitForFunction(() => window.__all && window.__all.ready && __all.rows.length === 17, null, { timeout: 120000 }).catch(() => errors.push('added sites did not come back from the address'));
+  // A site name comes from the address, which anyone can craft into a link: it must arrive as text, never as markup.
+  await page.goto(url + '#add=' + encodeURIComponent('10,10,<img src=x onerror="window.__xss=1"><b>bold</b>')); await page.reload();
+  await page.waitForFunction(() => window.__all && window.__all.ready && __all.rows.length === 16, null, { timeout: 120000 }).catch(() => errors.push('a site with a crafted name was not added'));
+  await page.locator('#sites li button', { hasText: 'onerror' }).click().catch(() => errors.push('the crafted site has no row'));
+  await page.waitForFunction(() => document.body.classList.contains('mode-surface'), null, { timeout: 90000 }).catch(() => {}); await page.waitForTimeout(800);
+  const xss = await page.evaluate(() => ({ ran: window.__xss === 1, tags: document.querySelectorAll('#sites img, #h-name img, #h-name b').length, name: document.getElementById('h-name').textContent }));
+  if (xss.ran || xss.tags || /[<>]/.test(xss.name)) errors.push('a crafted site name in the address is rendered as markup: ' + JSON.stringify(xss));
+  await page.goto(url); await page.reload(); await page.waitForFunction(() => window.__all && window.__all.ready, null, { timeout: 120000 });
   await page.click('#topbar nav button[data-panel="validation"]'); await page.waitForTimeout(300);
   const how = await page.evaluate(() => document.getElementById('panel-body').innerText);
   if (!/over 20 evaluated points/.test(how) || /NaN|undefined/.test(how)) errors.push('the How do we know panel does not cover the twenty points cleanly');

@@ -102,6 +102,9 @@ function makePin(s) {
 // A site the user adds (custom.js): any coordinates or a known landing site. It gets a row, a verdict, and a place to stand.
 async function addCustom(lat, lon, name) {
   lon = +(((lon + 540) % 360) - 180).toFixed(5); lat = +lat.toFixed(5);
+  // The name can come from the page address, which anyone can craft into a link, and site names are written into HTML:
+  // keep letters, digits and plain punctuation only, so it can never become markup.
+  name = name ? String(name).replace(/[^\p{L}\p{N} .,()'°+-]/gu, '').replace(/'/g, '’').trim().slice(0, 40) || null : null;
   const same = S.index.sites.find((s) => s.custom && Math.abs(s.lat - lat) < 1e-6 && Math.abs(s.lon - lon) < 1e-6);
   if (same) return same;
   $('loading').classList.add('on');
