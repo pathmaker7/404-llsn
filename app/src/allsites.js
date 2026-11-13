@@ -26,13 +26,13 @@ export function allSites(root, { sites, days, p0, p1, onPick }) {
   const clampDay = (d) => Math.min(Math.max(d, 0), nd);
   // The day index n years after today (0.25 = three months).
   const y = (n) => { const d = new Date(today * 1000); d.setUTCMonth(d.getUTCMonth() + n * 12); return clampDay(Math.round((d.getTime() / 1000 - p0) / DAY)); };
-  const st = { a: td, b: y(0.25), ready: false, rows: sites }; // opens on the next three months; the buttons widen it
+  const st = { a: td, b: clampDay(td + 14), ready: false, rows: sites }; // opens on the next two weeks; the buttons widen it
   const dayOf = (v) => Math.round((Date.parse(v + 'T00:00:00Z') / 1000 - p0) / DAY);
 
   root.innerHTML = `<div class="a-head"><h2></h2><div class="a-range">
       <label><span></span> <input type="date" id="a-from" min="${iso(p0)}" max="${iso(p0 + (nd - 1) * DAY)}"></label>
       <label><span></span> <input type="date" id="a-to" min="${iso(p0 + DAY)}" max="${iso(p0 + nd * DAY)}"></label>
-      <button data-y="0.25"></button><button data-y="1"></button><button data-y="5"></button><button data-y="0"></button></div></div>
+      <button data-y="2w"></button><button data-y="0.25"></button><button data-y="1"></button><button data-y="5"></button><button data-y="0"></button></div></div>
     <div class="a-row a-axis"><span></span><canvas></canvas><span></span></div>
     <ol id="sites"></ol>
     <p class="v-key"><i class="ok"></i><span></span> <i class="bad"></i><span></span> <i class="cur"></i><span></span> <span class="tip" tabindex="0">ⓘ</span> <span class="a-hint"></span></p>
@@ -92,6 +92,17 @@ export function allSites(root, { sites, days, p0, p1, onPick }) {
     g.font = `${11 * dpr}px "IBM Plex Mono", monospace`; g.textBaseline = 'top';
     const d = new Date((p0 + st.a * DAY) * 1000); d.setUTCDate(1); if (!months) d.setUTCMonth(0);
     let last = -1e9;
+    if (span <= 45) { // short period: one tick per day, the day of the month under it, the month named on its first day
+      for (let k = st.a; k < st.b; k++) {
+        const x = xOf(k, w), dt = new Date((p0 + k * DAY) * 1000), first = dt.getUTCDate() === 1 || k === st.a;
+        g.fillStyle = 'rgba(150,170,200,.35)'; g.fillRect(Math.round(x), h - 5 * dpr, 1, 5 * dpr);
+        if (x - last < (first ? 0 : 30) * dpr) continue;
+        g.fillStyle = first ? '#dfe6f2' : 'rgba(200,210,230,.6)';
+        g.fillText(first ? dt.toLocaleDateString(I.lang, { month: 'short', day: 'numeric', timeZone: 'UTC' }) : String(dt.getUTCDate()), x + 3 * dpr, 0);
+        last = first ? x + 30 * dpr : x;
+      }
+      return;
+    }
     for (; ; months ? d.setUTCMonth(d.getUTCMonth() + 1) : d.setUTCFullYear(d.getUTCFullYear() + 1)) {
       const x = xOf((d.getTime() / 1000 - p0) / DAY, w);
       if (x > w) break;
@@ -111,8 +122,8 @@ export function allSites(root, { sites, days, p0, p1, onPick }) {
     const [lf, lt] = root.querySelectorAll('.a-range label span'); lf.textContent = L('aFrom'); lt.textContent = L('aTo');
     from.value = iso(p0 + st.a * DAY); to.value = iso(p0 + st.b * DAY);
     for (const b of root.querySelectorAll('.a-range button')) {
-      const n = +b.dataset.y, r = n ? [td, y(n)] : [0, nd];
-      b.textContent = L(n === 0.25 ? 'a3m' : n === 1 ? 'a1y' : n === 5 ? 'a5y' : 'aAll');
+      const k = b.dataset.y, n = +k, r = k === '2w' ? [td, clampDay(td + 14)] : n ? [td, y(n)] : [0, nd];
+      b.textContent = L(k === '2w' ? 'a2w' : n === 0.25 ? 'a3m' : n === 1 ? 'a1y' : n === 5 ? 'a5y' : 'aAll');
       b.classList.toggle('on', r[0] === st.a && r[1] === st.b);
       b.onclick = () => { [st.a, st.b] = r; redraw(); };
     }
