@@ -3,6 +3,11 @@
 (function (root) {
   const S = {
   "en": {
+    "aAddSite": "Add a known landing site…",
+    "aLat": "latitude",
+    "aLon": "longitude",
+    "aAddBtn": "Add point",
+    "aAddTip": "Any point on the Moon: latitude from -90 to 90, longitude in degrees east. Near the south pole it uses NASA terrain averaged to 320 m (the horizon can be off by 1 to 2 degrees). Elsewhere the Moon is treated as smooth: Sun and Earth positions are exact, hills are not included.",
     "aBattery": "Battery lasts, days without Sun",
     "aRadio": "Radio silence allowed, days",
     "aReset": "Reset",
@@ -57,7 +62,7 @@
     "mWhyBoth": "This spot lost both the Sun and Earth for too long.",
     "mWhyLight": "The robot lands in the dark and the Sun does not rise in the first day.",
     "mWhyOk": "Here the Sun and Earth stayed above the hills almost the whole time.",
-    "mWhyPower": "A hill hid the Sun for longer than the battery could last.",
+    "mWhyPower": "The Sun stayed hidden for longer than the battery could last.",
     "mWhyRadio": "A ridge hid Earth for too long: no commands in, no data out.",
     "mWhySlope": "The ground here is too steep for a safe landing.",
     "rBothPct": "Sun and Earth together",
@@ -93,6 +98,11 @@
     "vYear": "year"
   },
   "ru": {
+    "aAddSite": "Добавить известное место посадки…",
+    "aLat": "широта",
+    "aLon": "долгота",
+    "aAddBtn": "Добавить точку",
+    "aAddTip": "Любая точка Луны: широта от -90 до 90, долгота в градусах к востоку. У южного полюса используется рельеф NASA, усреднённый до 320 м (горизонт может отличаться на 1 или 2 градуса). В остальных местах Луна считается гладкой: положения Солнца и Земли точные, холмы не учтены.",
     "aBattery": "Батареи хватает, дней без Солнца",
     "aRadio": "Допустимо без связи, дней",
     "aReset": "Сбросить",
@@ -147,7 +157,7 @@
     "mWhyBoth": "В этом месте и Солнце, и Земля пропали слишком надолго.",
     "mWhyLight": "Робот садится в темноте, и Солнце не восходит в первый день.",
     "mWhyOk": "Здесь Солнце и Земля почти всё время оставались над холмами.",
-    "mWhyPower": "Холм закрыл Солнце дольше, чем могла выдержать батарея.",
+    "mWhyPower": "Солнце было скрыто дольше, чем могла выдержать батарея.",
     "mWhyRadio": "Хребет слишком долго закрывал Землю: ни команд, ни данных.",
     "mWhySlope": "Поверхность здесь слишком крутая для безопасной посадки.",
     "rBothPct": "Солнце и Земля вместе",
@@ -183,6 +193,11 @@
     "vYear": "год"
   },
   "ky": {
+    "aAddSite": "Белгилүү конуу жерин кошуу…",
+    "aLat": "кеңдик",
+    "aLon": "узундук",
+    "aAddBtn": "Чекит кошуу",
+    "aAddTip": "Айдын каалаган чекити: кеңдик -90дон 90го чейин, узундук чыгышка карай градус менен. Түштүк уюлга жакын жерде NASAнын 320 мге орточоланган рельефи колдонулат (горизонт 1 же 2 градуска айырмаланышы мүмкүн). Башка жерде Ай жылмакай деп эсептелет: Күн менен Жердин орду так, дөбөлөр эсепке алынбайт.",
     "aBattery": "Батарея жетет, Күнсүз күн",
     "aRadio": "Байланышсыз уруксат, күн",
     "aReset": "Баштапкы",
@@ -237,7 +252,7 @@
     "mWhyBoth": "Бул жерде Күн да, Жер да өтө узакка жоголду.",
     "mWhyLight": "Робот караңгыда конот, биринчи күнү Күн чыкпайт.",
     "mWhyOk": "Бул жерде Күн менен Жер дээрлик дайыма дөбөлөрдөн жогору турду.",
-    "mWhyPower": "Дөбө Күндү батарея чыдай алгандан узак жаап койду.",
+    "mWhyPower": "Күн батарея чыдай алгандан узак жашырылып турду.",
     "mWhyRadio": "Кырка Жерди өтө узак жаап койду: буйрук да, маалымат да жок.",
     "mWhySlope": "Бул жер коопсуз конуу үчүн өтө тик.",
     "rBothPct": "Күн менен Жер чогуу",

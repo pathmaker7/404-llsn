@@ -327,3 +327,8 @@ body.mode-surface .skymark { display: none !important; }
 .a-mission input { width: 58px; background: rgba(255,255,255,.03); border: 1px solid var(--line-2); border-radius: 3px; padding: 3px 6px; color: var(--text); font: 12px var(--mono); color-scheme: dark; }
 .a-mission button { background: none; border: 1px solid var(--line); border-radius: 3px; color: var(--muted); padding: 3px 8px; font: inherit; cursor: pointer; }
 .a-mission .tip { position: relative; cursor: help; }
+/* add a site: a known landing or any coordinates */
+.a-add { display: inline-flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-left: auto; }
+.a-add select, .a-add button { background: rgba(255,255,255,.03); border: 1px solid var(--line-2); border-radius: 3px; padding: 3px 8px; color: var(--text); font: inherit; cursor: pointer; color-scheme: dark; }
+.a-add input { width: 86px; } .a-add input.bad { border-color: var(--bad); }
+.a-add button { border-color: var(--teal); color: var(--teal); }

@@ -1,5 +1,6 @@
 import * as THREE from '../vendor/three.module.js';
-import { loadIndex, loadOverview, loadSite, PERIOD } from './data.js';
+import { loadIndex, loadOverview, loadSite, registerSite, loadPolar, PERIOD } from './data.js';
+import { makeSite, kindOf, FAMOUS } from './custom.js';
 import { renderVerdict } from './verdict.js';
 import {
   sample, nextSunChange, nextEarthChange, fmtDuration, fmtUTC, sunFraction, SUN_STATE_LABEL,
@@ -14,7 +15,7 @@ const DEG = Math.PI / 180;
 
 // ------------------------------------------------------------------ state
 const S = {
-  index: null, mode: 'overview', siteId: null, variant: 'databook', site: null,
+  customs: [], index: null, mode: 'overview', siteId: null, variant: 'databook', site: null,
   t: 0, playing: false, speedH: 24, missionStart: 0, missionDays: 14, extra: {},
   panel: null, lastHud: 0,
 };
@@ -56,6 +57,7 @@ function setHash() {
   p.set('land', isoLocal(S.missionStart).slice(0, 10));
   if (Mi.limits.nightH !== Mi.NIGHT_LIMIT_H) p.set('battery', Mi.limits.nightH / 24); // only when the user changed a limit
   if (Mi.limits.silenceH !== Mi.SILENCE_LIMIT_H) p.set('radio', Mi.limits.silenceH / 24);
+  if (S.customs.length) p.set('add', S.customs.map((c) => [c.lat, c.lon, c.name].join(',')).join(';')); // sites the user added
   history.replaceState(null, '', location.pathname + '#' + p.toString());
 }
 
@@ -74,14 +76,19 @@ function buildSiteList() {
     sites: S.index.sites.map((s) => { const v = s.variants[spot(s)]; return { id: s.id, name: s.name, ref: s.ref, dir: v.dir, slope: v.slope_deg, evaSlope: S.extra[v.dir] ?? v.slope_deg }; }),
     days: S.missionDays, p0: periodStart(), p1: periodEnd(),
     onHover: hot,
+    famous: FAMOUS, onAdd: (lat, lon, name) => addCustom(lat, lon, name).then(setHash),
     onLimits: () => { setHash(); drawVerdict(); },
     onTime: (t) => { S.mapT = t; S.mapPlay = false; },
     onPlay: () => { S.mapPlay = !S.mapPlay; },
     onPick: (id, t) => { if (t != null) { S.missionStart = t; S.t = t; } enterSite(id, spot(siteEntry(id))); },
   });
+  $('pins').innerHTML = '';
+  for (const s of overview.sites) makePin(s);
+}
+
+function makePin(s) {
   const pins = $('pins');
-  pins.innerHTML = '';
-  for (const s of overview.sites) {
+  {
     const el = document.createElement('div');
     el.className = 'pin';
     el.textContent = s.name;
@@ -92,13 +99,33 @@ function buildSiteList() {
   }
 }
 
+// A site the user adds (custom.js): any coordinates or a known landing site. It gets a row, a verdict, and a place to stand.
+async function addCustom(lat, lon, name) {
+  lon = +(((lon + 540) % 360) - 180).toFixed(5); lat = +lat.toFixed(5);
+  const same = S.index.sites.find((s) => s.custom && Math.abs(s.lat - lat) < 1e-6 && Math.abs(s.lon - lon) < 1e-6);
+  if (same) return same;
+  $('loading').classList.add('on');
+  const grid = kindOf(lat, lon) === 'coarse' ? await loadPolar().finally(() => $('loading').classList.remove('on')) : overview.ov;
+  $('loading').classList.remove('on');
+  const made = makeSite(lat, lon, grid), id = 'u' + (S.customs.length + 1);
+  const label = name || `${Math.abs(lat).toFixed(2)}°${lat < 0 ? 'S' : 'N'} ${Math.abs(lon).toFixed(2)}°${lon < 0 ? 'W' : 'E'}`;
+  const entry = { id, name: label, ref: made.kind === 'coarse' ? 'added · coarse terrain' : 'added · smooth Moon', lat, lon, custom: made.kind,
+    variants: { databook: { dir: id, slope_deg: made.slope, offset_m: 0 } } };
+  registerSite(id, made);
+  S.index.sites.push(entry); S.extra[id] = made.slope; S.customs.push({ lat, lon, name: label });
+  makePin(overview.addSite(entry, made.kind === 'coarse'));
+  S.all.add({ id, name: label, ref: entry.ref, dir: id, slope: made.slope, evaSlope: made.slope });
+  resize();
+  return entry;
+}
+
 function placePins() {
   const w = window.innerWidth, h = window.innerHeight;
   const show = S.mode === 'overview' && !overview.anim && overview.dist < 2.2e6; // labels only when close enough to tell the sites apart
   const items = [];
   for (const s of overview.sites) {
-    const p = show ? overview.project(s.pos, w, h) : null;
-    const g = show ? overview.project(s.pos, w, h, 0) : null;
+    const p = show && !s.off ? overview.project(s.pos, w, h) : null; // a site outside the polar terrain has a row but no label here
+    const g = p ? overview.project(s.pos, w, h, 0) : null;
     s.el.style.display = p ? '' : 'none';
     const row = globalThis.__all?.rows.find((r) => r.id === s.id);
     s.st = row && row.good >= 0 ? (row.good > 0 ? 'ok' : 'bad') : ''; // green: at least one safe landing day in the chosen period
@@ -150,7 +177,7 @@ async function enterSite(id, variant, { fly = true, keepTime = false } = {}) {
   const ovSite = overview.sites.find((s) => s.id === id);
   $('loading').classList.add('on');
   const load = loadSite(entry.variants[variant].dir);
-  if (fly && S.mode === 'overview') await overview.flyTo(ovSite);
+  if (fly && S.mode === 'overview' && !ovSite.off) await overview.flyTo(ovSite);
   $('fade').classList.add('on');
   const site = await load;
   $('loading').classList.remove('on');
@@ -209,7 +236,9 @@ function renderHudStatic() {
     b.disabled = !e.variants[b.dataset.v];
     if (b.dataset.v === 'best' && !e.variants.best) b.title = 'No DEM pixel with slope ≤ 10° within 500 m';
   }
-  $('h-variant-note').textContent = e.ref === 'Team' ? 'You stand on a point picked by our team on NASA terrain: the best-lit point of this crater rim, or the lowest point of this crater floor. It is not a NASA candidate site.'
+  $('h-variant-note').textContent = e.custom === 'coarse' ? 'A site you added. The horizon and the ground here come from NASA terrain averaged to 320 m, so the horizon can be off by about 1 degree, and by up to 2 on a narrow peak. The fifteen prepared sites use 80 m terrain.'
+    : e.custom === 'smooth' ? 'A site you added. The app has no terrain outside the south pole, so the horizon here is the smooth curve of the Moon and the ground is flat. Sun and Earth positions are exact; the slope checks do not apply.'
+    : e.ref === 'Team' ? 'You stand on a point picked by our team on NASA terrain: the best-lit point of this crater rim, or the lowest point of this crater floor. It is not a NASA candidate site.'
     : S.variant === 'best'
     ? `You stand on the best-lit flat point, ${m.offset_m.toFixed(0)} m from the centre of this region.`
     : e.variants.best ? 'You stand on the centre of this region (NASA Data Book). It is a region marker, not a chosen landing point.'
@@ -442,8 +471,9 @@ async function renderValidation() {
   const body = $('panel-body');
   const rows = [];
   for (const s of S.index.sites) for (const [k, v] of Object.entries(s.variants)) rows.push({ s, k, v });
-  const allSun = Math.max(...rows.map((r) => r.v.validation_max_arcsec?.sun ?? NaN));
-  const allEarth = Math.max(...rows.map((r) => r.v.validation_max_arcsec?.earth ?? NaN));
+  const checked = rows.filter((r) => r.v.validation_max_arcsec); // sites the user added have no Horizons check of their own
+  const allSun = Math.max(...checked.map((r) => r.v.validation_max_arcsec.sun));
+  const allEarth = Math.max(...checked.map((r) => r.v.validation_max_arcsec.earth));
   let detail = '';
   if (S.site) {
     const val = S.site.meta.validation;
@@ -467,7 +497,7 @@ async function renderValidation() {
   }
   body.innerHTML = `<h2>How do we know this is right?</h2>
   <p><b>Dates outside 2027 to 2028:</b> the positions shown are computed in your browser with astronomy-engine and the IAU lunar rotation model, for 2021 to 2031, and agree with the offline DE440 series below to better than 0.01° over 2027 to 2028 (tools/test.cjs).</p><p>Every Sun and Earth position in the validation below was computed offline with Skyfield and JPL's DE440 ephemeris, using DE440 lunar orientation in the Moon's Mean-Earth frame. That's the same frame the LOLA terrain uses. We then checked the positions against an independent source: the <a href="https://ssd.jpl.nasa.gov/horizons/" target="_blank" rel="noopener">JPL Horizons</a> API, with the observer placed on the lunar surface at each site.</p>
-  <div class="callout">Largest disagreement with Horizons over ${rows.length} evaluated points × 36 times each in 2027–2028, <b>as displayed</b> (including hourly interpolation):
+  <div class="callout">Largest disagreement with Horizons over ${checked.length} evaluated points × 36 times each in 2027 and 2028, <b>as displayed</b> (including hourly interpolation):
     Sun <b>${allSun.toFixed(2)}″</b>, Earth <b>${allEarth.toFixed(2)}″</b> (arcseconds). The Sun's disc is about 1900″ across.</div>
   <table class="t"><tr><th>Site · point</th><th>Sun max ″</th><th>Earth max ″</th><th>Slope</th><th>Offset</th></tr>
     ${rows.map((r) => `<tr><td>${r.s.name} · ${r.k === 'best' ? 'best ≤500 m' : 'Data Book'}</td><td>${r.v.validation_max_arcsec?.sun.toFixed(2) ?? '—'}</td><td>${r.v.validation_max_arcsec?.earth.toFixed(2) ?? '—'}</td><td>${r.v.slope_deg}°</td><td>${r.v.offset_m.toFixed(0)} m</td></tr>`).join('')}
@@ -491,7 +521,7 @@ async function renderValidation() {
 
 function renderAbout() {
   $('panel-body').innerHTML = `<h2>About</h2>
-  <p>At the lunar south pole the Sun never climbs more than about two degrees above a flat horizon, and distant ridges decide whether a lander has power or a line of sight to Earth. This tool puts you <b>on the terrain</b> at a candidate site. For any date in 2027–2028 you see where the Sun and Earth really are against the real LOLA horizon, how much of the Sun is up, and how long until you lose power or the link home.</p>
+  <p>At the lunar south pole the Sun never climbs more than about two degrees above a flat horizon, and distant ridges decide whether a lander has power or a line of sight to Earth. This tool puts you <b>on the terrain</b> at a candidate site. For any date from 2021 to 2031 you see where the Sun and Earth really are against the real LOLA horizon, how much of the Sun is up, and how long until you lose power or the link home.</p>
   <h3>How to read it</h3>
   <ul>
     <li><b>Disc visible</b>: share of the solar disc above the terrain. <b>Generating</b> means the whole disc is up; <b>Partial</b>, part of it.</li>
@@ -573,6 +603,7 @@ function frame(now) {
     S.mapT = Math.floor(Date.now() / 1000);
     for (const [k, f] of [['battery', 'nightH'], ['radio', 'silenceH']]) { const v = parseFloat(p.get(k)); if (v >= 0 && v <= 30) globalThis.Mission.limits[f] = v * 24; }
     buildSiteList();
+    for (const c of (p.get('add') || '').split(';')) { const [la, lo, ...nm] = c.split(','); if (c && Number.isFinite(+la) && Number.isFinite(+lo) && Math.abs(+la) <= 90) await addCustom(+la, +lo, nm.join(',') || null); }
     const t = S.missionStart;
     S.t = Number.isFinite(t) ? t : S.missionStart;
     $('speed').value = String(S.speedH);

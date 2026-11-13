@@ -18,8 +18,9 @@ NASA Space Apps Challenge 2026, challenge "Lunar Landing Site Navigator". Team *
    - THE ROBOT SURVIVED or THE ROBOT WAS LOST, and one sentence of why;
    - a strip of the next 120 landing days, green survives, red is lost (click a day to land on it);
    - eleven checks with a tick or a cross (hover a line to read what it means).
-4. **Any day from 2021 to 2031**: past days are history, future days are a prediction from the orbit model. The terrain does not change.
-5. "Details" brings back every expert number. English, Russian and Kyrgyz for the answer panel.
+4. **Your own mission**: set how long the battery lasts and how long radio silence is allowed, and every site and day is judged again. **Add any point on the Moon** by latitude and longitude, or pick a known landing (Apollo 11, Apollo 17, Chandrayaan-3, IM-1, Chang'e 6, IM-2): it gets its own row, verdict and surface view, and the page address keeps it, so a comparison can be shared as a link. Sun and Earth positions are exact everywhere. Within about 235 km of the south pole an added point uses LOLA terrain averaged to 320 m (horizon within about 1 degree of the 80 m sites, up to 2 on a narrow peak, measured in `tools/smoke.cjs`); elsewhere the app has no terrain, so the horizon is the Moon's curve and the slope checks do not apply. The app says which case applies.
+5. **Any day from 2021 to 2031**: past days are history, future days are a prediction from the orbit model. The terrain does not change.
+6. "Details" brings back every expert number. English, Russian and Kyrgyz for the answer panel.
 
 ## The eleven checks
 
@@ -62,8 +63,10 @@ The app is static files, but it needs a web server (it loads ES modules and data
 | `app/index.html`, `app/src/`, `app/css/` | the app (three.js) |
 | `app/src/verdict.js` | the answer panel |
 | `app/src/allsites.js` | the timeline of every site on the map screen |
+| `app/src/custom.js` | a site the user adds: horizon and ground built in the browser |
 | `app/mission.js`, `app/sky.js`, `app/i18n.js` | the rules, the Sun and Earth positions, the texts |
 | `app/data/` | terrain and horizon for the twenty points (fifteen sites, five with a best spot within 500 m) |
+| `app/data/polar320.bin` | LOLA `LDEM_80S_80M` averaged to 320 m, for added polar points (`pipeline-3d/pipeline/mid.py`) |
 | `pipeline-3d/` | the offline Python pipeline that built `app/data/`. `sh pipeline-3d/add-sites.sh` builds the team's nine sites, then `node tools/eva-slope.cjs` writes the 2 km slope values |
 | `tools/` | `test.cjs`, `smoke.cjs`, `validate-horizons.cjs`, `record-demo.cjs` |
 | `explainer/` | the "How it works" page |

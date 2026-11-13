@@ -95,6 +95,28 @@ if (require.main !== module) return;
     await page.click('#back'); await page.waitForTimeout(600);
     await page.evaluate(() => { window.__verdict = null; });
   }
+  // 1c. Add a known landing site and a point of your own: each gets a row and a verdict, the address keeps them, and you can stand there.
+  await page.selectOption('#a-famous', { label: 'Apollo 11 (1969)' });
+  await page.fill('#a-lat', '-88'); await page.fill('#a-lon', '45'); await page.click('#a-addbtn');
+  await page.waitForFunction(() => __all.rows.length === 17 && ![...document.querySelectorAll('#sites .cnt')].some((c) => c.textContent === '…'), null, { timeout: 60000 });
+  const added = await page.evaluate(async () => {
+    const { makeSite } = await import('./src/custom.js'), { loadPolar } = await import('./src/data.js'), idx = __app.S.index.sites, grid = await loadPolar();
+    const diff = async (dir) => { const m = await (await fetch(`data/sites/${dir}/meta.json`)).json(), c = makeSite(m.lat, m.lon, grid).meta.mask.el_deg;
+      let sum = 0; for (let k = 0; k < 720; k++) sum += Math.abs(m.mask.el_deg[Math.round((k * 0.5) / m.mask.az_step_deg)] - c[k]); return +(sum / 720).toFixed(2); };
+    return { hash: location.hash, kinds: idx.filter((x) => x.custom).map((x) => x.custom), slopeSite: await diff('sr'), floorSite: await diff('sf'), peakSite: await diff('mm'), dip: makeSite(0.67, 23.47, grid).meta.mask.el_deg[0] };
+  });
+  console.log('added sites:', JSON.stringify(added));
+  // The 320 m horizon is honest only if it stays near the 80 m one where both exist: under half a degree on a slope and on a
+  // crater floor, under two degrees on a narrow peak (the numbers the app tells the user).
+  if (added.kinds.join() !== 'smooth,coarse' || !/add=/.test(added.hash) || !(added.slopeSite < 0.5) || !(added.floorSite < 0.5) || !(added.peakSite < 2) || Math.abs(added.dip + 0.0869) > 0.002) errors.push('added sites are wrong: ' + JSON.stringify(added));
+  await page.locator('#sites li button', { hasText: 'Apollo 11' }).click();
+  await page.waitForFunction(() => window.__verdict && document.body.classList.contains('mode-surface'), null, { timeout: 90000 }); await page.waitForTimeout(1500);
+  const apollo = await page.evaluate(() => ({ note: document.getElementById('h-variant-note').textContent, rows: document.querySelectorAll('.v-rows tr').length, sky: document.getElementById('sky-lines').innerText, pole: __verdict.rows.find((r) => r.id === 'pole').ok }));
+  await page.screenshot({ path: path.join(OUT, 'added-site.png') });
+  if (!/smooth curve of the Moon/.test(apollo.note) || apollo.rows !== 11 || !/°/.test(apollo.sky) || /NaN|undefined/.test(apollo.sky) || apollo.pole !== false) errors.push('standing on an added site does not work: ' + JSON.stringify(apollo));
+  await page.click('#back'); await page.waitForTimeout(600);
+  await page.reload();
+  await page.waitForFunction(() => window.__all && window.__all.ready && __all.rows.length === 17, null, { timeout: 120000 }).catch(() => errors.push('added sites did not come back from the address'));
   await page.click('#topbar nav button[data-panel="validation"]'); await page.waitForTimeout(300);
   const how = await page.evaluate(() => document.getElementById('panel-body').innerText);
   if (!/over 20 evaluated points/.test(how) || /NaN|undefined/.test(how)) errors.push('the How do we know panel does not cover the twenty points cleanly');

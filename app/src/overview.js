@@ -143,6 +143,16 @@ export class Overview {
     });
   }
 
+  /** A site added later. onCap: it lies on the detailed polar terrain; otherwise it sits on the globe. */
+  addSite(s, onCap) {
+    const { X, Y } = latlonToMap(s.lat, s.lon), la = s.lat * DEG, lo = s.lon * DEG;
+    const pos = onCap ? new THREE.Vector3(...curve(X, -Y, this.heightAt(X, Y) * EXAG))
+      : new THREE.Vector3(R * Math.cos(la) * Math.sin(lo), -R * Math.sin(la) - R, -R * Math.cos(la) * Math.cos(lo));
+    const o = { ...s, pos, off: !onCap };
+    this.sites.push(o);
+    return o;
+  }
+
   heightAt(X, Y) {
     const { n, pixel_m: pix, h } = this.ov, c0 = (n - 1) / 2;
     const c = Math.round(X / pix + c0), r = Math.round(c0 - Y / pix);

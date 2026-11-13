@@ -63,6 +63,19 @@ export function loadSky(dir) {
   return sky.get(dir);
 }
 
+/** LOLA averaged to 320 m around the pole, for sites the user adds there (7 MB, fetched once, only when needed). */
+let polar = null;
+export function loadPolar() {
+  if (!polar) polar = getBin('data/polar320.bin').then((b) => ({ n: 1900, pixel_m: 320, h: new Int16Array(b) }));
+  return polar;
+}
+
+/** A site built in the browser (custom.js): same shape as a loaded one, nothing to fetch. */
+export function registerSite(dir, { meta, near, far }) {
+  const s = new Promise((r) => setTimeout(r, 0)).then(() => ({ dir, meta, ch: computeChannels(meta), n: PN, t0: P0 }));
+  sky.set(dir, s); cache.set(dir, s.then((x) => ({ ...x, near, far })));
+}
+
 async function _load(dir) {
   const base = `data/sites/${dir}/`, s = await loadSky(dir);
   const [near, far] = await Promise.all([getBin(base + s.meta.terrain.near.file), getBin(base + s.meta.terrain.far.file)]);

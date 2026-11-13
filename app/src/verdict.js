@@ -45,7 +45,7 @@ export function renderVerdict(el, ctx) {
     const ts = t + d * DAY, x = at(ts), date = new Date(ts * 1000), badRow = x.rows.find((r) => r.ok === false && r.pri === 'must');
     const label = longDate(ts) + ': ' + (x.ok ? L('mOkShort') : L('mLostShort') + ' (' + L('r' + cap(badRow.id)) + ')');
     good += x.ok; if (d > 0 && x.ok && next < 0) next = d; if (!x.ok && until < 0) until = d;
-    strip.push(`<button class="day ${x.ok ? 'ok' : 'bad'}${d === 0 ? ' now' : ''}" data-t="${ts}" title="${label}" aria-label="${label}">${date.getUTCDate() === 1 || d === 0 ? `<i>${date.toLocaleDateString(I.lang, { month: 'short', day: 'numeric', timeZone: 'UTC' })}</i>` : ''}</button>`);
+    strip.push(`<button class="day ${x.ok ? 'ok' : 'bad'}${d === 0 ? ' now' : ''}" data-t="${ts}" title="${label}" aria-label="${label}">${(date.getUTCDate() === 1 && d > 15) || d === 0 ? `<i>${date.toLocaleDateString(I.lang, { month: 'short', day: 'numeric', timeZone: 'UTC' })}</i>` : ''}</button>`);
   }
   const sum = e.ok ? (until < 0 ? L('calAllOk') : L('calUntil', { date: longDate(t + (until - 1) * DAY) })) : next < 0 ? L('calNone') : L('calNext', { date: longDate(t + next * DAY) });
   const shift = (dd, mm) => { const d = new Date(t * 1000); d.setUTCDate(d.getUTCDate() + dd); d.setUTCMonth(d.getUTCMonth() + mm); return d.getTime() / 1000; };

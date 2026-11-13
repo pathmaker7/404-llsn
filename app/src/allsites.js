@@ -20,7 +20,7 @@ export function dayVerdicts(sky, slope, evaSlope, days) {
 }
 
 /** root: the panel element. sites: [{ id, name, ref, dir, slope, evaSlope }]. p0, p1: period (unix s). onPick(id, t or null). */
-export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}, onTime = () => {}, onPlay = () => {}, onLimits = () => {} }) {
+export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}, onTime = () => {}, onPlay = () => {}, onLimits = () => {}, onAdd = () => {}, famous = [] }) {
   const Mi = globalThis.Mission;
   const nd = Math.floor(((p1 - p0) / 3600 + 1 - days * 24) / 24) + 1;
   const today = Math.floor(Date.now() / 1000 / DAY) * DAY, td = Math.round((today - p0) / DAY);
@@ -34,7 +34,7 @@ export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}
       <label><span></span> <input type="date" id="a-from" min="${iso(p0)}" max="${iso(p0 + (nd - 1) * DAY)}"></label>
       <label><span></span> <input type="date" id="a-to" min="${iso(p0 + DAY)}" max="${iso(p0 + nd * DAY)}"></label>
       <button data-y="2w"></button><button data-y="1m"></button><button data-y="0.25"></button><button data-y="1"></button><button data-y="5"></button><button data-y="0"></button></div></div>
-    <div class="a-mission"><span class="tip" tabindex="0">ⓘ</span> <label><span></span> <input id="a-night" type="number" min="0" max="30" step="0.5"></label><label><span></span> <input id="a-radio" type="number" min="0" max="30" step="0.5"></label><button id="a-reset"></button></div>
+    <div class="a-mission"><span class="tip" tabindex="0">ⓘ</span> <label><span></span> <input id="a-night" type="number" min="0" max="30" step="0.5"></label><label><span></span> <input id="a-radio" type="number" min="0" max="30" step="0.5"></label><button id="a-reset"></button><span class="a-add"><select id="a-famous"></select><input id="a-lat" type="number" min="-90" max="90" step="any"><input id="a-lon" type="number" min="-180" max="360" step="any"><button id="a-addbtn"></button></span></div>
     <div class="a-row a-axis"><span></span><canvas></canvas><span></span></div>
     <ol id="sites"><div id="a-headline"></div></ol>
     <p class="v-key"><i class="ok"></i><span></span> <i class="bad"></i><span></span> <i class="cur"></i><span></span> <span class="tip" tabindex="0">ⓘ</span> <span class="a-hint"></span></p>
@@ -42,7 +42,7 @@ export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}
   const ol = root.querySelector('#sites'), tip = root.querySelector('#a-tip'), axis = root.querySelector('.a-axis canvas');
   const from = root.querySelector('#a-from'), to = root.querySelector('#a-to');
 
-  for (const s of sites) {
+  function addRow(s) {
     const li = document.createElement('li');
     li.className = 'a-row'; li.dataset.id = s.id;
     li.onmouseenter = () => onHover(s.id); li.onmouseleave = () => onHover(null);
@@ -65,6 +65,7 @@ export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}
     s.li = li; s.cv = cv;
     ol.appendChild(li);
   }
+  for (const s of sites) addRow(s);
 
   const fit = (cv, hCss) => {
     const dpr = Math.min(window.devicePixelRatio || 1, 2), w = Math.max(Math.round(cv.clientWidth * dpr), 1), h = Math.round(hCss * dpr);
@@ -148,6 +149,10 @@ export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}
     root.querySelector('.a-mission .tip').dataset.tip = L('aLimitsTip'); root.querySelector('#a-reset').textContent = L('aReset');
     for (const [id, k] of [['#a-night', 'nightH'], ['#a-radio', 'silenceH']]) { const el = root.querySelector(id); if (document.activeElement !== el) el.value = +(Mi.limits[k] / 24).toFixed(1); }
     root.querySelector('#a-reset').hidden = Mi.limits.nightH === Mi.NIGHT_LIMIT_H && Mi.limits.silenceH === Mi.SILENCE_LIMIT_H;
+    const fam = root.querySelector('#a-famous');
+    fam.innerHTML = `<option value="">${L('aAddSite')}</option>` + famous.map((f, i) => `<option value="${i}">${f.name}</option>`).join('');
+    root.querySelector('#a-lat').placeholder = L('aLat'); root.querySelector('#a-lon').placeholder = L('aLon');
+    const ab = root.querySelector('#a-addbtn'); ab.textContent = L('aAddBtn'); ab.title = L('aAddTip');
     paintAxis();
     for (const s of sites) {
       s.good = paintRow(s);
@@ -176,6 +181,18 @@ export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}
     st.ready = true; redraw();
   })();
   root.querySelector('#a-play').onclick = () => onPlay();
+  root.querySelector('#a-famous').onchange = (e) => { const f = famous[+e.target.value]; if (e.target.value !== '' && f) onAdd(f.lat, f.lon, f.name); e.target.value = ''; };
+  root.querySelector('#a-addbtn').onclick = () => {
+    const la = root.querySelector('#a-lat'), lo = root.querySelector('#a-lon'), lat = parseFloat(la.value), lon = parseFloat(lo.value);
+    const bad = !(lat >= -90 && lat <= 90) || !(lon >= -180 && lon <= 360);
+    la.classList.toggle('bad', !(lat >= -90 && lat <= 90)); lo.classList.toggle('bad', !(lon >= -180 && lon <= 360));
+    if (!bad) { onAdd(lat, lon, null); la.value = lo.value = ''; }
+  };
+  /** A site added by the user gets its own row, judged like the others. */
+  async function add(s) {
+    sites.push(s); addRow(s); redraw();
+    s.sky = await loadSky(s.dir); s.v = dayVerdicts(s.sky, s.slope, s.evaSlope, days); redraw();
+  }
   // The mission's own limits: every site and day is judged again with them, here and on the site screen.
   function setLimits(nightDays, radioDays) {
     const ok = (v) => Number.isFinite(v) && v >= 0 && v <= 30;
@@ -197,5 +214,5 @@ export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}
     if (clock.textContent !== txt) clock.textContent = txt;
     play.textContent = playing ? '❚❚' : '▶'; play.title = L('aPlay');
   }
-  return { redraw, setHead, setLimits, range: () => [p0 + st.a * DAY, p0 + st.b * DAY] };
+  return { redraw, setHead, setLimits, add, add, range: () => [p0 + st.a * DAY, p0 + st.b * DAY] };
 }
