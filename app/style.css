@@ -72,3 +72,115 @@ footer { padding: 10px 20px 24px; font-size: 12px; }
   main { grid-template-columns: 1fr; grid-template-areas: "map" "results" "sky" "timeline" "controls"; padding: 12px 16px; }
 }
 .team a.explain { color: var(--sun); }
+
+/* ---------- mission mode: the first screen; the planner's own panels are hidden until asked for ---------- */
+#mission { grid-area: mission; }
+body:not(.mission) #mission { display: none; }
+body.mission main { grid-template-columns: minmax(300px, 1fr) minmax(280px, 520px); grid-template-areas: "mission map" "sky sky"; align-items: start; }
+body.mission .controls, body.mission .results, body.mission .timeline { display: none; }
+#mission h2 { font-size: 20px; margin-bottom: 6px; }
+#mission p { line-height: 1.45; margin: 8px 0; }
+.mcards { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin: 12px 0; }
+.mcard { text-align: left; padding: 12px; border-radius: 10px; display: flex; flex-direction: column; gap: 6px; }
+.mcard b { font-size: 16px; color: var(--sun); }
+.mcard span { color: var(--muted); line-height: 1.4; }
+.mcard:hover { border-color: var(--sun); }
+#mission label { color: var(--text); font-weight: 600; flex-wrap: wrap; }
+#mission select, #mission input[type=date] { flex: 1 1 180px; min-width: 0; }
+button.primary { background: var(--sun); color: #1a1300; border-color: var(--sun); font-weight: 700; padding: 8px 22px; font-size: 16px; }
+button.link { background: none; border: none; color: var(--muted); padding: 0; }
+.verdict { margin-top: 14px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--both); }
+.verdict b { display: block; font-size: 20px; letter-spacing: .5px; color: var(--both); }
+.verdict.bad { border-color: var(--bad); }
+.verdict.bad b { color: var(--bad); }
+.checks { list-style: none; padding: 0; margin: 10px 0; }
+.checks li { padding: 3px 0; }
+.checks li.ok::before { content: "✔ "; color: var(--both); }
+.checks li.bad::before { content: "✘ "; color: var(--bad); }
+.news { border-left: 3px solid var(--sun); padding-left: 10px; color: var(--sun); }
+.mbtns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+@media (max-width: 1100px) {
+  body.mission main { grid-template-columns: 1fr; grid-template-areas: "mission" "map" "sky"; }
+}
+body.mission.cards .sky { display: none; }
+#draftNote { padding: 0 20px 16px; }
+/* guided mission: big readable text, one explanation box per idea, nothing else on the map */
+body.mission .maptoggle, body.mission .tabs, body.mission #mapInfo, body.mission .sky > .hint { display: none; }
+body.mission #map { cursor: default; }
+#mission .lead { font-size: 16px; }
+#mission .step { color: var(--sun); font-weight: 700; letter-spacing: .3px; margin: 0 0 6px; }
+#mission .why { font-size: 16px; font-weight: 600; }
+.explainbox { background: #0e121b; border: 1px solid var(--line); border-left: 3px solid var(--earth); border-radius: 8px; padding: 10px 12px; margin: 10px 0; line-height: 1.5; }
+.explainbox button { margin-left: 6px; }
+#mission .checks li { font-size: 15px; padding: 4px 0; }
+#mission .mcard b { color: var(--text); }
+/* mission report: every criterion, with a plain-words explanation on hover, keyboard focus or tap */
+#mission h3 { margin: 14px 0 2px; font-size: 15px; }
+table.report td, table.report th { white-space: normal; text-align: left; }
+table.report tr.info td { color: var(--muted); }
+.tip { position: relative; cursor: help; color: var(--earth); outline: none; }
+.tip:hover::after, .tip:focus::after { content: attr(data-tip); position: absolute; left: 0; top: 1.5em; z-index: 5; width: min(320px, 70vw); background: #000; color: var(--text); border: 1px solid var(--earth); border-radius: 8px; padding: 8px 10px; font-size: 13px; line-height: 1.4; font-weight: 400; white-space: normal; }
+.badge { font-style: normal; font-weight: 700; margin-top: 4px; }
+.badge.ok { color: var(--both); } .badge.bad { color: var(--bad); }
+.mcard.on { border-color: var(--text); background: #1c2333; }
+.dayrow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 8px 0; }
+.dayrow input { font-size: 16px; padding: 6px 8px; }
+ol.res { padding-left: 0; list-style: none; line-height: 1.5; }
+ol.res li { margin: 5px 0; }
+#mission a { color: var(--sun); }
+/* 3D view from the spot, and details folded away until asked for */
+iframe.stand { display: block; width: 100%; height: min(62vh, 560px); border: 0; border-radius: 10px; background: #000; margin: 6px 0 10px; }
+details.more { margin: 10px 0 0; }
+details.more > summary { cursor: pointer; color: var(--muted); font-size: 14px; padding: 6px 0; }
+details.more > summary:hover, details.more[open] > summary { color: var(--text); }
+
+/* ---------- guided mission, design pass ----------
+   Read: a guided flow for students and judges, calm and minimal. One accent (the Sun amber), cool off-black neutrals,
+   one radius scale (8px controls, 12px surfaces), no boxes around text, details only on hover or behind a disclosure.
+   Scoped to body.mission so the expert planner keeps its dense look. */
+body.mission { --bg: #0a0c10; --panel: #11141a; --line: #222732; --text: #eceef2; --muted: #8b93a3; background: var(--bg); }
+body.mission header { border-bottom: 0; padding: 18px 28px 6px; align-items: center; }
+body.mission header h1 { font-size: 17px; font-weight: 600; letter-spacing: -.01em; }
+body.mission header .sub { display: none; }
+body.mission main { padding: 10px 28px 28px; gap: 28px; max-width: 1280px; margin: 0 auto; grid-template-columns: minmax(0, 1.5fr) minmax(260px, 1fr); }
+body.mission #mission { background: none; border: 0; padding: 0; }
+body.mission #map { border-radius: 12px; border-color: var(--line); }
+body.mission .sky { border-radius: 12px; }
+#mission h2 { font-size: clamp(28px, 4vw, 44px); line-height: 1.05; letter-spacing: -.03em; font-weight: 650; margin: 18px 0 14px; max-width: 16ch; }
+#mission .lead { font-size: 17px; line-height: 1.5; color: var(--muted); max-width: 60ch; }
+#mission .step { color: var(--muted); font-weight: 500; font-size: 14px; letter-spacing: 0; margin: 4px 0 14px; }
+#mission .why { font-size: 17px; font-weight: 400; color: var(--text); max-width: 60ch; margin: 6px 0 14px; }
+#mission .hint { font-size: 13px; }
+.explainbox { background: none; border: 0; border-top: 1px solid var(--line); border-radius: 0; padding: 14px 0 2px; margin: 14px 0 0; max-width: 60ch; color: var(--muted); }
+.explainbox b { color: var(--text); font-weight: 600; }
+body.mission button, body.mission input, body.mission select { border-radius: 8px; background: transparent; padding: 8px 12px; transition: border-color .15s, background-color .15s, transform .08s; }
+body.mission button:active { transform: scale(.98); }
+body.mission button:focus-visible, body.mission .tip:focus-visible, body.mission summary:focus-visible { outline: 2px solid var(--sun); outline-offset: 2px; }
+body.mission button.primary { background: var(--sun); color: #1a1300; border-color: var(--sun); font-weight: 600; font-size: 16px; padding: 11px 22px; margin-top: 18px; white-space: nowrap; }
+body.mission button.primary:hover { background: #ffd564; border-color: #ffd564; }
+.mbtns { margin-top: 18px; align-items: center; } .mbtns button.primary { margin-top: 0; }
+.mcards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 18px 0; max-width: 640px; }
+.mcard { padding: 16px; border-radius: 12px; gap: 4px; background: var(--panel) !important; border-color: transparent !important; }
+.mcard:hover { border-color: var(--line) !important; background: #161a22 !important; }
+.mcard.on { border-color: var(--text) !important; }
+#mission .mcard b { font-size: 17px; font-weight: 600; }
+.mcard span { font-size: 14px; }
+.verdict, .verdict.bad { border: 0; padding: 0; margin: 6px 0 10px; color: var(--muted); font-size: 15px; }
+.verdict b { font-size: clamp(30px, 4.6vw, 48px); line-height: 1.05; letter-spacing: -.03em; font-weight: 650; margin-bottom: 6px; text-transform: none; }
+.news { border: 0; padding: 0; color: var(--text); font-size: 17px; max-width: 60ch; }
+iframe.stand { border-radius: 12px; height: min(60vh, 540px); margin: 4px 0 6px; background: #05070a; }
+details.more { border-top: 1px solid var(--line); margin-top: 14px; }
+details.more > summary { padding: 12px 0; list-style: none; display: flex; justify-content: space-between; }
+details.more > summary::-webkit-details-marker { display: none; }
+details.more > summary::after { content: "+"; color: var(--muted); }
+details.more[open] > summary::after { content: "\2212"; }
+table.report { width: 100%; border-collapse: collapse; font-size: 14px; }
+table.report th { color: var(--muted); font-weight: 500; padding: 6px 8px 6px 0; border: 0; }
+table.report td { padding: 7px 8px 7px 0; border: 0; }
+table.report tr.should td, table.report tr.info:first-of-type td { border-top: 0; }
+.tip { color: var(--muted); } .tip:hover, .tip:focus { color: var(--text); }
+.tip:hover::after, .tip:focus::after { background: #1a1e27; border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 8px 24px rgba(0, 0, 0, .4); }
+.dayrow { gap: 8px; margin: 6px 0 18px; }
+#mission a { color: var(--text); text-decoration-color: var(--muted); text-underline-offset: 3px; }
+@media (max-width: 1100px) { body.mission header { padding: 14px 16px 4px; } body.mission main { padding: 6px 16px 20px; grid-template-columns: 1fr; gap: 18px; } .mcards { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) { body.mission button { transition: none; } body.mission button:active { transform: none; } }

@@ -61,7 +61,21 @@
     return { sun, earth };
   }
 
-  const Sky = { skyAt, bodiesMoonFixed, siteFrame, azEl, R_MOON_KM };
+  // Yardstick for Mission mode: the Sun over a place on Earth during one UTC day.
+  // Highest elevation (degrees, with refraction) and hours above the horizon, sampled every 10 minutes.
+  function sunDayOnEarth(date, lat, lon) {
+    const obs = new A.Observer(lat, lon, 0), t0 = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+    let maxEl = -90, up = 0;
+    for (let m = 0; m < 1440; m += 10) {
+      const t = new Date(t0 + m * 60000), eq = A.Equator(A.Body.Sun, t, obs, true, true);
+      const el = A.Horizon(t, obs, eq.ra, eq.dec, 'normal').altitude;
+      maxEl = Math.max(maxEl, el);
+      if (el > 0) up += 10;
+    }
+    return { maxEl, upHours: up / 60 };
+  }
+
+  const Sky = { skyAt, bodiesMoonFixed, siteFrame, azEl, sunDayOnEarth, R_MOON_KM };
   if (typeof module !== 'undefined' && module.exports) module.exports = Sky;
   else root.Sky = Sky;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

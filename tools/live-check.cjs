@@ -26,7 +26,7 @@ const APP = 'https://lunar-navigator-404.web.app/', EXPLAINER = 'https://lunar-n
         video: Math.round(v.duration || 0), app: [...document.querySelectorAll('a')].some((a) => a.href === 'https://lunar-navigator-404.web.app/') };
     });
     console.log(`explainer ${w}px: page width ${ex.sw}, broken images ${ex.broken.length}, video ${ex.video} s`);
-    if (ex.sw > w || ex.broken.length || ex.video !== 120 || !ex.app) errors.push(`explainer ${w}px: ${JSON.stringify(ex)}`);
+    if (ex.sw > w || ex.broken.length || ex.video < 20 || ex.video > 30 || !ex.app) errors.push(`explainer ${w}px: ${JSON.stringify(ex)}`);
     await p.close();
   }
   await browser.close();

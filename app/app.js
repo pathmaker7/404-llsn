@@ -39,7 +39,8 @@
   }
   function computeAll(horizonToo) { state.sites.forEach((s) => computeSite(s, horizonToo)); }
 
-  function addSite(p) {
+  function addSite(p, quiet) {
+    if (!quiet && M.ready && document.body.classList.contains('mission')) return; // Mission mode has four fixed spots
     const gr = ground(p.lat, p.lon);
     // Names can come from a shared link, and they are written into innerHTML and the CSV: drop markup and
     // quote characters and a leading spreadsheet formula sign here, once, for every caller.
@@ -49,6 +50,7 @@
     state.sites.push(s);
     computeSite(s, true);
     state.focus = s.id;
+    if (quiet) return; // loadSites adds many at once and renders once
     setView(isNaN(terrain.heightAt(s.lat, s.lon))); // show the map the new site is on
     renderSiteList(); render();
   }
@@ -321,7 +323,7 @@
     const sky = g.createLinearGradient(0, 0, 0, h); sky.addColorStop(0, '#0b1020'); sky.addColorStop(1, '#141c33');
     g.fillStyle = sky; g.fillRect(left, 0, w - left, h - bottom);
     g.strokeStyle = 'rgba(255,255,255,.08)'; g.fillStyle = '#8a93a6'; g.font = '11px system-ui';
-    for (let el = Math.ceil(lo); el <= hi; el += hi - lo > 12 ? 4 : 2) { g.beginPath(); g.moveTo(left, Y(el)); g.lineTo(w, Y(el)); g.stroke(); g.fillText(el + '°', 4, Y(el) + 4); }
+    for (let el = Math.ceil(lo); el <= hi; el += hi - lo > 60 ? 20 : hi - lo > 30 ? 10 : hi - lo > 12 ? 4 : 2) { g.beginPath(); g.moveTo(left, Y(el)); g.lineTo(w, Y(el)); g.stroke(); g.fillText(el + '°', 4, Y(el) + 4); }
     g.strokeStyle = 'rgba(255,255,255,.35)'; g.beginPath(); g.moveTo(left, Y(0)); g.lineTo(w, Y(0)); g.stroke();
     g.beginPath(); g.moveTo(X(0), h - bottom);
     for (let a = 0; a <= 360; a++) g.lineTo(X(a), Y(s.horizon[a % 360]));
@@ -474,6 +476,7 @@
   // ---------- shareable link: everything needed to reproduce the view lives in the URL hash ----------
   const INPUTS = ['start', 'span', 'stay', 'mast', 'margin'];
   function writeHash() {
+    if (document.body.classList.contains('mission')) return; // a mission is not a shareable planner view
     const q = new URLSearchParams();
     for (const id of INPUTS) q.set(id, $(id).value);
     q.set('landing', state.landing);
@@ -529,6 +532,126 @@
   $('slopeToggle').addEventListener('change', renderMap);
   $('shadowToggle').addEventListener('change', renderMap);
 
+  // ---------- mission mode: one guided mission, one decision per step, an explanation at every step ----------
+  // step 0 intro, 1 choose a spot, 2 verdict, 3 verdict after the launch delay, 4 what you learned
+  const M = { step: 0, delayed: false, ready: false };
+  const NARYN = { lat: 41.43, lon: 76.0 }; // the local event's town, as an Earth yardstick
+  const stopPlay = () => { if (playing) $('play').click(); };
+  const isoOf = (k) => state.times[k].toISOString().slice(0, 10);
+  const longDate = (k) => state.times[k].toLocaleDateString(I18n.lang, { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+  const delayK = () => (Mission.DELAY_DAYS * 24) / state.stepH;
+  const spotOf = (s) => Mission.SPOTS.find((x) => x.key === s.key);
+  const spotName = (s) => L('sp' + cap(s.key));
+  // In the mission the map, the sky title and the buttons all use the plain spot label, in the current language;
+  // the planner gets the catalogue names back ("Shackleton floor (shadowed)" would give the answer away).
+  const nameSpots = (plain) => { for (const s of state.sites) if (s.key) s.name = plain ? spotName(s) : spotOf(s).name; };
+  const cap = (id) => id[0].toUpperCase() + id.slice(1);
+  const judgeAt = (s, k) => Mission.evaluate(s, k, staySamples(), state.stepH);
+  function loadSites(list) {
+    state.sites = []; state.nextId = 1;
+    for (const p of list) addSite(p, true);
+    state.focus = state.sites[0]?.id ?? null;
+  }
+  function setMode(mission) {
+    document.body.classList.toggle('mission', mission); stopPlay(); M.ready = true;
+    $('modeBtn').textContent = L(mission ? 'mPlanner' : 'mMissions');
+    if (mission) { if (location.hash.includes('sites=')) history.replaceState(null, '', location.pathname + location.search); startMission(); } // drop a stale planner link, keep #lang
+    else nameSpots(false);
+    renderSiteList(); render();
+  }
+  $('modeBtn').addEventListener('click', () => setMode(!document.body.classList.contains('mission')));
+  // Everything except the landing spot is fixed: the day, the stay, the mast, the four spots.
+  function startMission() {
+    Object.assign(M, { step: 0, delayed: false }); stopPlay();
+    $('start').value = Mission.START; $('span').value = '90'; $('stay').value = Mission.STAY_DAYS;
+    $('mast').value = $('mast').defaultValue; $('margin').value = $('margin').defaultValue;
+    computeTimes(); loadSites(Mission.SPOTS.map((x) => ({ name: x.name, lat: x.lat, lon: x.lon, from: 'NASA Lunar Surface Data Book, M2M-30044' })));
+    state.sites.forEach((s, i) => { s.key = Mission.SPOTS[i].key; }); nameSpots(true);
+    state.landing = 0; state.scrub = 0; $('scrub').value = 0;
+    setView(false); renderSiteList(); render(); renderMission();
+  }
+  function land(id) { // the one decision: a spot; the day comes from the story (or, in step 5, from the day picker)
+    stopPlay(); state.focus = id; state.scrub = 0; $('scrub').value = 0;
+    if (M.step !== 5) { state.landing = M.delayed ? delayK() : 0; M.step = M.delayed ? 3 : 2; }
+    renderMission(); renderSiteList(); render(); // the panel first: it un-hides the sky card, which render() then sizes and draws
+  }
+  // Step 5: any landing day, past or future. Positions are computed for that day; the terrain never changes.
+  function setDay(iso) {
+    const d = new Date(iso + 'T00:00:00Z');
+    if (isNaN(d) || d < new Date('1950-01-01') || d > new Date('2100-12-31')) return renderMission(); // outside the offered range: keep the day
+    stopPlay(); $('start').value = iso; computeTimes(); computeAll(false);
+    state.landing = 0; state.scrub = 0; $('scrub').value = 0; M.delayed = false; M.step = 5;
+    renderMission(); renderSiteList(); render();
+  }
+  const shiftDay = (days, months) => { const d = new Date(state.times[0]); d.setUTCDate(d.getUTCDate() + days); d.setUTCMonth(d.getUTCMonth() + months); return d.toISOString().slice(0, 10); };
+  const days = (h) => (h / 24).toFixed(1);
+  const spotButtons = (k) => '<div class="mcards">' + state.sites.map((s) => {
+    const badge = k === undefined ? '' : judgeAt(s, k).ok ? `<i class="badge ok">✔ ${L('mOkShort')}</i>` : `<i class="badge bad">✘ ${L('mLostShort')}</i>`;
+    return `<button class="mcard${k !== undefined && s.id === state.focus ? ' on' : ''}" data-spot="${s.id}"><b><span style="color:${s.color}">●</span> ${spotName(s)}</b><span>${L('sp' + cap(s.key) + 'D')}</span>${badge}</button>`;
+  }).join('') + '</div>';
+  const passList = (k) => state.sites.filter((s) => judgeAt(s, k).ok).map(spotName).join(', ') || L('mNoSpot');
+  // One report row: the value and the limit in plain units.
+  function rowCells(r) {
+    const pct = (v) => L('vOfStay', { p: v.toFixed(0) }), deg = (v) => v.toFixed(1) + '°', d = (h) => L('vDays', { t: days(h) });
+    const value = { night: d, radio: d, light: (h) => (!h ? L('vUp') : h < Infinity ? L('vAfter', { t: h.toFixed(0) }) : L('vNone')), slope: deg, eva: deg, pole: deg,
+      sunPct: pct, earthPct: pct, bothPct: pct, sunMax: deg, windows: (v) => v }[r.id](r.v);
+    return [value, r.pri === 'info' ? '' : L('l' + cap(r.id))];
+  }
+  function reportHtml(e) {
+    return `<details class="more"><summary>${L('mReport')}</summary><p class="hint">${L('mReportHint')}</p><div class="tablewrap"><table class="report"><tr><th>${L('colCrit')}</th><th>${L('colResult')}</th><th>${L('colLimit')}</th><th>${L('colPri')}</th></tr>` +
+      e.rows.map((r) => { const [v, lim] = rowCells(r); return `<tr class="${r.pri}"><td>${L('r' + cap(r.id))} <span class="tip" tabindex="0" data-tip="${L('r' + cap(r.id) + 'Tip')}">ⓘ</span></td>` +
+        `<td class="${r.ok === undefined ? '' : r.ok ? 'best' : 'warn'}">${r.ok === undefined ? '' : r.ok ? '✔ ' : '✘ '}${v}</td><td>${lim}</td><td>${L('p' + cap(r.pri))}</td></tr>`; }).join('') + '</table></div></details>';
+  }
+  // The 3D surface view (app/surface, built by teammate steppekid): the same spot and day, seen from 2 m above the ground.
+  // It loads ES modules and data files, so it needs http(s); from a file:// copy and outside 2027 to 2028 the 2D sky is used.
+  const canStand = (k) => location.protocol !== 'file:' && isoOf(k) >= Mission.VIEW_FROM && isoOf(k) <= Mission.VIEW_TO;
+  const standHtml = (s, k) => { const [site, v] = spotOf(s).view, t = isoOf(k) + 'T00:00';
+    return `<p class="hint">${L('m3d')}</p><iframe class="stand" title="${L('m3dTitle')}" src="surface/index.html#site=${site}&v=${v}&land=${t}&days=${Mission.STAY_DAYS}&t=${t}&min=1"></iframe>`; };
+  function verdictHtml() {
+    const s = focusSite(), k = state.landing, e = judgeAt(s, k), bad = e.checks.filter((c) => !c.ok).map((c) => c.id);
+    window.__mission = { spot: s.key, site: spotOf(s).name, date: isoOf(k), ok: e.ok, checks: e.checks, rows: e.rows, delayed: M.delayed, passing: state.sites.filter((x) => judgeAt(x, k).ok).map((x) => x.key) };
+    const why = e.ok ? 'mWhyOk' : bad.includes('night') && bad.includes('radio') ? 'mWhyBoth' : bad.includes('night') ? 'mWhyPower' : bad.includes('radio') ? 'mWhyRadio' : bad.includes('light') ? 'mWhyLight' : 'mWhySlope';
+    return `<div class="verdict ${e.ok ? '' : 'bad'}"><b>${L(e.ok ? 'mPass' : 'mFail')}</b>${L('mAt', { spot: spotName(s), date: longDate(k) })}</div>` +
+      `<p class="why">${L(why)}</p>` + (canStand(k) ? standHtml(s, k) : `<div class="explainbox">${L('mSky')} <button id="mWatch">▶ ${L('mWatch')}</button></div>`) + reportHtml(e);
+  }
+  function renderMission() {
+    const body = $('missionBody'), st = M.step;
+    nameSpots(true);
+    document.body.classList.toggle('cards', st < 2 || st === 4 || canStand(state.landing)); // the 2D sky card shows with a verdict, unless the 3D view replaces it
+    const box = (key, vars) => `<div class="explainbox">${L(key, vars)}</div>`;
+    if (st === 0)
+      body.innerHTML = `<h2>${L('m0Title')}</h2><p class="lead">${L('m0Lead')}</p>${box('m0Sun')}${box('m0Earth')}<button id="mGo" class="primary">${L('m0Go')}</button>`;
+    else if (st === 1)
+      body.innerHTML = `<p class="step">${L('m1Step')}</p><p class="lead">${L('m1Lead', { date: longDate(0) })}</p>${spotButtons()}`;
+    else if (st === 2)
+      body.innerHTML = `<p class="step">${L('m2Step')}</p>${verdictHtml()}<div class="mbtns"><button id="mAgain">${L('mAgain')}</button><button id="mNext" class="primary">${L('mNext')} →</button></div>`;
+    else if (st === 3)
+      body.innerHTML = `<p class="step">${L('m3Step')}</p><p class="news">${L('m3Lead', { d: Mission.DELAY_DAYS, date: longDate(delayK()) })}</p>${verdictHtml()}<p class="lead">${L('m3Pick')}</p>${spotButtons()}<div class="mbtns"><button id="mFinish" class="primary">${L('mFinish')} →</button></div>`;
+    else if (st === 4) {
+      const n = Sky.sunDayOnEarth(state.times[0], NARYN.lat, NARYN.lon), top = Math.max(...state.sites.map((s) => judgeAt(s, 0).m.sunElMax));
+      body.innerHTML = `<h2>${L('m4Title')}</h2>${box('m4Place', { date: longDate(0), list: passList(0) })}${box('m4Date', { d: Mission.DELAY_DAYS, date: longDate(delayK()), list: passList(delayK()) })}` +
+        `<div class="mbtns"><button id="mAnyDay" class="primary">${L('mAnyDay')} →</button><button id="mReplay">${L('mReplay')}</button><button id="mOpenPlanner">${L('mOpenPlanner')}</button></div>` +
+        `<details class="more"><summary>${L('m4More')}</summary>${box('m4Naryn', { date: longDate(0), n: n.maxEl.toFixed(0), h: n.upHours.toFixed(0), s: top.toFixed(0) })}${box('m4Real')}</details>` +
+        `<details class="more"><summary>${L('mResTitle')}</summary><ol class="res">${[1, 2, 3, 4, 5].map((i) => `<li>${L('mRes' + i)}</li>`).join('')}</ol><p class="hint">${L('mNote')}</p></details>`;
+    } else
+      body.innerHTML = `<p class="step">${L('m5Title')}</p>` +
+        `<div class="dayrow"><button data-day="${shiftDay(-1, 0)}">◀ ${L('m5Prev')}</button><input id="mDay" type="date" min="1950-01-01" max="2100-12-31" value="${isoOf(0)}" aria-label="${L('m5Title')}"><button data-day="${shiftDay(1, 0)}">${L('m5Next')} ▶</button>` +
+        `<button data-day="${shiftDay(0, 1)}">${L('m5Month')}</button><button data-day="${shiftDay(0, 12)}">${L('m5Year')}</button><button data-day="${new Date().toISOString().slice(0, 10)}">${L('m5Today')}</button><button data-day="${Mission.START}">${L('m5Mission')}</button></div>` +
+        `<p class="lead">${L('m5Spots', { date: longDate(0) })}</p>${spotButtons(0)}${verdictHtml()}<div class="mbtns"><button id="mReplay">${L('mReplay')}</button><button id="mOpenPlanner">${L('mOpenPlanner')}</button></div><p class="hint"><span class="tip" tabindex="0" data-tip="${L('m5Note')}">ⓘ</span> ${L('m5NoteShort')}</p>`;
+    const on = (id, f) => { const el = $(id); if (el) el.onclick = f; };
+    on('mGo', () => { M.step = 1; renderMission(); });
+    on('mAgain', () => { stopPlay(); M.step = 1; renderMission(); });
+    on('mNext', () => { M.delayed = true; land(state.focus); });
+    on('mFinish', () => { stopPlay(); M.step = 4; renderMission(); });
+    on('mAnyDay', () => setDay(isoOf(0)));
+    on('mReplay', startMission);
+    on('mOpenPlanner', () => setMode(false));
+    on('mWatch', () => { $('play').click(); document.querySelector('.sky').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); });
+    for (const b of body.querySelectorAll('[data-spot]')) b.onclick = () => land(+b.dataset.spot);
+    for (const b of body.querySelectorAll('[data-day]')) b.onclick = () => setDay(b.dataset.day);
+    if ($('mDay')) $('mDay').onchange = (ev) => setDay(ev.target.value);
+  }
+
   // ---------- language: static markup by data-i18n attributes, dynamic text re-rendered ----------
   function applyLang(l) {
     I18n.set(l);
@@ -545,11 +668,16 @@
     $('lang').value = I18n.lang;
     $('hood').hidden = true; // its sentence was written in the old language; one click recomputes it
     setView(!$('globeMap').hidden);
+    $('modeBtn').textContent = L(document.body.classList.contains('mission') ? 'mPlanner' : 'mMissions');
+    if (state.times.length && document.body.classList.contains('mission')) renderMission();
     try { localStorage.setItem('lang', I18n.lang); } catch (e) { /* storage blocked: the link still carries lang */ }
   }
   for (const [code, name] of Object.entries(I18n.NAMES))
     $('lang').add(new Option(name + (I18n.REVIEWED[code] ? '' : ' (draft)'), code));
-  $('lang').addEventListener('change', (e) => { applyLang(e.target.value); renderSiteList(); render(); });
+  $('lang').addEventListener('change', (e) => {
+    applyLang(e.target.value); renderSiteList(); render();
+    if (document.body.classList.contains('mission') && location.hash) history.replaceState(null, '', location.pathname + location.search); // a stale #lang must not beat this choice on reload
+  });
   let savedLang = null;
   try { savedLang = localStorage.getItem('lang'); } catch (e) { /* private mode */ }
   applyLang(new URLSearchParams(location.hash.slice(1)).get('lang') || savedLang || 'en');
@@ -562,6 +690,7 @@
     state.landing = Math.min(shared.landing, Math.max(0, state.times.length - staySamples()));
   } else for (const name of DEFAULT_SITES) { const p = PRESET_SITES.find((x) => x.name === name); if (p) addSite(p); }
   state.focus = state.sites[0]?.id;
-  renderSiteList(); render();
+  // Mission mode is the first screen; a shared planner link (it carries sites) or #mode=planner opens the planner.
+  setMode(!(shared && shared.sites.length) && new URLSearchParams(location.hash.slice(1)).get('mode') !== 'planner');
   window.__app = state; // handy for the console during the demo
 })();

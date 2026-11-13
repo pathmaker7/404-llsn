@@ -6,16 +6,18 @@
 <title>Lunar Landing Site Navigator</title>
 <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="mission">
 <header>
   <div>
     <h1 data-i18n="title">Lunar Landing Site Navigator</h1>
     <p class="sub" data-i18n="sub"></p>
   </div>
-  <div class="team">404 agents · NASA Space Apps 2026 · Naryn · <a class="explain" href="https://lunar-navigator-explained.web.app" target="_blank" rel="noopener" data-i18n="explainLink">How it works</a> <select id="lang" aria-label="Language"></select></div>
+  <div class="team">404 agents · NASA Space Apps 2026 · Naryn · <a class="explain" href="https://lunar-navigator-explained.web.app" target="_blank" rel="noopener" data-i18n="explainLink">How it works</a> <button id="modeBtn" data-i18n="mPlanner">Expert planner</button> <select id="lang" aria-label="Language"></select></div>
 </header>
 
 <main>
+  <section id="mission" class="card"><div id="missionBody"><p>Loading NASA terrain (about 9 MB)…</p></div></section>
+
   <aside class="controls">
     <section>
       <h2 data-i18n="mission"></h2>
@@ -115,6 +117,7 @@
 <script src="terrain.js"></script>
 <script src="globe.js"></script>
 <script src="analysis.js"></script>
+<script src="mission.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

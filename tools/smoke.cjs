@@ -12,9 +12,104 @@ const { chromium } = require('playwright-core');
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
   const t0 = Date.now();
-  await page.goto('file://' + path.join(__dirname, '..', 'app', 'index.html'));
+  const APP = 'file://' + path.join(__dirname, '..', 'app', 'index.html');
+  // Mission mode is the first screen: play one mission end to end before the planner checks.
+  await page.goto(APP);
   await page.waitForFunction(() => window.__app && window.__app.sites.length > 0, null, { timeout: 30000 });
   console.log('loaded in', Date.now() - t0, 'ms');
+  const hidden = (sel) => page.evaluate((q) => getComputedStyle(document.querySelector(q)).display === 'none', sel);
+  if (!(await page.locator('#mGo').count()) || !(await hidden('.results')) || !(await hidden('.sky'))) errors.push('the guided mission is not the first screen');
+  await page.screenshot({ path: path.join(out, 'app-mission.png') });
+  await page.click('#mGo');
+  await page.screenshot({ path: path.join(out, 'app-mission-choose.png') });
+  const spot = (key) => page.evaluate((k) => { const s = __app.sites.find((x) => x.key === k); document.querySelector(`[data-spot="${s.id}"]`).click(); return { ...__mission, text: document.getElementById('missionBody').innerText.replace(/\s+/g, ' ').slice(0, 330) }; }, key);
+  // The story the mission tells must be what the data says: on landing day only the mountain top survives...
+  const first = {};
+  for (const k of ['wall', 'plateau', 'rim2', 'ridge']) { first[k] = await spot(k); if (k !== 'ridge') await page.click('#mAgain'); }
+  console.log('landing day:', JSON.stringify(first.ridge), '| wall:', first.wall.text);
+  if (first.ridge.passing.join() !== 'ridge,rim2' || !first.ridge.ok || first.wall.ok || !/ROBOT WAS LOST/.test(first.wall.text)) errors.push(`landing day story broken: passing ${first.ridge.passing}`);
+  // ...and the verdict is the planner's own number for the same site, date and stay.
+  const same = await page.evaluate(() => { const s = __app.sites[__app.focus - 1], k0 = __app.landing; return [__mission.checks[0].v, Analysis.metrics(s.track, k0, k0 + 14 * 24 / __app.stepH, __app.stepH).longestDarkH]; });
+  if (same[0] !== same[1]) errors.push(`mission night ${same[0]} != planner night ${same[1]}`);
+  // The mission report: eleven rows, each with a hover explanation; the four "must" rows decide the verdict.
+  const rep = await page.evaluate(() => ({ rows: document.querySelectorAll('table.report tr').length - 1, tips: [...document.querySelectorAll('.tip')].map((t) => t.dataset.tip), must: document.querySelectorAll('table.report tr.must').length }));
+  if (rep.rows !== 11 || rep.must !== 4 || rep.tips.length !== 11 || rep.tips.some((t) => t.length < 30)) errors.push('mission report incomplete: ' + JSON.stringify(rep));
+  await page.click('details.more summary'); await page.hover('.tip');
+  if ((await page.evaluate(() => getComputedStyle(document.querySelector('.tip'), '::after').content)).length < 30) errors.push('the hover explanation does not show');
+  await page.screenshot({ path: path.join(out, 'app-mission-verdict.png'), fullPage: true });
+  // ...then the 12 day delay moves the landing day, the mountain top fails and the two rims pass.
+  await page.click('#mNext');
+  const late = await page.evaluate(() => ({ ...__mission, news: !!document.querySelector('p.news') }));
+  console.log('after the delay:', JSON.stringify(late));
+  if (!late.delayed || late.date !== '2027-08-12' || late.ok || !late.news || late.passing.join() !== 'plateau') errors.push(`delay story broken: ${late.date} passing ${late.passing}`);
+  const replan = await spot('plateau');
+  if (!replan.ok || replan.date !== '2027-08-12') errors.push('replanning to the plateau after the delay did not pass');
+  await page.click('#mFinish');
+  const learned = await page.evaluate(() => document.getElementById('missionBody').innerText.replace(/\s+/g, ' '));
+  console.log('summary:', learned.slice(0, 420));
+  if (/undefined|NaN|\{\w+\}/.test(learned) || !/Ridge, Second rim/.test(learned) || !/Plateau/.test(learned)) errors.push('the summary does not name the surviving spots');
+  await page.screenshot({ path: path.join(out, 'app-mission-learned.png') });
+  // Step 5, any day: the picker moves the landing day, the answer is recomputed, and no text is a raw key in any language.
+  await page.click('#mAnyDay');
+  const day = () => page.evaluate(() => ({ date: __mission.date, passing: __mission.passing.join(), badges: document.querySelectorAll('.badge').length, input: document.getElementById('mDay').value }));
+  const d0 = await day();
+  if (d0.date !== '2027-07-22' || d0.passing !== 'ridge,rim2' || d0.badges !== 4) errors.push('any-day step does not start on the mission day: ' + JSON.stringify(d0));
+  await page.click('[data-day="2027-07-23"]'); // +1 day
+  const d1 = await day();
+  if (d1.date !== '2027-07-23' || d1.input !== '2027-07-23') errors.push('+1 day did not move the landing day: ' + JSON.stringify(d1));
+  await page.fill('#mDay', '2035-03-01'); await page.dispatchEvent('#mDay', 'change');
+  const d2 = await day();
+  console.log('any day 2035-03-01:', JSON.stringify(d2));
+  if (d2.date !== '2035-03-01') errors.push('typing a future date did not work: ' + JSON.stringify(d2));
+  for (const l of ['ru', 'ky', 'en']) {
+    const bad = await page.evaluate((l) => {
+      I18n.set(l); document.querySelector('[data-spot]').click(); for (const d of document.querySelectorAll('details')) d.open = true;
+      const keys = new Set(Object.keys(I18n.S.en)), body = document.getElementById('missionBody');
+      const words = (body.innerText + ' ' + [...body.querySelectorAll('.tip')].map((t) => t.dataset.tip).join(' ')).split(/[^\w{}]+/);
+      return words.filter((w) => (keys.has(w) && /^[a-z]+\d?[A-Z]/.test(w)) || /^(undefined|NaN|Infinity)$/.test(w) || /^\{\w+\}$/.test(w));
+    }, l);
+    if (bad.length) errors.push(`any-day step, ${l}: raw text ${bad.join()}`);
+  }
+  await page.screenshot({ path: path.join(out, 'app-mission-anyday.png'), fullPage: true });
+  await page.setViewportSize({ width: 390, height: 844 });
+  const w390 = await page.evaluate(() => document.documentElement.scrollWidth);
+  if (w390 > 390) errors.push('any-day step scrolls sideways at 390 px: ' + w390);
+  await page.locator('table.report').scrollIntoViewIfNeeded();
+  await page.screenshot({ path: path.join(out, 'app-mission-anyday-390.png') });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  // Served over http the verdict shows the 3D view from the spot (app/surface) in place of the 2D sky: same spot, same day.
+  {
+    const http = require('http'), fs = require('fs'), root = path.join(__dirname, '..', 'app');
+    const types = { html: 'text/html', js: 'text/javascript', css: 'text/css', json: 'application/json', bin: 'application/octet-stream' };
+    const srv = http.createServer((q, r) => { const f = path.join(root, decodeURIComponent(q.url.split('?')[0]).replace(/\/$/, '/index.html'));
+      if (!f.startsWith(root) || !fs.existsSync(f)) { r.writeHead(404); return r.end(); }
+      r.writeHead(200, { 'content-type': types[f.split('.').pop()] || 'application/octet-stream' }); fs.createReadStream(f).pipe(r); });
+    await new Promise((ok) => srv.listen(0, '127.0.0.1', ok));
+    const p3 = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+    p3.on('pageerror', (e) => errors.push('3D page: ' + e.message));
+    await p3.goto(`http://127.0.0.1:${srv.address().port}/index.html`);
+    await p3.waitForFunction(() => window.__app && window.__app.sites.length > 0);
+    await p3.click('#mGo');
+    await p3.evaluate(() => document.querySelector(`[data-spot="${__app.sites.find((x) => x.key === 'ridge').id}"]`).click());
+    const fr = p3.frameLocator('iframe.stand');
+    const view = await p3.waitForFunction(() => { const w = document.querySelector('iframe.stand')?.contentWindow; return w && w.__app && w.__app.ready && w.__app.S.site && { dir: w.__app.S.site.dir, t: new Date(w.__app.S.t * 1000).toISOString().slice(0, 10), min: w.document.documentElement.classList.contains('min') }; }, null, { timeout: 60000 }).then((h) => h.jsonValue()).catch((e) => ({ error: e.message.slice(0, 120) }));
+    console.log('3D view:', JSON.stringify(view));
+    if (view.dir !== 'cr-best' || view.t !== '2027-07-22' || !view.min) errors.push('the 3D view is not at the chosen spot and day: ' + JSON.stringify(view));
+    if (await p3.evaluate(() => getComputedStyle(document.querySelector('.sky')).display !== 'none')) errors.push('2D sky still shown next to the 3D view');
+    await p3.waitForTimeout(2500);
+    await p3.screenshot({ path: path.join(out, 'app-mission-3d.png') });
+    await fr.locator('#play').click(); await p3.waitForTimeout(3000);
+    await p3.screenshot({ path: path.join(out, 'app-mission-3d-playing.png') });
+    await p3.setViewportSize({ width: 390, height: 844 }); await p3.waitForTimeout(800);
+    await p3.screenshot({ path: path.join(out, 'app-mission-3d-390.png') });
+    await p3.close(); srv.close();
+  }
+  await page.click('#mOpenPlanner');
+  if (await hidden('.results')) errors.push('the full planner did not open from the mission');
+
+  await page.goto(APP + '#mode=planner');
+  await page.reload();
+  await page.waitForFunction(() => window.__app && window.__app.sites.length > 0, null, { timeout: 30000 });
   const summary = await page.evaluate(() => ({
     sites: __app.sites.map((s) => s.name),
     samples: __app.times.length,
