@@ -42,6 +42,14 @@ if (require.main !== module) return;
   if (days(all0.from, all0.to) < 28 || days(all0.from, all0.to) > 31 || all0.from !== new Date().toISOString().slice(0, 10)) errors.push('the timeline does not open on the next month: ' + all0.from + ' ' + all0.to);
   if (all0.rows.length !== 15 || all0.rows.some((r) => r.total !== days(all0.from, all0.to) || !(r.good >= 0 && r.good <= r.total))) errors.push('timeline rows are wrong: ' + JSON.stringify(all0));
   if (!all0.rows.some((r) => r.good < r.total)) errors.push('the timeline shows no lost day at all');
+  // Legibility (the owner could not tell the days apart, nor what the language dropdown was): on the opening period every
+  // landing day is its own block with a gap after it, and the language choice is visible buttons with exactly one lit.
+  const clear = await page.evaluate(() => {
+    const cv = document.querySelector('#sites li canvas'), px = cv.getContext('2d').getImageData(0, Math.floor(cv.height / 2), cv.width, 1).data;
+    let gaps = 0; for (let x = 1; x < cv.width; x++) if (px[x * 4 + 3] === 0 && px[(x - 1) * 4 + 3] !== 0) gaps++;
+    return { gaps, days: __all.rows[0].total, langs: document.querySelectorAll('#lang button').length, lit: document.querySelectorAll('#lang button.on').length };
+  });
+  if (clear.gaps !== clear.days || clear.langs !== 3 || clear.lit !== 1) errors.push('days are not separate blocks, or the language buttons are not clear: ' + JSON.stringify(clear));
   const order = await page.evaluate(() => [...document.querySelectorAll('#sites .cnt b')].map((b) => +b.textContent));
   if (order.some((n, i) => i && n > order[i - 1])) errors.push('sites are not listed best first: ' + order);
   await page.fill('#a-from', '2022-01-01'); await page.dispatchEvent('#a-from', 'change');
