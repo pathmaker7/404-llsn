@@ -12,7 +12,7 @@ At the Moon's south pole the Sun and Earth only rise a few degrees, so one ridge
 
 ## Links
 - Demo video: docs/demo.mp4 (120 s); also on https://lunar-navigator-explained.web.app#video. Upload to YouTube if the guide asks for a video link; the voice is a synthetic placeholder until an adult team member records it
-- Repository: https://github.com/pathmaker7/lunar-landing-site-navigator
+- Repository: https://github.com/pathmaker7/404-llsn
 - Live app: https://lunar-navigator-404.web.app
 - How it works, for non-specialists: https://lunar-navigator-explained.web.app
 

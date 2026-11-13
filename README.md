@@ -11,7 +11,7 @@ Built for the south pole, where the Sun and Earth skim the horizon, and usable a
 ## Live
 
 - App: https://lunar-navigator-404.web.app
-- Code: https://github.com/pathmaker7/lunar-landing-site-navigator
+- Code: https://github.com/pathmaker7/404-llsn
 - How it works (the problem, the challenge, Space Apps rules, method, results, limits): https://lunar-navigator-explained.web.app
 - Demo video (2 min, synthetic placeholder voice): `docs/demo.mp4`, also embedded on the explainer page
 
