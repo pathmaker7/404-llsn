@@ -243,10 +243,12 @@ function renderHud(s) {
   const lit = s.sunFrac > 0;
   // Always in view (the challenge's core output): where the Sun and Earth stand against the real horizon at the moment shown,
   // and how long until that changes.
-  const line = (cls, name, el, over, state, next) => `<div class="${cls}"><i></i><b>${name}</b><span title="${fmtDeg(over)} above the terrain in that direction">${fmtDeg(el)} elevation</span><span>${state}</span><em>${next}</em></div>`;
-  $('skybar').innerHTML = `<p>${fmtUTC(s.t)}</p>`
-    + line('sun', 'Sun', s.sunEl, s.sunEl - s.sunMask, `${(s.sunFrac * 100).toFixed(0)}% of the disc visible`, ns == null ? '' : `${lit ? 'sunset in' : 'sunrise in'} ${fmtDuration(ns - s.t)}`)
-    + line('earth', 'Earth', s.earthEl, s.earthEl - s.earthMask, s.earthVis ? 'in view: radio link' : 'hidden: no radio link', ne == null ? '' : `${s.earthVis ? 'Earthset in' : 'Earthrise in'} ${fmtDuration(ne - s.t)}`);
+  const T = globalThis.I18n.t;
+  const line = (cls, name, el, over, state, next) => `<div class="${cls}"><i></i><b>${name}</b><strong title="${fmtDeg(over)} above the terrain in that direction">${fmtDeg(el)}</strong><span>${T('sElev')}<br>${state}</span><em>${next}</em></div>`;
+  $('sky-at').firstElementChild.textContent = T('sAt');
+  if (document.activeElement !== $('sky-when')) $('sky-when').value = new Date(s.t * 1000).toISOString().slice(0, 19); // to the second; typing is not overwritten
+  $('sky-lines').innerHTML = line('sun', T('sSun'), s.sunEl, s.sunEl - s.sunMask, T('sDisc', { p: (s.sunFrac * 100).toFixed(0) }), ns == null ? '' : `${T(lit ? 'sSunset' : 'sSunrise')} ${fmtDuration(ns - s.t)}`)
+    + line('earth', T('sEarth'), s.earthEl, s.earthEl - s.earthMask, T(s.earthVis ? 'sIn' : 'sHid'), ne == null ? '' : `${T(s.earthVis ? 'sEset' : 'sErise')} ${fmtDuration(ne - s.t)}`);
   $('h-sun-next').innerHTML = ns == null ? `<span class="muted">No change before end of data (${S.index.period.end.slice(0, 10)})</span>`
     : `${lit ? 'Sunlight lost in' : 'Sunlight returns in'} <b>${fmtDuration(ns - s.t)}</b>`;
   $('h-earth-next').innerHTML = ne == null ? `<span class="muted">No change before end of data</span>`
@@ -298,6 +300,15 @@ $('m-start').addEventListener('change', (e) => {
 });
 $('m-days').addEventListener('change', (e) => { S.missionDays = +e.target.value; refreshMission(); setHash(); });
 $('back').addEventListener('click', backToMap);
+// Any moment, to the second: the sky and the numbers move there; a moment outside the stay moves the landing to that day.
+$('sky-when').addEventListener('change', (e) => {
+  const t = Date.parse(e.target.value + 'Z') / 1000;
+  if (!Number.isFinite(t)) return;
+  const c = Math.min(Math.max(t, periodStart()), periodEnd() - S.missionDays * 86400);
+  S.playing = false; $('play').textContent = '▶';
+  if (c < S.missionStart || c > missionEnd()) { S.missionStart = Math.floor(c / 86400) * 86400; S.t = c; refreshMission(); setHash(); }
+  setTime(c);
+});
 for (const b of $('h-variant').querySelectorAll('button')) b.addEventListener('click', () => switchVariant(b.dataset.v));
 
 // view options
@@ -544,7 +555,7 @@ function frame(now) {
     // Three visible buttons, the current language lit: a closed dropdown did not say what it was for.
     sel.innerHTML = Object.entries(I18n.NAMES).map(([k, v]) => `<button data-l="${k}" title="${v}">${k.toUpperCase()}</button>`).join('');
     const mark = () => { for (const b of sel.children) b.classList.toggle('on', b.dataset.l === I18n.lang); };
-    for (const b of sel.children) b.onclick = () => { I18n.set(b.dataset.l); try { localStorage.setItem('lang', b.dataset.l); } catch (e) { /* storage blocked */ } mark(); drawVerdict(); S.all?.redraw(); };
+    for (const b of sel.children) b.onclick = () => { I18n.set(b.dataset.l); try { localStorage.setItem('lang', b.dataset.l); } catch (e) { /* storage blocked */ } mark(); drawVerdict(); S.all?.redraw(); S.dirty = true; };
     mark();
     const ov = await loadOverview(S.index);
     overview.build(ov, S.index.sites);

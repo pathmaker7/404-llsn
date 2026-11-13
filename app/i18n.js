@@ -3,6 +3,17 @@
 (function (root) {
   const S = {
   "en": {
+    "sAt": "Sky at",
+    "sSun": "Sun",
+    "sEarth": "Earth",
+    "sElev": "above a flat horizon",
+    "sDisc": "{p}% of the disc visible",
+    "sIn": "in view: radio link",
+    "sHid": "hidden: no radio link",
+    "sSunset": "sunset in",
+    "sSunrise": "sunrise in",
+    "sEset": "Earthset in",
+    "sErise": "Earthrise in",
     "aPlay": "Play the sunlight over this period",
     "a1m": "Next month",
     "a2w": "Next 2 weeks",
@@ -78,6 +89,17 @@
     "vYear": "year"
   },
   "ru": {
+    "sAt": "Небо на",
+    "sSun": "Солнце",
+    "sEarth": "Земля",
+    "sElev": "над ровным горизонтом",
+    "sDisc": "видно {p}% диска",
+    "sIn": "видна: связь есть",
+    "sHid": "скрыта: связи нет",
+    "sSunset": "закат через",
+    "sSunrise": "восход через",
+    "sEset": "заход Земли через",
+    "sErise": "восход Земли через",
     "aPlay": "Показать движение света за этот период",
     "a1m": "Месяц вперёд",
     "a2w": "2 недели вперёд",
@@ -153,6 +175,17 @@
     "vYear": "год"
   },
   "ky": {
+    "sAt": "Асман",
+    "sSun": "Күн",
+    "sEarth": "Жер",
+    "sElev": "тегиз горизонттон жогору",
+    "sDisc": "дисктин {p}% көрүнөт",
+    "sIn": "көрүнөт: байланыш бар",
+    "sHid": "жашырылган: байланыш жок",
+    "sSunset": "батышына",
+    "sSunrise": "чыгышына",
+    "sEset": "Жердин батышына",
+    "sErise": "Жердин чыгышына",
     "aPlay": "Ушул мезгилдеги жарыктын жылышын көрсөтүү",
     "a1m": "Бир ай алдыга",
     "a2w": "2 жума алдыга",

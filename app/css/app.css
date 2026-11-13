@@ -311,3 +311,14 @@ body.mode-surface .skymark { display: none !important; }
 .skymark::before { content: ""; width: 16px; height: 16px; border-radius: 50%; flex: none; }
 .skymark.sun::before { background: radial-gradient(#fff 40%, #fff3c4 75%); box-shadow: 0 0 10px 2px #fff; }
 .skymark.earth::before { background: url(../data/earth.jpg) 38% 50% / 200% 100%; box-shadow: inset -4px -2px 5px rgba(0,0,0,.65); }
+/* a way back that says where it goes; panels that scroll show it */
+#back { border-color: var(--teal); color: var(--teal); font-weight: 600; padding: 7px 14px; }
+#hud, #sitelist, #panel { scrollbar-width: thin; scrollbar-color: rgba(70,224,200,.7) rgba(255,255,255,.06); }
+#hud { overflow-y: scroll; }
+#hud::-webkit-scrollbar, #sitelist::-webkit-scrollbar { width: 10px; }
+#hud::-webkit-scrollbar-track, #sitelist::-webkit-scrollbar-track { background: rgba(255,255,255,.06); border-radius: 5px; }
+#hud::-webkit-scrollbar-thumb, #sitelist::-webkit-scrollbar-thumb { background: rgba(70,224,200,.7); border-radius: 5px; }
+#sky-at { display: flex; align-items: center; gap: 6px; font: 11px var(--mono); color: var(--muted); margin-bottom: 4px; }
+#sky-when { background: #0d1118; border: 1px solid var(--line-2); border-radius: 3px; padding: 3px 6px; color: var(--text); font: 12px var(--mono); color-scheme: dark; }
+#skybar strong { font: 600 22px var(--mono); min-width: 92px; } #skybar .sun strong { color: var(--sun); } #skybar .earth strong { color: var(--earth); }
+#skybar span { font-size: 11px; line-height: 1.35; color: var(--muted); } #skybar b { width: auto; min-width: 44px; }

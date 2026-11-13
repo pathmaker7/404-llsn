@@ -42,6 +42,11 @@ if (require.main !== module) return;
   if (days(all0.from, all0.to) < 28 || days(all0.from, all0.to) > 31 || all0.from !== new Date().toISOString().slice(0, 10)) errors.push('the timeline does not open on the next month: ' + all0.from + ' ' + all0.to);
   if (all0.rows.length !== 15 || all0.rows.some((r) => r.total !== days(all0.from, all0.to) || !(r.good >= 0 && r.good <= r.total))) errors.push('timeline rows are wrong: ' + JSON.stringify(all0));
   if (!all0.rows.some((r) => r.good < r.total)) errors.push('the timeline shows no lost day at all');
+  // The bodies read as themselves (the owner saw "a part of it and a bigger circle around it"): the app opens from far enough to
+  // show the whole Moon, and the Moon and the Earth carry their real NASA pictures.
+  const bodies = await page.evaluate(() => { const o = __app.overview, w = (t) => (t && t.image && t.image.width) || 0;
+    return { from: o.introFrom, moon: w(o.mat.uniforms.moon.value), earth: w(o.earthBody.material.uniforms.map.value), sun: !!o.sunBody }; });
+  if (!(bodies.from >= 5e6) || bodies.moon < 1024 || bodies.earth < 1024 || !bodies.sun) errors.push('the Moon, Earth or Sun is not shown as the real body: ' + JSON.stringify(bodies));
   // Legibility (the owner could not tell the days apart, nor what the language dropdown was): on the opening period every
   // landing day is its own block with a gap after it, and the language choice is visible buttons with exactly one lit.
   const clear = await page.evaluate(() => {
@@ -100,7 +105,7 @@ if (require.main !== module) return;
   if (v0.date !== v0.today) errors.push('the default landing day is not today: ' + v0.date);
   // The challenge's required output is in view without opening anything: Sun and Earth elevation against the horizon, and time to the next change.
   const sky = await page.evaluate(() => { const b = document.getElementById('skybar'), r = b.getBoundingClientRect(); return { text: b.innerText, shown: r.height > 30 && r.top >= 0 && r.bottom <= innerHeight }; });
-  if (!sky.shown || !/Sun[\s\S]*°\s*elevation[\s\S]*Earth[\s\S]*°\s*elevation/.test(sky.text) || !/(sunset|sunrise) in|Earth(set|rise) in/.test(sky.text) || /NaN|undefined/.test(sky.text)) errors.push('Sun and Earth positions are not shown by default on the site screen: ' + JSON.stringify(sky));
+  if (!sky.shown || !/Sun[\s\S]*°[\s\S]*Earth[\s\S]*°/.test(sky.text) || !/(sunset|sunrise) in|Earth(set|rise) in/.test(sky.text) || /NaN|undefined/.test(sky.text)) errors.push('Sun and Earth positions are not shown by default on the site screen: ' + JSON.stringify(sky));
   if (v0.rows !== 11 || v0.tips.length !== 11 || v0.tips.some((n) => n < 30)) errors.push('the eleven checks with their explanations are not all shown');
   if (v0.strip !== 120 || v0.green !== v0.good || !new RegExp('^' + v0.good + '\\b').test(v0.count.trim())) errors.push('the landing day strip and its count disagree: ' + JSON.stringify([v0.strip, v0.green, v0.good, v0.count]));
   if (/undefined|NaN|\{\w+\}/.test(v0.text)) errors.push('raw text in the answer panel');
@@ -112,6 +117,10 @@ if (require.main !== module) return;
     if ((await page.evaluate(() => __verdict.ok)) !== (cls === 'ok')) errors.push(`a ${cls} day did not give the matching verdict`);
   }
 
+  // 2b. Any moment to the second: typing a date and time moves the sky clock there, and the back button says where it goes.
+  await page.fill('#sky-when', '2028-02-03T04:05:06'); await page.dispatchEvent('#sky-when', 'change'); await page.waitForTimeout(400);
+  const when = await page.evaluate(() => ({ t: __app.S.t, land: __verdict.date, back: document.getElementById('back').textContent, bar: getComputedStyle(document.getElementById('hud')).overflowY }));
+  if (when.t !== Date.parse('2028-02-03T04:05:06Z') / 1000 || when.land !== '2028-02-03' || !/All sites/.test(when.back) || when.bar !== 'scroll') errors.push('exact time, back button or scrollbar is wrong: ' + JSON.stringify(when));
   // 3. Any day, past or future: the date field, the year buttons, and the 3D clock follow.
   await page.fill('#v-day', '2030-05-01'); await page.dispatchEvent('#v-day', 'change'); await page.waitForTimeout(500);
   const v1 = await page.evaluate(() => ({ date: __verdict.date, clock: document.getElementById('d-time').textContent }));

@@ -25,7 +25,7 @@
       <div class="sub">South pole · Sun · Earth · real horizon</div>
     </div>
   </div>
-  <button id="back" class="ghost surface-only" title="Back to the south-pole map">◂ South pole</button>
+  <button id="back" class="ghost surface-only" title="Back to the Moon with all sites">← All sites</button>
   <nav>
     <div id="lang" role="group" aria-label="Language"></div>
     <button data-panel="validation">How do we know?</button>
@@ -36,7 +36,7 @@
 <aside id="sitelist" class="overview-only"></aside>
 
 <section id="hud" class="surface-only">
-  <div id="skybar" aria-live="off"></div>
+  <div id="skybar"><label id="sky-at"><span></span> <input id="sky-when" type="datetime-local" step="1"> UTC</label><div id="sky-lines"></div></div>
   <div id="verdict" class="verdict"></div>
   <div class="hud-site">
     <div class="site-name" id="h-name">—</div>

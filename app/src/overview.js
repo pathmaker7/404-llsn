@@ -206,7 +206,7 @@ export class Overview {
   /** Opening move: from far enough to see the whole Moon, down to the south pole. */
   intro(ms = 3200) {
     const d1 = this.dist, d0 = 7.5e6, t0 = performance.now();
-    this.dist = d0;
+    this.dist = d0; this.introFrom = d0;
     this.anim = (now) => {
       const u = Math.min((now - t0) / ms, 1), e = 1 - Math.pow(1 - u, 3);
       this.dist = Math.exp(Math.log(d0) + (Math.log(d1) - Math.log(d0)) * e);
