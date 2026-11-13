@@ -35,7 +35,7 @@ export class Overview {
     this.scene.background = new THREE.Color(0x000000);
     this.camera = new THREE.PerspectiveCamera(45, 1, 100, 5e6);
     this.target = new THREE.Vector3(0, 0, 0);
-    this.dist = 400000; this.theta = 0; this.phi = 48; // orbit (deg)
+    this.dist = 760000; this.theta = 0; this.phi = 48; // orbit (deg)
     this.anim = null;
   }
 
@@ -84,7 +84,12 @@ export class Overview {
     this.mat?.uniforms.light.value.set(Math.cos(e) * Math.sin(a), Math.sin(e), -Math.cos(e) * Math.cos(a));
   }
 
-  setSize(w, h) { this.camera.aspect = w / h; this.camera.updateProjectionMatrix(); }
+  /** lift: pixels to move the picture up, so the pole stays clear of the panel at the bottom of the map screen. */
+  setSize(w, h, lift = 0) {
+    this.camera.aspect = w / h;
+    if (lift) this.camera.setViewOffset(w, h, 0, lift, w, h); else this.camera.clearViewOffset();
+    this.camera.updateProjectionMatrix();
+  }
 
   _place() {
     const t = this.theta * DEG, p = this.phi * DEG;
@@ -113,7 +118,7 @@ export class Overview {
   }
 
   reset() {
-    this.target.set(0, 0, 0); this.dist = 400000; this.theta = 0; this.phi = 48;
+    this.target.set(0, 0, 0); this.dist = 760000; this.theta = 0; this.phi = 48;
   }
 
   render(now) {

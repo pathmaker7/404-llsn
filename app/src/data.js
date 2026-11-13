@@ -53,10 +53,18 @@ function computeChannels(meta) {
   return ch;
 }
 
+/** Sun and Earth over the whole period at one point, without its terrain meshes (the map's timeline needs only this). */
+const sky = new Map();
+export function loadSky(dir) {
+  if (!sky.has(dir)) sky.set(dir, getJSON(`data/sites/${dir}/meta.json`).then(async (meta) => {
+    await new Promise((r) => setTimeout(r, 30)); // let the page paint before the one-off ephemeris pass
+    return { dir, meta, ch: computeChannels(meta), n: PN, t0: P0 };
+  }));
+  return sky.get(dir);
+}
+
 async function _load(dir) {
-  const base = `data/sites/${dir}/`;
-  const meta = await getJSON(base + 'meta.json');
-  const [near, far] = await Promise.all([getBin(base + meta.terrain.near.file), getBin(base + meta.terrain.far.file)]);
-  await new Promise((r) => setTimeout(r, 30)); // let the "Loading" label paint before the one-off ephemeris pass
-  return { dir, meta, ch: computeChannels(meta), n: PN, t0: P0, near: new Int16Array(near), far: new Int16Array(far) };
+  const base = `data/sites/${dir}/`, s = await loadSky(dir);
+  const [near, far] = await Promise.all([getBin(base + s.meta.terrain.near.file), getBin(base + s.meta.terrain.far.file)]);
+  return { ...s, near: new Int16Array(near), far: new Int16Array(far) };
 }

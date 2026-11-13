@@ -30,13 +30,49 @@ if (require.main !== module) return;
   // 1. First screen: the 3D map with every site, nothing else to decide.
   await page.goto(url);
   await page.waitForFunction(() => window.__app && window.__app.ready, null, { timeout: 60000 });
-  await page.waitForTimeout(1500);
+  await page.waitForFunction(() => window.__all && window.__all.ready, null, { timeout: 120000 });
   const front = await page.evaluate(() => ({ sites: document.querySelectorAll('#sites li').length, pins: document.querySelectorAll('#pins > *').length, nav: [...document.querySelectorAll('#topbar nav button')].map((b) => b.textContent) }));
   await page.screenshot({ path: path.join(OUT, 'map.png') });
-  if (front.sites !== 6 || front.pins !== 6) errors.push('the map does not show the six sites: ' + JSON.stringify(front));
+  if (front.sites !== 15 || front.pins !== 15) errors.push('the map does not show the fifteen sites: ' + JSON.stringify(front));
+
+  // 1b. The timeline of every site: the period can be set, the map can be turned, and a cell's colour is the verdict
+  // the site screen gives for that site and day.
+  const days = (a, b) => Math.round((Date.parse(b) - Date.parse(a)) / 86400000);
+  const all0 = await page.evaluate(() => ({ from: __all.from, to: __all.to, rows: __all.rows }));
+  if (all0.rows.length !== 15 || all0.rows.some((r) => r.total !== days(all0.from, all0.to) || !(r.good >= 0 && r.good <= r.total))) errors.push('timeline rows are wrong: ' + JSON.stringify(all0));
+  if (!all0.rows.some((r) => r.good > 0) || !all0.rows.some((r) => r.good < r.total)) errors.push('the timeline shows no difference between sites or days');
+  const order = await page.evaluate(() => [...document.querySelectorAll('#sites .cnt b')].map((b) => +b.textContent));
+  if (order.some((n, i) => i && n > order[i - 1])) errors.push('sites are not listed best first: ' + order);
+  await page.fill('#a-from', '2022-01-01'); await page.dispatchEvent('#a-from', 'change');
+  await page.fill('#a-to', '2024-01-01'); await page.dispatchEvent('#a-to', 'change');
+  const all1 = await page.evaluate(() => ({ from: __all.from, to: __all.to, total: __all.rows[0].total }));
+  if (all1.from !== '2022-01-01' || all1.to !== '2024-01-01' || all1.total !== 730) errors.push('a past to past period did not apply: ' + JSON.stringify(all1));
+  await page.click('.a-range button[data-y="0"]');
+  if ((await page.evaluate(() => __all.from + ' ' + __all.rows[0].total)) !== '2021-01-01 4004') errors.push('the whole period button did not apply');
+  await page.click('.a-range button[data-y="1"]');
+  const th0 = await page.evaluate(() => __app.overview.theta);
+  await page.mouse.move(150, 300); await page.mouse.down(); await page.mouse.move(350, 350, { steps: 6 }); await page.mouse.up(); // starts on bare map, left of every label
+  const th1 = await page.evaluate(() => __app.overview.theta); await page.waitForTimeout(400);
+  if (Math.abs(th1 - th0) < 20 || (await page.evaluate(() => __app.overview.theta)) !== th1) errors.push('dragging the map did not turn it and hold it: ' + [th0, th1]);
+  for (const [name, frac] of [['Peak near Shackleton', 0.1], ['Connecting ridge', 0.5], ['Leibnitz beta plateau', 0.8], ['Slater rim', 0.3], ['Shackleton floor', 0.6]]) {
+    const cv = page.locator('#sites li', { hasText: name }).locator('canvas'), box = await cv.boundingBox();
+    await cv.hover({ position: { x: box.width * frac, y: 7 } });
+    const tip = await page.evaluate(() => document.getElementById('a-tip').textContent);
+    await cv.click({ position: { x: box.width * frac, y: 7 } });
+    await page.waitForFunction(() => window.__verdict && document.body.classList.contains('mode-surface'), null, { timeout: 90000 }); await page.waitForTimeout(400);
+    const got = await page.evaluate(() => ({ date: __verdict.date, ok: __verdict.ok, cell: __all.at(__app.S.siteId, __verdict.date), site: __app.S.siteId }));
+    if (got.ok !== got.cell || /lost/.test(tip) === got.ok || !tip.startsWith(name)) errors.push(`timeline cell and site verdict disagree: ${name} ${JSON.stringify(got)} tip "${tip}"`);
+    await page.click('#back'); await page.waitForTimeout(600);
+    await page.evaluate(() => { window.__verdict = null; });
+  }
+  await page.click('#topbar nav button[data-panel="validation"]'); await page.waitForTimeout(300);
+  const how = await page.evaluate(() => document.getElementById('panel-body').innerText);
+  if (!/over 20 evaluated points/.test(how) || /NaN|undefined/.test(how)) errors.push('the How do we know panel does not cover the twenty points cleanly');
+  await page.goto(url); await page.reload();
+  await page.waitForFunction(() => window.__all && window.__all.ready, null, { timeout: 120000 });
 
   // 2. Click a site: the answer panel, complete and in view without opening anything.
-  await page.click('#sites li:nth-child(1) button');
+  await page.locator('#sites li button', { hasText: 'Peak near Shackleton' }).click();
   await page.waitForFunction(() => window.__verdict && document.body.classList.contains('mode-surface'), null, { timeout: 90000 });
   await page.waitForTimeout(2500);
   const v0 = await page.evaluate(() => ({ date: __verdict.date, today: new Date().toISOString().slice(0, 10), rows: document.querySelectorAll('.v-rows tr').length, tips: [...document.querySelectorAll('.v-rows .tip')].map((t) => t.dataset.tip.length),
@@ -80,7 +116,7 @@ if (require.main !== module) return;
 
   // 5. Phone width: no sideways scroll.
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.click('#sites li:nth-child(4) button');
+  await page.locator('#sites li button', { hasText: 'Connecting ridge' }).click();
   await page.waitForFunction(() => document.body.classList.contains('mode-surface'), null, { timeout: 90000 }); await page.waitForTimeout(2000);
   const w = await page.evaluate(() => document.documentElement.scrollWidth);
   await page.screenshot({ path: path.join(OUT, 'site-390.png') });

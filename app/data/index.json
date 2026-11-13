@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-13T17:03:21+00:00",
+ "generated_utc": "2026-11-13T19:33:54+00:00",
  "period": {
   "start": "2027-01-01T00:00:00Z",
   "end": "2028-12-31T23:00:00Z",
@@ -275,6 +275,267 @@
      },
      "validation_max_arcsec": {
       "sun": 0.155,
+      "earth": 0.471
+     }
+    }
+   }
+  },
+  {
+   "id": "sl",
+   "ref": "Team",
+   "name": "Slater rim",
+   "lat": -87.6946,
+   "lon": 114.5416,
+   "variants": {
+    "databook": {
+     "dir": "sl",
+     "lat": -87.6946,
+     "lon": 114.5416,
+     "offset_m": 0.0,
+     "slope_deg": 1.3,
+     "ground_height_m": 153.53,
+     "summary_full_period": {
+      "pct_sunlit_any": 60.20291837665299,
+      "pct_full_sun": 49.37870497036024,
+      "pct_earth": 45.975832193342455,
+      "pct_both": 29.924760601915185,
+      "longest_dark_h": 416,
+      "longest_comms_gap_h": 374
+     },
+     "validation_max_arcsec": {
+      "sun": 0.072,
+      "earth": 0.471
+     }
+    }
+   }
+  },
+  {
+   "id": "sh",
+   "ref": "Team",
+   "name": "Shoemaker rim",
+   "lat": -88.6483,
+   "lon": 19.4959,
+   "variants": {
+    "databook": {
+     "dir": "sh",
+     "lat": -88.6483,
+     "lon": 19.4959,
+     "offset_m": 0.0,
+     "slope_deg": 1.4,
+     "ground_height_m": 63.0,
+     "summary_full_period": {
+      "pct_sunlit_any": 47.82261741906065,
+      "pct_full_sun": 35.79571363429093,
+      "pct_earth": 50.775193798449614,
+      "pct_both": 26.749886000911992,
+      "longest_dark_h": 609,
+      "longest_comms_gap_h": 351
+     },
+     "validation_max_arcsec": {
+      "sun": 0.044,
+      "earth": 0.471
+     }
+    }
+   }
+  },
+  {
+   "id": "fr",
+   "ref": "Team",
+   "name": "Faustini rim",
+   "lat": -87.2067,
+   "lon": 61.7652,
+   "variants": {
+    "databook": {
+     "dir": "fr",
+     "lat": -87.2067,
+     "lon": 61.7652,
+     "offset_m": 0.0,
+     "slope_deg": 6.8,
+     "ground_height_m": 663.4,
+     "summary_full_period": {
+      "pct_sunlit_any": 41.603967168262656,
+      "pct_full_sun": 33.52713178294574,
+      "pct_earth": 33.8406292749658,
+      "pct_both": 12.232102143182855,
+      "longest_dark_h": 556,
+      "longest_comms_gap_h": 451
+     },
+     "validation_max_arcsec": {
+      "sun": 0.092,
+      "earth": 0.471
+     }
+    }
+   }
+  },
+  {
+   "id": "hw",
+   "ref": "Team",
+   "name": "Haworth rim",
+   "lat": -85.9697,
+   "lon": -2.3625,
+   "variants": {
+    "databook": {
+     "dir": "hw",
+     "lat": -85.9697,
+     "lon": -2.3625,
+     "offset_m": 0.0,
+     "slope_deg": 5.1,
+     "ground_height_m": 4975.53,
+     "summary_full_period": {
+      "pct_sunlit_any": 35.85841313269494,
+      "pct_full_sun": 27.941176470588236,
+      "pct_earth": 50.416096671226626,
+      "pct_both": 20.075239398084815,
+      "longest_dark_h": 2701,
+      "longest_comms_gap_h": 346
+     },
+     "validation_max_arcsec": {
+      "sun": 0.137,
+      "earth": 0.471
+     }
+    }
+   }
+  },
+  {
+   "id": "mp",
+   "ref": "Team",
+   "name": "Malapert rim",
+   "lat": -85.3904,
+   "lon": 26.609,
+   "variants": {
+    "databook": {
+     "dir": "mp",
+     "lat": -85.3904,
+     "lon": 26.609,
+     "offset_m": 0.0,
+     "slope_deg": 3.5,
+     "ground_height_m": 5543.44,
+     "summary_full_period": {
+      "pct_sunlit_any": 59.119927040583676,
+      "pct_full_sun": 54.052667578659374,
+      "pct_earth": 72.18992248062015,
+      "pct_both": 40.68627450980392,
+      "longest_dark_h": 434,
+      "longest_comms_gap_h": 204
+     },
+     "validation_max_arcsec": {
+      "sun": 0.153,
+      "earth": 0.471
+     }
+    }
+   }
+  },
+  {
+   "id": "nb",
+   "ref": "Team",
+   "name": "Nobile rim",
+   "lat": -85.2997,
+   "lon": 36.9278,
+   "variants": {
+    "databook": {
+     "dir": "nb",
+     "lat": -85.2997,
+     "lon": 36.9278,
+     "offset_m": 0.0,
+     "slope_deg": 6.3,
+     "ground_height_m": 6751.71,
+     "summary_full_period": {
+      "pct_sunlit_any": 52.02918376652986,
+      "pct_full_sun": 37.6937984496124,
+      "pct_earth": 50.22799817601459,
+      "pct_both": 26.955084359325127,
+      "longest_dark_h": 653,
+      "longest_comms_gap_h": 347
+     },
+     "validation_max_arcsec": {
+      "sun": 0.161,
+      "earth": 0.471
+     }
+    }
+   }
+  },
+  {
+   "id": "mm",
+   "ref": "Team",
+   "name": "Mons Mouton",
+   "lat": -84.3357,
+   "lon": 31.7595,
+   "variants": {
+    "databook": {
+     "dir": "mm",
+     "lat": -84.3357,
+     "lon": 31.7595,
+     "offset_m": 0.0,
+     "slope_deg": 5.0,
+     "ground_height_m": 5555.43,
+     "summary_full_period": {
+      "pct_sunlit_any": 51.57888736890105,
+      "pct_full_sun": 49.27610579115367,
+      "pct_earth": 100.0,
+      "pct_both": 51.57888736890105,
+      "longest_dark_h": 380,
+      "longest_comms_gap_h": 0
+     },
+     "validation_max_arcsec": {
+      "sun": 0.191,
+      "earth": 0.47
+     }
+    }
+   }
+  },
+  {
+   "id": "sf",
+   "ref": "Team",
+   "name": "Shackleton floor",
+   "lat": -89.6334,
+   "lon": 122.6609,
+   "variants": {
+    "databook": {
+     "dir": "sf",
+     "lat": -89.6334,
+     "lon": 122.6609,
+     "offset_m": 0.0,
+     "slope_deg": 6.5,
+     "ground_height_m": -2818.49,
+     "summary_full_period": {
+      "pct_sunlit_any": 0.0,
+      "pct_full_sun": 0.0,
+      "pct_earth": 0.0,
+      "pct_both": 0.0,
+      "longest_dark_h": 17544,
+      "longest_comms_gap_h": 17544
+     },
+     "validation_max_arcsec": {
+      "sun": 0.014,
+      "earth": 0.471
+     }
+    }
+   }
+  },
+  {
+   "id": "ff",
+   "ref": "Team",
+   "name": "Faustini floor",
+   "lat": -87.2456,
+   "lon": 76.882,
+   "variants": {
+    "databook": {
+     "dir": "ff",
+     "lat": -87.2456,
+     "lon": 76.882,
+     "offset_m": 0.0,
+     "slope_deg": 9.3,
+     "ground_height_m": -3345.85,
+     "summary_full_period": {
+      "pct_sunlit_any": 0.0,
+      "pct_full_sun": 0.0,
+      "pct_earth": 0.0,
+      "pct_both": 0.0,
+      "longest_dark_h": 17544,
+      "longest_comms_gap_h": 17544
+     },
+     "validation_max_arcsec": {
+      "sun": 0.093,
       "earth": 0.471
      }
     }

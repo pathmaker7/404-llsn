@@ -1,0 +1,148 @@
+// The map screen's answer: one row per site, one column per landing day over a period the user sets.
+// Green: a solar robot landing that day survives its stay. Red: it is lost. Same rules as the site panel (verdict.js#judgeAt).
+import { loadSky } from './data.js';
+import { judgeAt } from './verdict.js';
+
+const I = globalThis.I18n, L = (k, v) => I.t(k, v), DAY = 86400;
+const MUST = ['night', 'radio', 'light', 'slope'];
+const cap = (s) => s[0].toUpperCase() + s.slice(1);
+const OK = [63, 191, 127], BAD = [200, 69, 74];
+const iso = (t) => new Date(t * 1000).toISOString().slice(0, 10);
+
+/** One byte per landing day of the whole period: 0 survives, otherwise 1 + index in MUST of the first failed check. */
+export function dayVerdicts(sky, slope, evaSlope, days) {
+  const W = days * 24, nd = Math.floor((sky.n - W) / 24) + 1, out = new Uint8Array(nd);
+  for (let d = 0; d < nd; d++) {
+    const x = judgeAt(sky, d * 24, W, slope, evaSlope);
+    if (!x.ok) out[d] = 1 + MUST.indexOf(x.rows.find((r) => r.pri === 'must' && r.ok === false).id);
+  }
+  return out;
+}
+
+/** root: the panel element. sites: [{ id, name, ref, dir, slope, evaSlope }]. p0, p1: period (unix s). onPick(id, t or null). */
+export function allSites(root, { sites, days, p0, p1, onPick }) {
+  const nd = Math.floor(((p1 - p0) / 3600 + 1 - days * 24) / 24) + 1;
+  const today = Math.floor(Date.now() / 1000 / DAY) * DAY, td = Math.round((today - p0) / DAY);
+  const st = { a: td, b: Math.min(td + 365, nd), ready: false, rows: sites };
+  const clampDay = (d) => Math.min(Math.max(d, 0), nd);
+  const dayOf = (v) => Math.round((Date.parse(v + 'T00:00:00Z') / 1000 - p0) / DAY);
+
+  root.innerHTML = `<div class="a-head"><h2></h2><div class="a-range">
+      <label><span></span> <input type="date" id="a-from" min="${iso(p0)}" max="${iso(p0 + (nd - 1) * DAY)}"></label>
+      <label><span></span> <input type="date" id="a-to" min="${iso(p0 + DAY)}" max="${iso(p0 + nd * DAY)}"></label>
+      <button data-y="1"></button><button data-y="5"></button><button data-y="0"></button></div></div>
+    <div class="a-row a-axis"><span></span><canvas></canvas><span></span></div>
+    <ol id="sites"></ol>
+    <p class="v-key"><i class="ok"></i><span></span> <i class="bad"></i><span></span> <i class="cur"></i><span></span> <span class="tip" tabindex="0">ⓘ</span> <span class="a-hint"></span></p>
+    <div id="a-tip"></div>`;
+  const ol = root.querySelector('#sites'), tip = root.querySelector('#a-tip'), axis = root.querySelector('.a-axis canvas');
+  const from = root.querySelector('#a-from'), to = root.querySelector('#a-to');
+
+  for (const s of sites) {
+    const li = document.createElement('li');
+    li.className = 'a-row';
+    li.innerHTML = `<button title="${s.ref}">${s.name}<small>${s.ref}</small></button><canvas></canvas><span class="cnt"></span>`;
+    li.querySelector('button').onclick = () => onPick(s.id, null);
+    const cv = li.querySelector('canvas');
+    const dayAt = (e) => st.a + Math.min(Math.floor((e.offsetX / cv.clientWidth) * (st.b - st.a)), st.b - st.a - 1);
+    cv.onpointermove = (e) => {
+      if (!s.v) return;
+      const d = dayAt(e), why = s.v[d];
+      const date = new Date((p0 + d * DAY) * 1000).toLocaleDateString(I.lang, { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+      tip.textContent = `${s.name} · ${date}: ${why ? L('mLostShort') + ' (' + L('r' + cap(MUST[why - 1])) + ')' : L('mOkShort')}`;
+      tip.style.display = 'block';
+      tip.style.left = Math.min(e.clientX + 12, window.innerWidth - tip.offsetWidth - 8) + 'px';
+      tip.style.top = e.clientY - 34 + 'px';
+    };
+    cv.onpointerleave = () => { tip.style.display = 'none'; };
+    cv.onclick = (e) => onPick(s.id, p0 + dayAt(e) * DAY);
+    s.li = li; s.cv = cv;
+    ol.appendChild(li);
+  }
+
+  const fit = (cv, hCss) => {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2), w = Math.max(Math.round(cv.clientWidth * dpr), 1), h = Math.round(hCss * dpr);
+    if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
+    return { g: cv.getContext('2d'), w, h, dpr };
+  };
+  const xOf = (d, w) => ((d - st.a) / (st.b - st.a)) * w;
+
+  function paintRow(s) {
+    const { g, w, h } = fit(s.cv, 12), span = st.b - st.a;
+    if (!s.v) { g.fillStyle = 'rgba(255,255,255,.07)'; g.fillRect(0, 0, w, h); return 0; }
+    let good = 0;
+    for (let d = st.a; d < st.b; d++) good += s.v[d] === 0;
+    for (let x = 0; x < w; x++) {
+      const d0 = st.a + Math.floor((x * span) / w), d1 = Math.max(d0 + 1, st.a + Math.floor(((x + 1) * span) / w));
+      let ok = 0;
+      for (let d = d0; d < d1; d++) ok += s.v[d] === 0;
+      const f = ok / (d1 - d0); // several days share one pixel on long periods: the colour is their mix
+      g.fillStyle = `rgb(${BAD.map((c, i) => Math.round(c + (OK[i] - c) * f)).join(',')})`;
+      g.fillRect(x, 0, 1, h);
+    }
+    if (td >= st.a && td < st.b) { g.fillStyle = '#fff'; g.fillRect(Math.round(xOf(td, w)), 0, Math.max(2, Math.round(w / span / 4)), h); }
+    return good;
+  }
+
+  function paintAxis() {
+    const { g, w, h, dpr } = fit(axis, 22), span = st.b - st.a, months = span <= 800;
+    g.clearRect(0, 0, w, h);
+    g.font = `${11 * dpr}px "IBM Plex Mono", monospace`; g.textBaseline = 'top';
+    const d = new Date((p0 + st.a * DAY) * 1000); d.setUTCDate(1); if (!months) d.setUTCMonth(0);
+    let last = -1e9;
+    for (; ; months ? d.setUTCMonth(d.getUTCMonth() + 1) : d.setUTCFullYear(d.getUTCFullYear() + 1)) {
+      const x = xOf((d.getTime() / 1000 - p0) / DAY, w);
+      if (x > w) break;
+      if (x < 0) continue;
+      const jan = d.getUTCMonth() === 0;
+      g.fillStyle = jan ? 'rgba(220,228,240,.7)' : 'rgba(150,170,200,.35)';
+      g.fillRect(Math.round(x), h - (jan ? 9 : 5) * dpr, 1, (jan ? 9 : 5) * dpr);
+      if (x - last < 58 * dpr || x > w - 30 * dpr) continue;
+      g.fillStyle = jan ? '#dfe6f2' : 'rgba(200,210,230,.6)';
+      g.fillText(jan || !months ? String(d.getUTCFullYear()) : d.toLocaleDateString(I.lang, { month: 'short', timeZone: 'UTC' }), x + 3 * dpr, 0);
+      last = x;
+    }
+  }
+
+  function redraw() {
+    const y = (n) => { const d = new Date(today * 1000); d.setUTCFullYear(d.getUTCFullYear() + n); return clampDay(Math.round((d.getTime() / 1000 - p0) / DAY)); };
+    root.querySelector('h2').textContent = L('aTitle');
+    const [lf, lt] = root.querySelectorAll('.a-range label span'); lf.textContent = L('aFrom'); lt.textContent = L('aTo');
+    from.value = iso(p0 + st.a * DAY); to.value = iso(p0 + st.b * DAY);
+    for (const b of root.querySelectorAll('.a-range button')) {
+      const n = +b.dataset.y, r = n ? [td, y(n)] : [0, nd];
+      b.textContent = L(n === 1 ? 'a1y' : n === 5 ? 'a5y' : 'aAll');
+      b.classList.toggle('on', r[0] === st.a && r[1] === st.b);
+      b.onclick = () => { [st.a, st.b] = r; redraw(); };
+    }
+    const key = root.querySelectorAll('.v-key > span');
+    key[0].textContent = L('mOkShort'); key[1].textContent = L('mLostShort'); key[2].textContent = L('aToday');
+    key[3].dataset.tip = L('aTip'); key[4].textContent = L('aHint');
+    paintAxis();
+    for (const s of sites) {
+      s.good = paintRow(s);
+      s.li.querySelector('.cnt').innerHTML = s.v ? `<b>${s.good}</b> / ${st.b - st.a}` : '…';
+    }
+    // Best site for the chosen period first. Only once every row is known, so rows do not jump while loading.
+    if (st.ready) for (const s of [...sites].sort((p, q) => q.good - p.good)) ol.appendChild(s.li);
+    globalThis.__all = { ready: st.ready, a: st.a, b: st.b, from: from.value, to: to.value, rows: sites.map((s) => ({ id: s.id, good: s.good, total: st.b - st.a })),
+      at: (id, date) => sites.find((s) => s.id === id).v[dayOf(date)] === 0 /* does a landing that day survive: what the cell's colour says */ };
+  }
+  const setRange = () => {
+    const a = clampDay(dayOf(from.value)), b = clampDay(dayOf(to.value));
+    if (Number.isFinite(a) && Number.isFinite(b) && b > a) { st.a = a; st.b = b; }
+    redraw();
+  };
+  from.onchange = setRange; to.onchange = setRange;
+
+  redraw();
+  (async () => {
+    for (const s of sites) {
+      s.v = dayVerdicts(await loadSky(s.dir), s.slope, s.evaSlope, days);
+      redraw();
+      await new Promise((r) => setTimeout(r)); // let the row paint before the next site is computed
+    }
+    st.ready = true; redraw();
+  })();
+  return { redraw };
+}

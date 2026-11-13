@@ -245,3 +245,33 @@ html.min #h-variant, html.min .mission, html.min #sitelist .tiny { display: none
 html.min #h-variant-note { display: block !important; font-size: 12px; color: var(--muted); margin-top: 4px; }
 #sites li button { display: flex; justify-content: space-between; align-items: baseline; width: 100%; }
 @media (max-width: 760px) { #hud { display: block; left: 10px; right: 10px; top: 58px; } #hud > div { margin-bottom: 8px; } #more { top: auto; bottom: 150px; right: 10px; } }
+
+/* ---------- map screen: every site, every landing day (allsites.js) ---------- */
+#sitelist { left: 16px; right: 16px; top: auto; bottom: 16px; width: auto; max-height: 48vh; padding: 12px 14px 8px; }
+.a-head { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+#sitelist h2 { margin: 0; }
+.a-range { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 12px; color: var(--muted); }
+.a-range input, .a-range button { background: rgba(255,255,255,.03); border: 1px solid var(--line); color: var(--text); border-radius: 3px; padding: 4px 8px; font: inherit; cursor: pointer; color-scheme: dark; }
+.a-range button.on, .a-range button:hover { border-color: var(--teal); color: var(--teal); }
+.a-row { display: grid; grid-template-columns: 190px 1fr 78px; gap: 10px; align-items: center; }
+.a-row canvas { width: 100%; height: 14px; display: block; cursor: pointer; border-radius: 2px; }
+.a-axis canvas { height: 22px; cursor: default; }
+#sites { gap: 3px; margin: 2px 0 8px; }
+#sites li button { display: block; border: 0; background: none; padding: 1px 0; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#sites li button:hover { background: none; color: var(--teal); }
+#sites li button small { font: 400 10px var(--mono); color: var(--muted); margin-left: 6px; }
+#sites .cnt { font-family: var(--mono); font-size: 11px; color: var(--muted); text-align: right; white-space: nowrap; }
+#sites .cnt b { color: var(--text); font-weight: 600; }
+#sitelist .v-key { margin: 0; }
+#a-tip { position: fixed; z-index: 50; display: none; pointer-events: none; white-space: nowrap; background: #1a1e27; border: 1px solid var(--line-2); border-radius: 6px; padding: 6px 9px; font-size: 12px; }
+#gl { cursor: grab; touch-action: none; }
+@media (max-width: 760px) {
+  #sitelist { left: 8px; right: 8px; bottom: 8px; }
+  .a-row { grid-template-columns: 104px 1fr; }
+  .a-row > :last-child, #sites li button small, .a-hint { display: none; }
+}
+body.mode-overview #more { display: none; }
+#sitelist .v-key i.ok { background: rgb(63,191,127); } #sitelist .v-key i.bad { background: rgb(200,69,74); }
+.pin, #sitelist h2, .a-row button { user-select: none; -webkit-user-select: none; }
+#sites { gap: 1px; } #sites li button { padding: 0; font-size: 12.5px; } .a-row canvas { height: 12px; }
+.a-axis canvas { height: 22px; }

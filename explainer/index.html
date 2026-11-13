@@ -35,7 +35,7 @@
 <p>At the Moon's south pole the Sun never climbs more than a couple of degrees above the horizon. It slides sideways along it. So one hill, kilometres away, can hide the Sun for days, and one ridge can hide Earth and cut the radio. A few hundred metres, or a few days of launch delay, can decide whether a mission lives.</p>
 
 <h2>What you do</h2>
-<figure><img src="map.png" alt="A 3D map of the lunar south pole with six labelled landing sites" loading="lazy"><figcaption>1. Pick one of six candidate sites on the 3D map.</figcaption></figure>
+<figure><img src="map.png" alt="A 3D map of the lunar south pole with fifteen labelled sites, and under it one row of green and red landing days for each site" loading="lazy"><figcaption>1. Fifteen sites on a 3D map you can turn. Each row shows on which landing days a robot survives there, over any period you set.</figcaption></figure>
 <figure><img src="site.png" alt="Standing on a site: a panel says the robot was lost, shows 27 of 120 days in green, and lists eleven checks" loading="lazy"><figcaption>2. You stand on the site. The panel answers for the chosen landing day.</figcaption></figure>
 <ol>
   <li><b>Read the verdict.</b> <span class="ok">THE ROBOT SURVIVED</span> or <span class="bad">THE ROBOT WAS LOST</span>, with one sentence of why.</li>
@@ -59,7 +59,7 @@
 <h2>Where the numbers come from</h2>
 <ul>
   <li><b>Terrain:</b> NASA Lunar Reconnaissance Orbiter laser altimeter (LOLA), <code>LDEM_80S_80M</code>, 80 m per pixel. The skyline around each site is traced on it.</li>
-  <li><b>Sites:</b> six regions from NASA's <i>Lunar Surface Data Book</i> (M2M-30044). For five of them we also found the best-lit flat point within 500 m, and that is where you stand.</li>
+  <li><b>Sites:</b> six regions from NASA's <i>Lunar Surface Data Book</i> (M2M-30044). For five of them we also found the best-lit flat point within 500 m, and that is where you stand. Nine more sites were picked by our team on the same terrain: the best-lit point of a crater rim, or the lowest point of a crater floor.</li>
   <li><b>Sun and Earth:</b> positions are calculated for every hour from 2021 to 2031 with astronomy-engine and the IAU lunar rotation model. A past day is history, a future day is a prediction; the terrain does not change.</li>
 </ul>
 
@@ -68,12 +68,12 @@
   <li>Our Sun and Earth positions agree with NASA JPL Horizons to 0.005°.</li>
   <li>They also agree, to better than 0.01°, with a separate calculation made with NASA's DE440 ephemeris by a different program, at four sites over two years. A test fails if they stop agreeing.</li>
   <li>Each rule is tested exactly at its limit and just past it.</li>
-  <li>A browser test plays the whole app and checks that every green or red day equals the verdict you get when you click it.</li>
+  <li>A browser test plays the whole app and checks that a green or red day, on the map timeline and on the site, equals the verdict you get when you click it.</li>
 </ul>
 
 <h2>What it does not do</h2>
 <ul>
-  <li>Six regions only. A new site needs its terrain to be prepared first.</li>
+  <li>Fifteen sites only. A new site needs its terrain to be prepared first.</li>
   <li>Nothing smaller than 80 m is in the data: no rocks, no small craters.</li>
   <li>It does not plan a descent, a trajectory or fuel. It answers power and radio.</li>
 </ul>

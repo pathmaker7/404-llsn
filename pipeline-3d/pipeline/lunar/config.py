@@ -8,7 +8,7 @@ ROOT = Path(__file__).resolve().parents[2]
 DATA_RAW = ROOT / "data" / "raw"
 KERNELS = ROOT / "data" / "kernels"
 CACHE = ROOT / "data" / "cache"
-WEB_DATA = ROOT / "web" / "data"
+WEB_DATA = ROOT.parent / "app" / "data"  # this repo serves the app from app/
 
 # --- Terrain: LOLA LDEM_80S_80M (values read from ldem_80s_80m.lbl, PDS3 label) ---
 DEM_IMG = DATA_RAW / "ldem_80s_80m.img"
@@ -63,6 +63,17 @@ SITES = [
     {"id": "ps",  "ref": "Site07", "name": "Peak near Shackleton",  "lat": -88.8110, "lon":  123.6901},
     {"id": "dg",  "ref": "Site11", "name": "de Gerlache rim 1",     "lat": -88.6834, "lon":  -67.9321},
     {"id": "lbp", "ref": "Site20", "name": "Leibnitz beta plateau", "lat": -85.4266, "lon":   31.74276},
+    # Added by team 404 agents (ref "Team"): the best-lit point on a crater rim, or the lowest point of a crater
+    # floor, found on LOLA terrain around the crater centre from the USGS gazetteer. Not Data Book sites.
+    {"id": "sl",  "ref": "Team", "name": "Slater rim",             "lat": -87.6946, "lon":  114.5416},
+    {"id": "sh",  "ref": "Team", "name": "Shoemaker rim",          "lat": -88.6483, "lon":   19.4959},
+    {"id": "fr",  "ref": "Team", "name": "Faustini rim",           "lat": -87.2067, "lon":   61.7652},
+    {"id": "hw",  "ref": "Team", "name": "Haworth rim",            "lat": -85.9697, "lon":   -2.3625},
+    {"id": "mp",  "ref": "Team", "name": "Malapert rim",           "lat": -85.3904, "lon":   26.6090},
+    {"id": "nb",  "ref": "Team", "name": "Nobile rim",             "lat": -85.2997, "lon":   36.9278},
+    {"id": "mm",  "ref": "Team", "name": "Mons Mouton",            "lat": -84.3357, "lon":   31.7595},
+    {"id": "sf",  "ref": "Team", "name": "Shackleton floor",       "lat": -89.6334, "lon":  122.6609},
+    {"id": "ff",  "ref": "Team", "name": "Faustini floor",         "lat": -87.2456, "lon":   76.8820},
 ]
 SITE_SOURCE = ("NASA M2M-30044 Lunar Surface Data Book (Baseline, 2025-03-18), "
                "Table A2.1-1, p.75")

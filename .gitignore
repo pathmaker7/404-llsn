@@ -2,3 +2,6 @@ node_modules/
 .DS_Store
 .firebase/
 *.img
+pipeline-3d/.venv/
+pipeline-3d/data/
+__pycache__/

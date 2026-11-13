@@ -3,6 +3,15 @@
 (function (root) {
   const S = {
   "en": {
+    "a1y": "Next year",
+    "a5y": "Next 5 years",
+    "aAll": "2021 to 2031",
+    "aFrom": "From",
+    "aTo": "To",
+    "aToday": "today",
+    "aTitle": "On which landing days does a robot survive?",
+    "aHint": "Click a day to land there. Drag the map to turn it.",
+    "aTip": "One column is one landing day, judged for a 14 day stay with the same checks as on the site. On long periods several days share one pixel and the colour is their mix. Six sites come from the NASA Lunar Surface Data Book. Nine more (marked Team) were picked by the team on NASA LOLA terrain: the best-lit point of a crater rim or the lowest point of a crater floor. Map: heights times 2, lighting illustrative.",
     "calAllOk": "Every later day works too.",
     "calNext": "Next safe landing day: {date}.",
     "calNone": "No safe day in this period.",
@@ -65,6 +74,15 @@
     "vYear": "year"
   },
   "ru": {
+    "a1y": "Год вперёд",
+    "a5y": "5 лет вперёд",
+    "aAll": "С 2021 по 2031",
+    "aFrom": "С",
+    "aTo": "По",
+    "aToday": "сегодня",
+    "aTitle": "В какие дни посадки робот выживает?",
+    "aHint": "Нажмите на день, чтобы сесть там. Карту можно вращать мышью.",
+    "aTip": "Один столбец: один день посадки, оценка для 14 дней работы по тем же проверкам, что и на месте. На длинных периодах несколько дней попадают в один пиксель, и цвет показывает их смесь. Шесть мест взяты из NASA Lunar Surface Data Book. Ещё девять (с пометкой Team) выбрала команда по рельефу NASA LOLA: самая освещённая точка вала кратера или самая низкая точка его дна. Карта: высоты увеличены в 2 раза, освещение условное.",
     "calAllOk": "Все следующие дни тоже подходят.",
     "calNext": "Следующий безопасный день посадки: {date}.",
     "calNone": "В этом периоде нет безопасного дня.",
@@ -127,6 +145,15 @@
     "vYear": "год"
   },
   "ky": {
+    "a1y": "Бир жыл алдыга",
+    "a5y": "5 жыл алдыга",
+    "aAll": "2021ден 2031ге",
+    "aFrom": "Башы",
+    "aTo": "Аягы",
+    "aToday": "бүгүн",
+    "aTitle": "Робот кайсы конуу күндөрүндө аман калат?",
+    "aHint": "Ошол жерге конуу үчүн күндү басыңыз. Картаны чычкан менен бурса болот.",
+    "aTip": "Бир тилке: бир конуу күнү, 14 күндүк иш үчүн ошол эле текшерүүлөр менен бааланат. Узак мезгилде бир пикселге бир нече күн туура келет, түсү алардын аралашмасы. Алты жер NASA Lunar Surface Data Book китебинен алынган. Дагы тогузун (Team белгиси менен) команда NASA LOLA рельефи боюнча тандады: кратер кырынын эң жарык чекити же түбүнүн эң төмөн чекити. Карта: бийиктиктер 2 эсе чоңойтулган, жарык шарттуу.",
     "calAllOk": "Кийинки күндөрдүн баары да жарайт.",
     "calNext": "Кийинки коопсуз конуу күнү: {date}.",
     "calNone": "Бул мезгилде коопсуз күн жок.",

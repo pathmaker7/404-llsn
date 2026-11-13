@@ -55,7 +55,7 @@ const Sky = require('../app/sky.js');
     assert.ok(meta.mask.el_deg.length > 100 && typeof extra[v.dir] === 'number', `${v.dir}: horizon mask or slope value missing`);
     points++;
   }
-  assert.strictEqual(index.sites.length, 6); assert.strictEqual(points, 11);
+  assert.strictEqual(index.sites.length, 15); assert.strictEqual(points, 20);
 
   // 5. The app computes Sun and Earth positions for 2021 to 2031 with sky.js. They must match the pipeline's independent
   //    JPL DE440 series (2027 to 2028) at the same points, or the extended dates could not be trusted.

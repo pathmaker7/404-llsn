@@ -7,6 +7,7 @@ import {
 import { SurfaceView } from './surface.js';
 import { Overview } from './overview.js';
 import { Timeline } from './timeline.js';
+import { allSites } from './allsites.js';
 
 const $ = (id) => document.getElementById(id);
 const DEG = Math.PI / 180;
@@ -31,10 +32,10 @@ const og = overlay.getContext('2d');
 function resize() {
   const w = window.innerWidth, h = window.innerHeight, dpr = Math.min(window.devicePixelRatio || 1, 2);
   renderer.setSize(w, h, false);
-  surface.setSize(w, h); overview.setSize(w, h);
+  surface.setSize(w, h); overview.setSize(w, h, $('sitelist').offsetHeight / 2);
   overlay.width = Math.round(w * dpr); overlay.height = Math.round(h * dpr);
   og.setTransform(dpr, 0, 0, dpr, 0, 0);
-  timeline.draw();
+  timeline.draw(); S.all?.redraw();
 }
 window.addEventListener('resize', resize);
 
@@ -58,17 +59,14 @@ function setHash() {
 
 // ------------------------------------------------------------- overview UI
 function buildSiteList() {
-  const ol = $('sites');
-  ol.innerHTML = '';
-  for (const s of S.index.sites) {
-    const v = s.variants.databook, b = s.variants.best;
-    const sm = v.summary_full_period;
-    const li = document.createElement('li');
-    const bs = b?.summary_full_period;
-    li.innerHTML = `<button><span class="nm">${s.name}</span><span class="rf">${s.ref}</span></button>`;
-    li.querySelector('button').onclick = () => enterSite(s.id, s.variants.best ? 'best' : 'databook') /* land on the best-lit point near the centre when there is one */;
-    ol.appendChild(li);
-  }
+  // Every site, every landing day (allsites.js). Each site is judged at the point the app stands on: the best-lit
+  // flat point near the region centre when there is one.
+  const spot = (s) => (s.variants.best ? 'best' : 'databook');
+  S.all = allSites($('sitelist'), {
+    sites: S.index.sites.map((s) => { const v = s.variants[spot(s)]; return { id: s.id, name: s.name, ref: s.ref, dir: v.dir, slope: v.slope_deg, evaSlope: S.extra[v.dir] ?? v.slope_deg }; }),
+    days: S.missionDays, p0: periodStart(), p1: periodEnd(),
+    onPick: (id, t) => { if (t != null) { S.missionStart = t; S.t = t; } enterSite(id, spot(siteEntry(id))); },
+  });
   const pins = $('pins');
   pins.innerHTML = '';
   for (const s of overview.sites) {
@@ -153,7 +151,8 @@ function backToMap() {
   S.mode = 'overview';
   S.playing = false; $('play').textContent = '▶';
   document.body.className = 'mode-overview';
-  overview.reset();
+  overview.reset(); S.held = false;
+  resize();
   setHash();
 }
 
@@ -291,9 +290,17 @@ $('look-earth').addEventListener('click', () => { const s = sample(S.site, S.t);
 {
   const cv = $('gl');
   let drag = null;
-  cv.addEventListener('pointerdown', (e) => { if (S.mode !== 'surface') return; drag = { x: e.clientX, y: e.clientY }; cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener('pointerdown', (e) => { drag = { x: e.clientX, y: e.clientY }; cv.setPointerCapture(e.pointerId); });
   cv.addEventListener('pointermove', (e) => {
     if (!drag) return;
+    if (S.mode !== 'surface') { // the map: drag turns it and tilts it, and stops the slow turn
+      if (overview.anim) return;
+      S.held = true;
+      overview.theta -= (e.clientX - drag.x) * 0.3;
+      overview.phi = Math.min(Math.max(overview.phi + (e.clientY - drag.y) * 0.2, 12), 85);
+      drag = { x: e.clientX, y: e.clientY };
+      return;
+    }
     const k = surface.fov / window.innerHeight;
     surface.yaw = (surface.yaw - (e.clientX - drag.x) * k + 360) % 360;
     surface.pitch = Math.min(Math.max(surface.pitch + (e.clientY - drag.y) * k, -85), 85);
@@ -306,7 +313,7 @@ $('look-earth').addEventListener('click', () => { const s = sample(S.site, S.t);
       surface.fov = Math.min(Math.max(surface.fov * Math.exp(e.deltaY * 0.001), 2), 100);
       $('fovlabel').textContent = `${surface.fov.toFixed(surface.fov < 10 ? 1 : 0)}°`;
     } else if (!overview.anim) {
-      overview.dist = Math.min(Math.max(overview.dist * Math.exp(e.deltaY * 0.001), 60000), 1.2e6);
+      overview.dist = Math.min(Math.max(overview.dist * Math.exp(e.deltaY * 0.001), 60000), 1.6e6);
     }
   }, { passive: false });
   window.addEventListener('keydown', (e) => {
@@ -472,6 +479,7 @@ function frame(now) {
     drawOverlay(s);
     if (S.dirty && now - S.lastHud > 60) { renderHud(s); S.lastHud = now; S.dirty = false; }
   } else {
+    if (!S.held && !overview.anim && S.mode === 'overview') overview.theta += dt * 1.5; // slow turn until the user takes the map
     overview.render(now);
     drawOverlay(null);
   }
@@ -488,10 +496,9 @@ function frame(now) {
     const I18n = globalThis.I18n, sel = $('lang');
     try { I18n.set(localStorage.getItem('lang') || 'en'); } catch (e) { /* storage blocked */ }
     sel.innerHTML = Object.entries(I18n.NAMES).map(([k, v]) => `<option value="${k}">${v}</option>`).join(''); sel.value = I18n.lang;
-    sel.onchange = () => { I18n.set(sel.value); try { localStorage.setItem('lang', sel.value); } catch (e) { /* storage blocked */ } drawVerdict(); };
+    sel.onchange = () => { I18n.set(sel.value); try { localStorage.setItem('lang', sel.value); } catch (e) { /* storage blocked */ } drawVerdict(); S.all?.redraw(); };
     const ov = await loadOverview(S.index);
     overview.build(ov, S.index.sites);
-    buildSiteList();
     const p = new URLSearchParams(location.hash.slice(1));
     // Embedded in the guided mission (team 404 agents merge): start minimal, one button brings every number back.
     document.documentElement.classList.add('min'); document.documentElement.classList.toggle('embed', p.get('min') === '1'); // embed: inside the guided mission, which shows its own verdict // on <html>: the app replaces body.className
@@ -499,6 +506,7 @@ function frame(now) {
     const landing = p.get('land') ? Date.parse(p.get('land').slice(0, 10) + 'T00:00:00Z') / 1000 : Math.floor(Date.now() / 86400000) * 86400; // default: land today
     S.missionStart = Number.isFinite(landing) ? landing : periodStart();
     S.missionDays = 14; // the survival limits are set for a 14 day stay; "Details" can change it
+    buildSiteList();
     const t = S.missionStart;
     S.t = Number.isFinite(t) ? t : S.missionStart;
     $('speed').value = String(S.speedH);
