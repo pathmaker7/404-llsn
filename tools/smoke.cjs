@@ -34,6 +34,8 @@ const { chromium } = require('playwright-core');
   // The mission report: eleven rows, each with a hover explanation; the four "must" rows decide the verdict.
   const rep = await page.evaluate(() => ({ rows: document.querySelectorAll('table.report tr').length - 1, tips: [...document.querySelectorAll('.tip')].map((t) => t.dataset.tip), must: document.querySelectorAll('table.report tr.must').length }));
   if (rep.rows !== 11 || rep.must !== 4 || rep.tips.length !== 11 || rep.tips.some((t) => t.length < 30)) errors.push('mission report incomplete: ' + JSON.stringify(rep));
+  // Minimal by default (owner, 2026-11-14): the report stays folded until the user opens it.
+  if (await page.evaluate(() => [...document.querySelectorAll('#missionBody details.more')].some((d) => d.open))) errors.push('the mission report is shown before the user asks for it');
   await page.click('details.more summary'); await page.hover('.tip');
   if ((await page.evaluate(() => getComputedStyle(document.querySelector('.tip'), '::after').content)).length < 30) errors.push('the hover explanation does not show');
   await page.screenshot({ path: path.join(out, 'app-mission-verdict.png'), fullPage: true });
