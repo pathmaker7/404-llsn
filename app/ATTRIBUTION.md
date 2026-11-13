@@ -32,4 +32,6 @@ IBM Plex Sans Condensed and IBM Plex Mono (SIL Open Font License 1.1), loaded fr
 
 ## Assets
 
-No third-party images or textures are used. The Earth is a plain sphere lit from the true Sun direction. The fine surface texture on the near terrain is procedural noise, labelled in the app as illustrative and below the 80 m data resolution.
+One third-party image is used: NASA's colour map of the Moon, on the globe around the polar terrain (credited at the end of this file). The Earth is a plain sphere lit from the true Sun direction. The fine surface texture on the near terrain is procedural noise, labelled in the app as illustrative and below the 80 m data resolution.
+
+- Moon colour map on the globe around the polar terrain: NASA Scientific Visualization Studio, CGI Moon Kit (`lroc_color_poles_2k.tif`, from LRO LROC data), https://svs.gsfc.nasa.gov/4720. Converted to JPEG as `app/data/moon.jpg`.

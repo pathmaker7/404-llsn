@@ -294,3 +294,5 @@ body.mode-overview #more { display: none; }
 .skymark { position: fixed; z-index: 5; transform: translate(-50%, -50%); pointer-events: none; font: 600 11px var(--mono); letter-spacing: .06em; padding: 2px 7px; border-radius: 10px; background: rgba(8,11,16,.8); }
 .skymark.sun { color: #ffb547; border: 1px solid #ffb547; } .skymark.earth { color: #5fb4ff; border: 1px solid #5fb4ff; }
 body.mode-surface .skymark { display: none !important; }
+.skymark { font-size: 12px; padding: 3px 10px; border-radius: 12px; }
+.skymark.sun { background: #ffb547; color: #1a1300; border-color: #ffb547; } .skymark.earth { background: #3f86e0; color: #fff; border-color: #3f86e0; }

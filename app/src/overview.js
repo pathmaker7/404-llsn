@@ -18,12 +18,21 @@ attribute float hgt; attribute float rad; attribute vec2 mxz;
 varying vec3 vN; varying float vH; varying float vR; varying vec2 vM;
 void main(){ vN = normal; vH = hgt; vR = rad; vM = mxz;
   gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`;
+const MOON = /* glsl */`uniform sampler2D moon; uniform vec3 sun3;
+// One Moon: NASA's colour map of the whole Moon, lit by the real Sun direction. n: unit vector from the Moon's
+// centre in scene axes (y points out of the south pole, lon 0 is toward -z, lon 90 E toward +x).
+vec3 moonCol(vec3 n){
+  float lon = atan(n.x, -n.z), lat = -asin(clamp(n.y, -1.0, 1.0));
+  vec3 c = texture2D(moon, vec2(lon / 6.2831853 + 0.5, lat / 3.14159265 + 0.5)).rgb;
+  return c * 1.75 * (0.05 + smoothstep(-0.02, 0.12, dot(n, sun3)));
+}
+`;
 const frag = /* glsl */`
 uniform vec3 light; uniform float hMin; uniform float hMax; uniform float ringR; uniform float edge;
 uniform sampler2D hmap; uniform vec2 sunDir; uniform float sunEl; uniform float pix; uniform float gridN;
 varying vec3 vN; varying float vH; varying float vR; varying vec2 vM;
 const float RM = 1737400.0;
-float hAt(vec2 p){ return texture2D(hmap, (p / pix + 0.5 * gridN) / gridN).r; }
+${MOON}float hAt(vec2 p){ return texture2D(hmap, (p / pix + 0.5 * gridN) / gridN).r; }
 // Real shadow: walk from this point toward the Sun over the terrain; lit when no ground rises above the Sun's
 // elevation here (elevation at the pole plus the angle this point sits toward the Sun; the sphere drops d*d/2R).
 float sunlit(){
@@ -49,7 +58,8 @@ void main(){
   float ring = 1.0 - smoothstep(0.0, 260.0, abs(mod(r + ringR * 0.5, ringR) - ringR * 0.5));
   col = mix(col, vec3(0.27, 0.88, 0.78), ring * 0.22);
   col *= mix(0.2, 1.0, sunlit());
-  col *= mix(1.0, 0.42, smoothstep(edge * 0.72, edge, vR)); // the cap dims into the plain globe around it
+  float a = vR / RM, sa = sin(a) / max(vR, 1.0);
+  col = mix(col, moonCol(vec3(sa * vM.x, cos(a), sa * vM.y)), smoothstep(edge * 0.5, edge * 0.96, vR)); // the detailed cap fades into the Moon around it
   gl_FragColor = vec4(col, 1.0);
   #include <colorspace_fragment>
 }`;
@@ -59,10 +69,11 @@ export class Overview {
     this.renderer = renderer;
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x000000);
-    this.camera = new THREE.PerspectiveCamera(45, 1, 100, 1.2e7);
+    this.camera = new THREE.PerspectiveCamera(45, 1, 100, 2e8);
     this.target = new THREE.Vector3(0, 0, 0);
     this.dist = 760000; this.theta = 0; this.phi = 48; // orbit (deg)
     this.anim = null;
+    this.pole = new THREE.Vector3();
   }
 
   build(ov, sites) {
@@ -86,6 +97,8 @@ export class Overview {
       const a = r * n + c;
       idx.set([a, a + n, a + 1, a + 1, a + n, a + n + 1], k); k += 6;
     }
+    const moonTex = new THREE.TextureLoader().load('data/moon.jpg'); // NASA SVS CGI Moon Kit colour map, 2k
+    moonTex.colorSpace = THREE.SRGBColorSpace; moonTex.generateMipmaps = false; moonTex.minFilter = THREE.LinearFilter; moonTex.wrapS = THREE.RepeatWrapping;
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     g.setAttribute('hgt', new THREE.BufferAttribute(hgt, 1)); g.setAttribute('rad', new THREE.BufferAttribute(rad, 1)); g.setAttribute('mxz', new THREE.BufferAttribute(mxz, 2));
@@ -95,21 +108,28 @@ export class Overview {
       uniforms: { light: { value: new THREE.Vector3(0.5, 0.5, -0.7).normalize() },
         hMin: { value: ov.min_m * EXAG }, hMax: { value: ov.max_m * EXAG },
         ringR: { value: 2 * 1737400 * Math.tan(0.5 * DEG) }, edge: { value: edge },
+        moon: { value: moonTex }, sun3: { value: new THREE.Vector3(0, 0, -1) },
         hmap: { value: hmap }, sunDir: { value: new THREE.Vector2(0, -1) }, sunEl: { value: 0.02 }, pix: { value: pix }, gridN: { value: n } },
       vertexShader: vert, fragmentShader: frag });
     this.mesh = new THREE.Mesh(g, this.mat);
     this.scene.add(this.mesh);
     // The rest of the Moon: a plain globe (no terrain data outside the cap), lit by the same light, and a few stars.
     const globe = new THREE.Mesh(new THREE.SphereGeometry(R + low - 300, 128, 96), new THREE.ShaderMaterial({
-      uniforms: { light: this.mat.uniforms.light },
+      uniforms: { moon: this.mat.uniforms.moon, sun3: this.mat.uniforms.sun3 },
       vertexShader: 'varying vec3 vN; void main(){ vN = normal; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
-      fragmentShader: 'uniform vec3 light; varying vec3 vN; void main(){ float l = max(dot(normalize(vN), light), 0.0); gl_FragColor = vec4(vec3(0.27, 0.272, 0.285) * 0.42 * (0.18 + 0.95 * l), 1.0);\n#include <colorspace_fragment>\n}' }));
+      fragmentShader: MOON + 'varying vec3 vN; void main(){ gl_FragColor = vec4(moonCol(normalize(vN)), 1.0);\n#include <colorspace_fragment>\n}' }));
     globe.position.y = -R;
     this.scene.add(globe);
     const st = new Float32Array(900 * 3);
-    for (let i = 0; i < 900; i++) { const u = Math.random() * 2 - 1, a = Math.random() * 2 * Math.PI, q = Math.sqrt(1 - u * u); st.set([6e6 * q * Math.cos(a), 6e6 * u - R, 6e6 * q * Math.sin(a)], i * 3); }
+    for (let i = 0; i < 900; i++) { const u = Math.random() * 2 - 1, a = Math.random() * 2 * Math.PI, q = Math.sqrt(1 - u * u); st.set([6e7 * q * Math.cos(a), 6e7 * u - R, 6e7 * q * Math.sin(a)], i * 3); }
     const sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.BufferAttribute(st, 3));
     this.scene.add(new THREE.Points(sg, new THREE.PointsMaterial({ color: 0xcfd6e4, size: 1.6, sizeAttenuation: false })));
+    // The Sun and Earth as bodies in the sky, in their real directions (drawn far larger than they would look).
+    const disc = (stops) => { const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d'), gr = x.createRadialGradient(64, 64, 0, 64, 64, 64);
+      for (const [o, col] of stops) gr.addColorStop(o, col); x.fillStyle = gr; x.fillRect(0, 0, 128, 128);
+      const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthWrite: false })); this.scene.add(s); return s; };
+    this.sunBody = disc([[0, '#fff'], [0.18, '#fff6d8'], [0.3, 'rgba(255,200,90,.55)'], [1, 'rgba(255,170,60,0)']]); this.sunBody.scale.setScalar(7e6);
+    this.earthBody = disc([[0, '#9fd0ff'], [0.55, '#3f86e0'], [0.8, '#1c4fa8'], [0.86, 'rgba(120,180,255,.5)'], [1, 'rgba(120,180,255,0)']]); this.earthBody.scale.setScalar(2.4e6);
     this.ov = ov; this.edge = edge;
     this.sites = sites.map((s) => {
       const { X, Y } = latlonToMap(s.lat, s.lon);
@@ -134,8 +154,11 @@ export class Overview {
   /** lift: pixels to move the picture up, so the pole stays clear of the panel at the bottom of the map screen. */
   /** The real Sun and Earth at a moment: sub-solar and sub-Earth longitude and latitude on the Moon, radians.
    *  Shadows follow the Sun; the shading light keeps the Sun's direction but is raised so lit ground stays readable. */
-  setSky(sunLon, sunLat, earthLon) {
+  setSky(sunLon, sunLat, earthLon, earthLat = 0) {
     if (!this.mat) return;
+    const dir = (lon, lat) => new THREE.Vector3(Math.cos(lat) * Math.sin(lon), -Math.sin(lat), -Math.cos(lat) * Math.cos(lon));
+    this.mat.uniforms.sun3.value.copy(dir(sunLon, sunLat));
+    this.sunBody.position.copy(dir(sunLon, sunLat)).multiplyScalar(2.6e7).y -= R; this.earthBody.position.copy(dir(earthLon, earthLat)).multiplyScalar(2.2e7).y -= R;
     this.mat.uniforms.sunDir.value.set(Math.sin(sunLon), -Math.cos(sunLon));
     this.mat.uniforms.sunEl.value = -sunLat; // at the south pole the Sun stands as high as it is south of the equator
     this.setSunAzimuth(sunLon / DEG);
@@ -173,6 +196,17 @@ export class Overview {
         if (u >= 1) { this.anim = null; resolve(); }
       };
     });
+  }
+
+  /** Opening move: from far enough to see the whole Moon, down to the south pole. */
+  intro(ms = 3200) {
+    const d1 = this.dist, d0 = 7.5e6, t0 = performance.now();
+    this.dist = d0;
+    this.anim = (now) => {
+      const u = Math.min((now - t0) / ms, 1), e = 1 - Math.pow(1 - u, 3);
+      this.dist = Math.exp(Math.log(d0) + (Math.log(d1) - Math.log(d0)) * e);
+      if (u >= 1) this.anim = null;
+    };
   }
 
   reset() {

@@ -91,7 +91,7 @@ function buildSiteList() {
 
 function placePins() {
   const w = window.innerWidth, h = window.innerHeight;
-  const show = S.mode === 'overview' && !overview.anim;
+  const show = S.mode === 'overview' && !overview.anim && overview.dist < 2.2e6; // labels only when close enough to tell the sites apart
   const items = [];
   for (const s of overview.sites) {
     const p = show ? overview.project(s.pos, w, h) : null;
@@ -118,9 +118,16 @@ function placePins() {
     it.s.el.style.left = `${it.x}px`; it.s.el.style.top = `${it.y}px`;
   }
   for (const [id, v] of [['sunmark', overview.sunMark], ['earthmark', overview.earthMark]]) { // where the Sun and Earth stand, on the rim of the cap
-    const q = show && v ? overview.project(v, w, h, 0) : null, el = $(id);
+    const q = show && v ? overview.project(v, w, h, 0) : null, el = $(id), c = q && overview.project(overview.pole, w, h, 0);
     el.style.display = q ? '' : 'none';
-    if (q) { el.style.left = `${q.x}px`; el.style.top = `${q.y}px`; }
+    if (!q) continue;
+    el.style.left = `${q.x}px`; el.style.top = `${q.y}px`;
+    if (!c) continue;
+    // an arrow from the label away from the pole: the body stands in that direction
+    const n = Math.hypot(q.x - c.x, q.y - c.y) || 1, ux = (q.x - c.x) / n, uy = (q.y - c.y) / n, x0 = q.x + ux * 40, y0 = q.y + uy * 22, x1 = x0 + ux * 46, y1 = y0 + uy * 46;
+    og.strokeStyle = og.fillStyle = id === 'sunmark' ? '#ffb547' : '#5fb4ff'; og.lineWidth = 2.5;
+    og.beginPath(); og.moveTo(x0, y0); og.lineTo(x1, y1); og.stroke();
+    og.beginPath(); og.moveTo(x1 + ux * 10, y1 + uy * 10); og.lineTo(x1 - uy * 6, y1 + ux * 6); og.lineTo(x1 + uy * 6, y1 - ux * 6); og.fill();
   }
   if (show) {
     for (const it of items) {
@@ -334,7 +341,7 @@ $('look-earth').addEventListener('click', () => { const s = sample(S.site, S.t);
       surface.fov = Math.min(Math.max(surface.fov * Math.exp(e.deltaY * 0.001), 2), 100);
       $('fovlabel').textContent = `${surface.fov.toFixed(surface.fov < 10 ? 1 : 0)}°`;
     } else if (!overview.anim) {
-      overview.dist = Math.min(Math.max(overview.dist * Math.exp(e.deltaY * 0.001), 60000), 1.6e6);
+      overview.dist = Math.min(Math.max(overview.dist * Math.exp(e.deltaY * 0.001), 60000), 9e6);
     }
   }, { passive: false });
   window.addEventListener('keydown', (e) => {
@@ -506,7 +513,8 @@ function frame(now) {
       if (S.mapPlay) { S.mapT += dt * Math.min((b - a) / 20, 2 * 86400); if (S.mapT >= b || S.mapT < a) S.mapT = a; }
       if (S.mapT !== S.mapShown) {
         const k = globalThis.Sky.bodiesMoonFixed(new Date(S.mapT * 1000)), lon = (v) => Math.atan2(v[1], v[0]);
-        overview.setSky(lon(k.sun), Math.asin(k.sun[2] / Math.hypot(...k.sun)), lon(k.earth));
+        const lat = (v) => Math.asin(v[2] / Math.hypot(...v));
+        overview.setSky(lon(k.sun), lat(k.sun), lon(k.earth), lat(k.earth));
         S.all.setHead(S.mapT, S.mapPlay); S.mapShown = S.mapT;
       }
       if (S.mapPlay !== S.playShown) { S.all.setHead(S.mapT, S.mapPlay); S.playShown = S.mapPlay; }
@@ -533,6 +541,7 @@ function frame(now) {
     mark();
     const ov = await loadOverview(S.index);
     overview.build(ov, S.index.sites);
+    overview.intro();
     const p = new URLSearchParams(location.hash.slice(1));
     // Embedded in the guided mission (team 404 agents merge): start minimal, one button brings every number back.
     document.documentElement.classList.add('min'); document.documentElement.classList.toggle('embed', p.get('min') === '1'); // embed: inside the guided mission, which shows its own verdict // on <html>: the app replaces body.className

@@ -66,6 +66,7 @@ if (require.main !== module) return;
   await page.click('.a-range button[data-y="0"]');
   if ((await page.evaluate(() => __all.from + ' ' + __all.rows[0].total)) !== '2021-01-01 4004') errors.push('the whole period button did not apply');
   await page.click('.a-range button[data-y="1"]');
+  await page.waitForFunction(() => !__app.overview.anim, null, { timeout: 20000 }); // the opening glide from the whole Moon has ended
   const th0 = await page.evaluate(() => __app.overview.theta);
   await page.mouse.move(150, 300); await page.mouse.down(); await page.mouse.move(350, 350, { steps: 6 }); await page.mouse.up(); // starts on bare map, left of every label
   const th1 = await page.evaluate(() => __app.overview.theta); await page.waitForTimeout(400);
