@@ -26,6 +26,8 @@
   </div>
   <button id="back" class="ghost surface-only" title="Back to the south-pole map">◂ South pole</button>
   <nav>
+    <select id="lang" aria-label="Language"></select>
+    <a class="ghost navlink" href="../index.html#mode=planner">Any site on the Moon</a>
     <button data-panel="compare">Compare sites</button>
     <button data-panel="validation">How do we know?</button>
     <button data-panel="about">About &amp; data</button>
@@ -34,12 +36,13 @@
 
 <aside id="sitelist" class="overview-only">
   <h2>Candidate sites</h2>
-  <p class="muted small">Pick a site to fly down and stand on the LOLA terrain. Coordinates from NASA's <em>Lunar Surface Data Book</em> (M2M-30044, 2025).</p>
+  <p class="muted small"><b>Pick a site on the map or in this list</b> to fly down and stand on it. You will see if a solar robot survives a landing there, on any day from 2021 to 2031. Coordinates from NASA's <em>Lunar Surface Data Book</em> (M2M-30044, 2025).</p>
   <ol id="sites"></ol>
   <p class="muted tiny">Map: LOLA LDEM_80S_80M averaged to 1.28 km, vertical exaggeration ×2, lighting illustrative. Up = 0° E (Earth-facing side).</p>
 </aside>
 
 <section id="hud" class="surface-only">
+  <div id="verdict" class="verdict"></div>
   <div class="hud-site">
     <div class="site-name" id="h-name">—</div>
     <div class="coords" id="h-coords">—</div>
@@ -129,6 +132,11 @@
 <button id="more" class="ghost" title="Show or hide the numbers and options">Details</button>
 <div id="loading">Loading terrain…</div>
 
+<script src="../i18n.js"></script>
+<script src="../vendor/astronomy.browser.min.js"></script>
+<script src="../sky.js"></script>
+<script src="../analysis.js"></script>
+<script src="../mission.js"></script>
 <script type="module" src="js/main.js"></script>
 </body>
 </html>

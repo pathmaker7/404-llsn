@@ -1,5 +1,6 @@
 import * as THREE from '../vendor/three.module.js';
-import { loadIndex, loadOverview, loadSite } from './data.js';
+import { loadIndex, loadOverview, loadSite, PERIOD } from './data.js';
+import { renderVerdict } from './verdict.js';
 import {
   sample, nextSunChange, nextEarthChange, fmtDuration, fmtUTC, missionStats,
   bestLandingDates, slipTolerance, sunFraction, SUN_STATE_LABEL,
@@ -14,7 +15,7 @@ const DEG = Math.PI / 180;
 // ------------------------------------------------------------------ state
 const S = {
   index: null, mode: 'overview', siteId: null, variant: 'databook', site: null,
-  t: 0, playing: false, speedH: 24, missionStart: 0, missionDays: 30,
+  t: 0, playing: false, speedH: 24, missionStart: 0, missionDays: 14, extra: {},
   panel: null, lastHud: 0,
 };
 
@@ -71,7 +72,7 @@ function buildSiteList() {
       <span>Longest night <b>${sm.longest_dark_h} h</b></span></span>
       <span class="alt">${bs ? `≤500 m away: sun <b>${bs.pct_sunlit_any.toFixed(0)}%</b>, night <b>${bs.longest_dark_h} h</b>` : 'No ≤10° slope within 500 m at 80 m res.'}</span>
     </button>`;
-    li.querySelector('button').onclick = () => enterSite(s.id, 'databook');
+    li.querySelector('button').onclick = () => enterSite(s.id, s.variants.best ? 'best' : 'databook') /* land on the best-lit point near the centre when there is one */;
     ol.appendChild(li);
   }
   const pins = $('pins');
@@ -80,7 +81,7 @@ function buildSiteList() {
     const el = document.createElement('div');
     el.className = 'pin';
     el.textContent = s.name;
-    el.onclick = () => enterSite(s.id, 'databook');
+    el.onclick = () => enterSite(s.id, s.variants.best ? 'best' : 'databook') /* land on the best-lit point near the centre when there is one */;
     pins.appendChild(el);
     s.el = el;
   }
@@ -243,6 +244,15 @@ function refreshMission() {
   }
   setTime(S.t);
   if (S.panel === 'compare') renderCompare();
+  drawVerdict();
+}
+
+// The answer panel (verdict.js): verdict, every check, landing days and the date controls for the chosen spot.
+function drawVerdict() {
+  if (!S.site) return;
+  const v = siteEntry(S.siteId).variants[S.variant];
+  renderVerdict($('verdict'), { site: S.site, slope: v.slope_deg, evaSlope: S.extra[v.dir] ?? v.slope_deg, t: S.missionStart, days: S.missionDays, p0: periodStart(), p1: periodEnd(),
+    setDate: (t) => { S.missionStart = t; S.t = t; S.playing = false; $('play').textContent = '▶'; refreshMission(); setHash(); } });
 }
 
 $('scrub').addEventListener('input', (e) => setTime(S.missionStart + (e.target.value / 1000) * (missionEnd() - S.missionStart)));
@@ -491,7 +501,7 @@ async function renderValidation() {
       <li>Browser vs pipeline solar-disc fraction (${sc.n} hourly samples): max |Δ| = ${sc.maxAbsFracDiff.toExponential(1)}.</li></ul>`;
   }
   body.innerHTML = `<h2>How do we know this is right?</h2>
-  <p>Every Sun and Earth position in this app was computed offline with Skyfield and JPL's DE440 ephemeris, using DE440 lunar orientation in the Moon's Mean-Earth frame. That's the same frame the LOLA terrain uses. We then checked the positions against an independent source: the <a href="https://ssd.jpl.nasa.gov/horizons/" target="_blank" rel="noopener">JPL Horizons</a> API, with the observer placed on the lunar surface at each site.</p>
+  <p><b>Dates outside 2027 to 2028:</b> the positions shown are computed in your browser with astronomy-engine and the IAU lunar rotation model, for 2021 to 2031, and agree with the offline DE440 series below to better than 0.01° over 2027 to 2028 (tools/test.cjs).</p><p>Every Sun and Earth position in the validation below was computed offline with Skyfield and JPL's DE440 ephemeris, using DE440 lunar orientation in the Moon's Mean-Earth frame. That's the same frame the LOLA terrain uses. We then checked the positions against an independent source: the <a href="https://ssd.jpl.nasa.gov/horizons/" target="_blank" rel="noopener">JPL Horizons</a> API, with the observer placed on the lunar surface at each site.</p>
   <div class="callout">Largest disagreement with Horizons over ${rows.length} evaluated points × 36 times each in 2027–2028, <b>as displayed</b> (including hourly interpolation):
     Sun <b>${allSun.toFixed(2)}″</b>, Earth <b>${allEarth.toFixed(2)}″</b> (arcseconds). The Sun's disc is about 1900″ across.</div>
   <table class="t"><tr><th>Site · point</th><th>Sun max ″</th><th>Earth max ″</th><th>Slope</th><th>Offset</th></tr>
@@ -564,16 +574,22 @@ function frame(now) {
 (async function boot() {
   try {
     S.index = await loadIndex();
+    S.index.period = PERIOD; // positions are computed in the browser for 2021 to 2031 (data.js)
+    S.extra = await fetch('data/extra.json').then((r) => r.json()).catch(() => ({}));
+    const I18n = globalThis.I18n, sel = $('lang');
+    try { I18n.set(localStorage.getItem('lang') || 'en'); } catch (e) { /* storage blocked */ }
+    sel.innerHTML = Object.entries(I18n.NAMES).map(([k, v]) => `<option value="${k}">${v}</option>`).join(''); sel.value = I18n.lang;
+    sel.onchange = () => { I18n.set(sel.value); try { localStorage.setItem('lang', sel.value); } catch (e) { /* storage blocked */ } drawVerdict(); };
     const ov = await loadOverview(S.index);
     overview.build(ov, S.index.sites);
     buildSiteList();
     const p = new URLSearchParams(location.hash.slice(1));
     // Embedded in the guided mission (team 404 agents merge): start minimal, one button brings every number back.
-    document.documentElement.classList.toggle('min', p.get('min') === '1'); // on <html>: the app replaces body.className
+    document.documentElement.classList.add('min'); document.documentElement.classList.toggle('embed', p.get('min') === '1'); // embed: inside the guided mission, which shows its own verdict // on <html>: the app replaces body.className
     $('more').onclick = () => { document.documentElement.classList.toggle('min'); resize(); };
-    const landing = p.get('land') ? Date.parse(p.get('land') + ':00Z') / 1000 : Date.parse('2027-01-01T00:00:00Z') / 1000;
+    const landing = p.get('land') ? Date.parse(p.get('land') + ':00Z') / 1000 : Math.floor(Date.now() / 86400000) * 86400; // default: land today
     S.missionStart = Number.isFinite(landing) ? landing : periodStart();
-    S.missionDays = +(p.get('days') || 30);
+    S.missionDays = +(p.get('days') || 14);
     const t = p.get('t') ? Date.parse(p.get('t') + ':00Z') / 1000 : S.missionStart;
     S.t = Number.isFinite(t) ? t : S.missionStart;
     $('speed').value = String(S.speedH);

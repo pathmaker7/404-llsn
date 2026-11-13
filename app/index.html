@@ -1,6 +1,8 @@
 <!doctype html>
 <html lang="en">
 <head>
+<script>/* Hosted: the front page is the 3D surface view. This page stays the planner and the guided mission (#mode=planner, #mode=mission), and the offline copy. */
+if (location.protocol !== "file:" && !/(mode|sites|lang)=/.test(location.hash)) location.replace("surface/");</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lunar Landing Site Navigator</title>

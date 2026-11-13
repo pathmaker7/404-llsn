@@ -20,6 +20,17 @@ The idea is **teach by deciding**. We do not simulate a flight. One checked engi
 
 ![Full planner](docs/screenshots/app-full.png)
 
+## What you open first (14 Nov)
+
+The hosted front page is the 3D app (`app/surface/`, built by teammate [steppekid](https://github.com/steppekid/lunar_3d_nasa_hackathon), extended by the team):
+
+1. **A 3D map of the south pole** with every candidate site as a clickable pin and in a list: six sites from NASA's Lunar Surface Data Book, each as the Data Book centre and as the best-lit point within 500 m (eleven points).
+2. **Click a site to fly down and stand on it.** One panel answers "can a solar robot land here on this day and survive 14 days": the verdict, one sentence of why, all eleven checks with a tick or a cross (hover a line to read what it means), and a strip of the next 120 landing days, green survives, red is lost (click a day to land on it).
+3. **Any day from 2021 to 2031**: previous or next day, month, year, a date field, or Today. Past days are history, future days are a prediction from the orbit model; the terrain does not change. Press ▶ to watch the 14 days in 3D.
+4. "Details" brings back every expert number. "Any site on the Moon" opens the 2D planner (`app/index.html#mode=planner`), and `#mode=mission` opens the guided mission.
+
+Positions for 2021 to 2031 are computed in the browser with `app/sky.js`; `npm test` checks they match the pipeline's independent JPL DE440 series (2027 to 2028) to better than 0.01°. Opened as a file (offline), `app/index.html` shows the planner and the guided mission, since the 3D app needs a web server.
+
 ## Live
 
 - App: https://lunar-navigator-404.web.app

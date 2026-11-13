@@ -197,15 +197,40 @@ table.t tr.sub td { color: var(--muted); font-size: 12px; }
   #topbar nav button { padding: 5px 7px; font-size: 12px; }
 }
 
-/* Minimal embed mode (merge with the guided mission): only the view, the time control and two status chips. */
-#more { position: fixed; top: 10px; right: 10px; z-index: 30; display: none; }
-html.min #more, html.min body #more { display: block; }
-html:not(.min) #more { display: block; top: auto; bottom: 10px; }
-html.min #topbar, html.min #disclaimer, html.min .hud-site, html.min .hud-time, html.min .hb-grid,
-html.min .tog, html.min .vt-hint, html.min .mission, html.min .legend, html.min #speed { display: none !important; }
-html.min #hud { background: none; border: 0; box-shadow: none; padding: 0; top: 10px; }
-html.min .hud-block { background: rgba(8, 10, 14, .55); backdrop-filter: blur(6px); border-radius: 10px; padding: 8px 10px; margin: 0 0 6px; border: 0; }
-html.min #viewtools { background: none; border: 0; box-shadow: none; top: 46px; }
-html.min #hud { left: 10px; right: 96px; width: auto; display: flex; flex-wrap: wrap; gap: 6px; }
-html.min .hud-block { margin: 0; flex: 0 1 250px; }
-html.min #dock { left: 10px; right: 10px; bottom: 10px; }
+/* ---------- team merge: the answer panel, and a calm default (his full HUD is one "Details" click away) ---------- */
+#hud { width: 372px; max-height: calc(100vh - 250px); overflow: auto; }
+#more { position: fixed; right: 16px; top: 64px; z-index: 30; }
+html.min #viewtools { top: 104px; }
+html.min .hud-time, html.min .hb-grid, html.min .coords, html.min #h-variant-note, html.min .tog, html.min .vt-hint, html.min #disclaimer, html.min .legend { display: none !important; }
+html.min #hud .hud-block { padding: 8px 12px; }
+html.min #viewtools { background: none; border: 0; padding: 0; width: 240px; }
+html.embed #verdict, html.embed #topbar, html.embed .hud-site, html.embed .mission, html.embed #speed { display: none !important; }
+html.embed #hud { left: 10px; right: 96px; top: 10px; width: auto; display: flex; flex-wrap: wrap; gap: 6px; max-height: none; }
+html.embed .hud-block { flex: 0 1 250px; } html.embed #more { top: 10px; right: 10px; } html.embed #viewtools { display: none; }
+html.embed #dock { left: 10px; right: 10px; bottom: 10px; }
+#lang, .navlink { background: rgba(10,14,20,.6); color: inherit; border: 1px solid var(--line); padding: 6px 10px; border-radius: 3px; font: inherit; font-size: 13px; text-decoration: none; }
+.verdict .v-head b { display: block; font-size: 26px; line-height: 1.05; letter-spacing: -.01em; font-weight: 700; }
+.verdict.ok .v-head b { color: #5fd38d; } .verdict.bad .v-head b { color: #ff6b6b; }
+.verdict .v-head span { color: var(--muted); font-size: 13px; }
+.verdict p { margin: 8px 0; font-size: 14px; line-height: 1.4; }
+.v-date { display: flex; flex-wrap: wrap; gap: 4px; margin: 10px 0; }
+.v-date button, .v-date input { background: #0d1118; color: inherit; border: 1px solid var(--line-2); border-radius: 3px; padding: 5px 7px; font: inherit; font-size: 12px; cursor: pointer; }
+.v-date input { flex: 1 1 120px; min-width: 0; font-family: var(--mono); } .v-date button:hover { border-color: var(--teal); }
+.verdict .v-cal { font-size: 13px; color: var(--muted); } .v-cal b { color: inherit; font-weight: 600; color: #e6e9ef; }
+.days { display: flex; gap: 1px; padding-bottom: 16px; }
+.days .day { flex: 1 1 0; min-width: 0; height: 22px; padding: 0; border: 0; border-radius: 2px; position: relative; cursor: pointer; opacity: .85; }
+.days .day.ok { background: #5fd38d; } .days .day.bad { background: #6b2f36; }
+.days .day:hover { opacity: 1; transform: scaleY(1.25); } .days .day.now { outline: 2px solid #fff; outline-offset: 1px; z-index: 1; opacity: 1; }
+.days .day i { position: absolute; top: 25px; left: 0; font-style: normal; font-size: 10px; color: var(--muted); white-space: nowrap; pointer-events: none; }
+.v-rows { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 4px; }
+.v-rows td { padding: 3px 0; } .v-rows td:nth-child(2) { text-align: right; font-family: var(--mono); font-size: 12px; white-space: nowrap; padding-left: 8px; } .v-rows td:nth-child(3) { width: 18px; text-align: right; color: #5fd38d; }
+.v-rows tr.fail td { color: #ff6b6b; } .v-rows tr.info td { color: var(--muted); }
+.v-rows tr.should td { border-top: 1px solid var(--line); } .v-rows tr.should ~ tr.should td { border-top: 0; } .v-rows tr.info td { border-top: 0; }
+.v-rows tr.should:first-of-type td { border-top: 1px solid var(--line); }
+.verdict .v-note { font-size: 12px; color: var(--muted); }
+.tip { position: relative; cursor: help; border-bottom: 1px dotted currentColor; outline: none; }
+.v-note .tip { border: 0; }
+.tip:hover::after, .tip:focus::after { content: attr(data-tip); position: absolute; left: 0; top: 1.6em; z-index: 40; width: 300px; max-width: 70vw; background: #1a1e27; color: #e6e9ef; border: 1px solid var(--line-2); border-radius: 6px; padding: 8px 10px; font: 400 12px/1.4 var(--sans, system-ui); white-space: normal; box-shadow: 0 8px 24px rgba(0,0,0,.5); }
+@media (max-width: 760px) { #hud { width: auto; right: 16px; max-height: 46vh; } #viewtools { display: none; } #topbar nav button { display: none; } }
+.hud-site { order: -1; }
+html.min:not(.embed) .hud-block, html.min .mission label:first-child { display: none !important; }

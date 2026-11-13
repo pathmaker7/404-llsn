@@ -22,7 +22,7 @@ const SECONDS = 29;
     if (!f.startsWith(root) || !fs.existsSync(f)) { r.writeHead(404); return r.end(); }
     r.writeHead(200, { 'content-type': types[f.split('.').pop()] || 'application/octet-stream' }); fs.createReadStream(f).pipe(r); });
   await new Promise((ok) => srv.listen(0, '127.0.0.1', ok));
-  await page.goto(`http://127.0.0.1:${srv.address().port}/index.html`);
+  await page.goto(`http://127.0.0.1:${srv.address().port}/index.html#mode=mission`);
   await page.waitForFunction(() => window.__app && window.__app.sites.length > 0);
   await page.evaluate(() => {
     const box = (css, text) => { const d = document.createElement('div'); d.style.cssText = 'position:fixed;z-index:99;font-family:system-ui;' + css; d.textContent = text; document.body.appendChild(d); return d; };

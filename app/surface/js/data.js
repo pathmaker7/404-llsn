@@ -1,4 +1,5 @@
 // Loads the static files produced by pipeline/build.py.
+import { sunFraction, maskLookup } from './science.js';
 const cache = new Map();
 
 async function getJSON(url) {
@@ -25,20 +26,37 @@ export function loadSite(dir) {
   return cache.get(dir);
 }
 
+// Period offered by the app: about five years back and five years ahead. The pipeline's ephem.bin covers 2027 to 2028
+// only, so the hourly Sun and Earth positions are computed here with the team's sky.js (astronomy-engine, IAU lunar
+// rotation model). tools/test.cjs checks that they match the pipeline's DE440 series to better than 0.01 degrees.
+export const PERIOD = { start: '2021-01-01T00:00:00Z', end: '2031-12-31T23:00:00Z', step_h: 1 };
+const P0 = Date.parse(PERIOD.start) / 1000, PN = Math.round((Date.parse(PERIOD.end) / 1000 - P0) / 3600) + 1;
+let bodies = null; // Sun xyz, Earth xyz in the Moon-fixed frame, km, one row per hour
+function getBodies() {
+  if (bodies) return bodies;
+  const Sky = globalThis.Sky; bodies = new Float64Array(PN * 6);
+  for (let i = 0; i < PN; i++) { const b = Sky.bodiesMoonFixed(new Date((P0 + i * 3600) * 1000)); bodies.set(b.sun, i * 6); bodies.set(b.earth, i * 6 + 3); }
+  return bodies;
+}
+const DEG = 180 / Math.PI;
+function computeChannels(meta) {
+  const Sky = globalThis.Sky, b = getBodies(), f = Sky.siteFrame(meta.lat, meta.lon, meta.ground_height_m + meta.observer_height_m);
+  const mask = meta.mask.el_deg, step = meta.mask.az_step_deg, ch = {};
+  for (const k of ['sunAz', 'sunEl', 'sunR', 'earthAz', 'earthEl', 'earthR', 'sunFrac', 'earthVis']) ch[k] = new Float32Array(PN);
+  for (let i = 0; i < PN; i++) {
+    const s = Sky.azEl([b[i * 6], b[i * 6 + 1], b[i * 6 + 2]], f), e = Sky.azEl([b[i * 6 + 3], b[i * 6 + 4], b[i * 6 + 5]], f);
+    ch.sunAz[i] = s.az; ch.sunEl[i] = s.el; ch.sunR[i] = Math.asin(695700 / s.dist) * DEG;
+    ch.earthAz[i] = e.az; ch.earthEl[i] = e.el; ch.earthR[i] = Math.asin(6371 / e.dist) * DEG;
+    ch.sunFrac[i] = sunFraction(s.az, s.el, ch.sunR[i], mask, step);
+    ch.earthVis[i] = e.el > maskLookup(mask, step, e.az) ? 1 : 0;
+  }
+  return ch;
+}
+
 async function _load(dir) {
   const base = `data/sites/${dir}/`;
   const meta = await getJSON(base + 'meta.json');
-  const [eph, near, far] = await Promise.all([
-    getBin(base + meta.ephem.file),
-    getBin(base + meta.terrain.near.file),
-    getBin(base + meta.terrain.far.file),
-  ]);
-  const n = meta.ephem.n;
-  const all = new Float32Array(eph);
-  const ch = {};
-  meta.ephem.channels.forEach((name, k) => { ch[name] = all.subarray(k * n, (k + 1) * n); });
-  return {
-    dir, meta, ch, n, t0: meta.ephem.t0_unix,
-    near: new Int16Array(near), far: new Int16Array(far),
-  };
+  const [near, far] = await Promise.all([getBin(base + meta.terrain.near.file), getBin(base + meta.terrain.far.file)]);
+  await new Promise((r) => setTimeout(r, 30)); // let the "Loading" label paint before the one-off ephemeris pass
+  return { dir, meta, ch: computeChannels(meta), n: PN, t0: P0, near: new Int16Array(near), far: new Int16Array(far) };
 }

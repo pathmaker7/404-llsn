@@ -175,6 +175,17 @@ near(mean, 22, 3, 'Shackleton floor mean horizon');
   }
   assert.deepStrictEqual(verdicts.ours, [['ridge', 'rim2'], ['plateau']], 'the mission story (our engine)');
   assert.deepStrictEqual(verdicts.view, verdicts.ours, 'the 3D view data tells the same story');
+  // The 3D app computes Sun and Earth positions for 2021 to 2031 with sky.js. They must match the pipeline's independent
+  // DE440 series (2027 to 2028) at the same points, or the extended dates could not be trusted.
+  for (const dir of ['cr-best', 'lbp', 'nr1', 'sr']) {
+    const base = `${__dirname}/../app/surface/data/sites/${dir}/`, meta = JSON.parse(fs.readFileSync(base + 'meta.json', 'utf8')), buf = fs.readFileSync(base + meta.ephem.file);
+    const all = new Float32Array(buf.buffer, buf.byteOffset, buf.length / 4), n = meta.ephem.n, ch = (name) => all.subarray(meta.ephem.channels.indexOf(name) * n, (meta.ephem.channels.indexOf(name) + 1) * n);
+    const f = Sky.siteFrame(meta.lat, meta.lon, meta.ground_height_m + meta.observer_height_m), sunEl = ch('sunEl'), earthEl = ch('earthEl'), sunAz = ch('sunAz');
+    let worst = 0;
+    for (let i = 0; i < n; i += 41) { const b = Sky.bodiesMoonFixed(new Date((meta.ephem.t0_unix + i * 3600) * 1000)), su = Sky.azEl(b.sun, f), ea = Sky.azEl(b.earth, f), da = Math.abs(su.az - sunAz[i]);
+      worst = Math.max(worst, Math.abs(su.el - sunEl[i]), Math.abs(ea.el - earthEl[i]), Math.min(da, 360 - da) * Math.cos(su.el * Math.PI / 180)); }
+    assert.ok(worst < 0.01, `${dir}: our positions differ from the DE440 series by ${worst} degrees`);
+  }
   // The Earth yardstick is sane: Naryn midsummer Sun is high, midwinter low.
   const june = Sky.sunDayOnEarth(new Date('2026-06-21T00:00:00Z'), 41.43, 76), dec = Sky.sunDayOnEarth(new Date('2026-12-21T00:00:00Z'), 41.43, 76);
   near(june.maxEl, 90 - 41.43 + 23.44, 0.3, 'Naryn solstice noon Sun');
