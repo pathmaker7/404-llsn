@@ -1,234 +1,100 @@
-// Opens app/index.html in headless Chrome, fails on any page error, saves screenshots.
-// Run: node tools/smoke.cjs [outDir]
+// Opens the app in headless Chrome over http, plays it like a visitor, fails on any page error, saves screenshots.
+// Run: node tools/smoke.cjs
+const fs = require('fs');
+const http = require('http');
 const path = require('path');
 const { chromium } = require('playwright-core');
+const ROOT = path.join(__dirname, '..'), OUT = path.join(ROOT, 'docs', 'screenshots');
+
+// A static server for one folder (the app needs http: ES modules and data files).
+function serve(dir) {
+  const types = { html: 'text/html', js: 'text/javascript', css: 'text/css', json: 'application/json', png: 'image/png', mp4: 'video/mp4' };
+  const srv = http.createServer((q, r) => {
+    const f = path.join(dir, decodeURIComponent(q.url.split('?')[0]).replace(/\/$/, '/index.html'));
+    if (!f.startsWith(dir) || !fs.existsSync(f)) { r.writeHead(404); return r.end(); }
+    r.writeHead(200, { 'content-type': types[f.split('.').pop()] || 'application/octet-stream' }); fs.createReadStream(f).pipe(r);
+  });
+  return new Promise((ok) => srv.listen(0, '127.0.0.1', () => ok(srv)));
+}
+module.exports = { serve };
+if (require.main !== module) return;
 
 (async () => {
-  const out = process.argv[2] || path.join(__dirname, '..', 'docs', 'screenshots');
-  require('fs').mkdirSync(out, { recursive: true });
+  fs.mkdirSync(OUT, { recursive: true });
+  const errors = [], app = await serve(path.join(ROOT, 'app')), url = `http://127.0.0.1:${app.address().port}/`;
   const browser = await chromium.launch({ executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' });
-  const page = await browser.newPage({ viewport: { width: 1600, height: 1250 } });
-  const errors = [];
-  page.on('pageerror', (e) => errors.push(e.message));
-  page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
-  const t0 = Date.now();
-  const APP = 'file://' + path.join(__dirname, '..', 'app', 'index.html');
-  // Mission mode is the first screen: play one mission end to end before the planner checks.
-  await page.goto(APP);
-  await page.waitForFunction(() => window.__app && window.__app.sites.length > 0, null, { timeout: 30000 });
-  console.log('loaded in', Date.now() - t0, 'ms');
-  const hidden = (sel) => page.evaluate((q) => getComputedStyle(document.querySelector(q)).display === 'none', sel);
-  if (!(await page.locator('#mGo').count()) || !(await hidden('.results')) || !(await hidden('.sky'))) errors.push('the guided mission is not the first screen');
-  await page.screenshot({ path: path.join(out, 'app-mission.png') });
-  await page.click('#mGo');
-  await page.screenshot({ path: path.join(out, 'app-mission-choose.png') });
-  const spot = (key) => page.evaluate((k) => { const s = __app.sites.find((x) => x.key === k); document.querySelector(`[data-spot="${s.id}"]`).click(); return { ...__mission, text: document.getElementById('missionBody').innerText.replace(/\s+/g, ' ').slice(0, 330) }; }, key);
-  // The story the mission tells must be what the data says: on landing day only the mountain top survives...
-  const first = {};
-  for (const k of ['wall', 'plateau', 'rim2', 'ridge']) { first[k] = await spot(k); if (k !== 'ridge') await page.click('#mAgain'); }
-  console.log('landing day:', JSON.stringify(first.ridge), '| wall:', first.wall.text);
-  if (first.ridge.passing.join() !== 'ridge,rim2' || !first.ridge.ok || first.wall.ok || !/ROBOT WAS LOST/.test(first.wall.text)) errors.push(`landing day story broken: passing ${first.ridge.passing}`);
-  // ...and the verdict is the planner's own number for the same site, date and stay.
-  const same = await page.evaluate(() => { const s = __app.sites[__app.focus - 1], k0 = __app.landing; return [__mission.checks[0].v, Analysis.metrics(s.track, k0, k0 + 14 * 24 / __app.stepH, __app.stepH).longestDarkH]; });
-  if (same[0] !== same[1]) errors.push(`mission night ${same[0]} != planner night ${same[1]}`);
-  // The mission report: eleven rows, each with a hover explanation; the four "must" rows decide the verdict.
-  const rep = await page.evaluate(() => ({ rows: document.querySelectorAll('table.report tr').length - 1, tips: [...document.querySelectorAll('table.report .tip')].map((t) => t.dataset.tip), must: document.querySelectorAll('table.report tr.must').length }));
-  if (rep.rows !== 11 || rep.must !== 4 || rep.tips.length !== 11 || rep.tips.some((t) => t.length < 30)) errors.push('mission report incomplete: ' + JSON.stringify(rep));
-  // The answer must be in view without opening anything (owner, 2026-11-14): the four deciding numbers and the strip of
-  // landing days, whose colours are the verdicts of the same engine.
-  const inView = await page.evaluate(() => { const days = [...document.querySelectorAll('.days .day')], perDay = 24 / __app.stepH;
-    return { chips: document.querySelectorAll('.chips .chip').length, days: days.length, now: document.querySelector('.day.now')?.dataset.cal, ok: days.filter((d) => d.classList.contains('ok')).length,
-      wrong: days.filter((d, i) => d.classList.contains('ok') !== Mission.evaluate(__app.sites[__app.focus - 1], i * perDay, Math.round(14 * 24 / __app.stepH) + 1, __app.stepH).ok).length, head: document.querySelector('.calhead').innerText }; });
-  console.log('in view:', JSON.stringify(inView));
-  if (inView.chips !== 4 || inView.days < 60 || inView.now !== '2027-07-22' || inView.wrong || !inView.ok || /undefined|NaN|\{/.test(inView.head)) errors.push('the verdict screen does not show the numbers and landing days: ' + JSON.stringify(inView));
-  // Minimal by default (owner, 2026-11-14): the report stays folded until the user opens it.
-  if (await page.evaluate(() => [...document.querySelectorAll('#missionBody details.more')].some((d) => d.open))) errors.push('the mission report is shown before the user asks for it');
-  await page.click('details.more summary'); await page.hover('table.report .tip');
-  if ((await page.evaluate(() => getComputedStyle(document.querySelector('table.report .tip'), '::after').content)).length < 30) errors.push('the hover explanation does not show');
-  await page.screenshot({ path: path.join(out, 'app-mission-verdict.png'), fullPage: true });
-  // ...then the 12 day delay moves the landing day, the mountain top fails and the two rims pass.
-  await page.click('#mNext');
-  const late = await page.evaluate(() => ({ ...__mission, news: !!document.querySelector('p.news') }));
-  console.log('after the delay:', JSON.stringify(late));
-  if (!late.delayed || late.date !== '2027-08-12' || late.ok || !late.news || late.passing.join() !== 'plateau') errors.push(`delay story broken: ${late.date} passing ${late.passing}`);
-  const replan = await spot('plateau');
-  if (!replan.ok || replan.date !== '2027-08-12') errors.push('replanning to the plateau after the delay did not pass');
-  await page.click('#mFinish');
-  const learned = await page.evaluate(() => document.getElementById('missionBody').innerText.replace(/\s+/g, ' '));
-  console.log('summary:', learned.slice(0, 420));
-  if (/undefined|NaN|\{\w+\}/.test(learned) || !/Ridge, Second rim/.test(learned) || !/Plateau/.test(learned)) errors.push('the summary does not name the surviving spots');
-  await page.screenshot({ path: path.join(out, 'app-mission-learned.png') });
-  // Step 5, any day: the picker moves the landing day, the answer is recomputed, and no text is a raw key in any language.
-  await page.click('#mAnyDay');
-  const day = () => page.evaluate(() => ({ date: __mission.date, passing: __mission.passing.join(), badges: document.querySelectorAll('.badge').length, input: document.getElementById('mDay').value }));
-  const d0 = await day();
-  if (d0.date !== '2027-07-22' || d0.passing !== 'ridge,rim2' || d0.badges !== 4) errors.push('any-day step does not start on the mission day: ' + JSON.stringify(d0));
-  await page.click('[data-day="2027-07-23"]'); // +1 day
-  const d1 = await day();
-  if (d1.date !== '2027-07-23' || d1.input !== '2027-07-23') errors.push('+1 day did not move the landing day: ' + JSON.stringify(d1));
-  await page.fill('#mDay', '2035-03-01'); await page.dispatchEvent('#mDay', 'change');
-  const d2 = await day();
-  console.log('any day 2035-03-01:', JSON.stringify(d2));
-  if (d2.date !== '2035-03-01') errors.push('typing a future date did not work: ' + JSON.stringify(d2));
-  for (const l of ['ru', 'ky', 'en']) {
-    const bad = await page.evaluate((l) => {
-      I18n.set(l); document.querySelector('[data-spot]').click(); for (const d of document.querySelectorAll('details')) d.open = true;
-      const keys = new Set(Object.keys(I18n.S.en)), body = document.getElementById('missionBody');
-      const words = (body.innerText + ' ' + [...body.querySelectorAll('.tip')].map((t) => t.dataset.tip).join(' ')).split(/[^\w{}]+/);
-      return words.filter((w) => (keys.has(w) && /^[a-z]+\d?[A-Z]/.test(w)) || /^(undefined|NaN|Infinity)$/.test(w) || /^\{\w+\}$/.test(w));
-    }, l);
-    if (bad.length) errors.push(`any-day step, ${l}: raw text ${bad.join()}`);
+  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  page.on('pageerror', (e) => errors.push('page error: ' + e.message));
+  page.on('response', (r) => { if (r.status() >= 400) errors.push(`${r.status()} ${r.url()}`); });
+
+  // 1. First screen: the 3D map with every site, nothing else to decide.
+  await page.goto(url);
+  await page.waitForFunction(() => window.__app && window.__app.ready, null, { timeout: 60000 });
+  await page.waitForTimeout(1500);
+  const front = await page.evaluate(() => ({ sites: document.querySelectorAll('#sites li').length, pins: document.querySelectorAll('#pins > *').length, nav: [...document.querySelectorAll('#topbar nav button')].map((b) => b.textContent) }));
+  await page.screenshot({ path: path.join(OUT, 'map.png') });
+  if (front.sites !== 6 || front.pins !== 6) errors.push('the map does not show the six sites: ' + JSON.stringify(front));
+
+  // 2. Click a site: the answer panel, complete and in view without opening anything.
+  await page.click('#sites li:nth-child(1) button');
+  await page.waitForFunction(() => window.__verdict && document.body.classList.contains('mode-surface'), null, { timeout: 90000 });
+  await page.waitForTimeout(2500);
+  const v0 = await page.evaluate(() => ({ date: __verdict.date, today: new Date().toISOString().slice(0, 10), rows: document.querySelectorAll('.v-rows tr').length, tips: [...document.querySelectorAll('.v-rows .tip')].map((t) => t.dataset.tip.length),
+    strip: document.querySelectorAll('#verdict .day').length, count: document.querySelector('.v-count').innerText, head: document.querySelector('.v-head').innerText, good: __verdict.good,
+    green: document.querySelectorAll('#verdict .day.ok').length, hash: location.hash, variant: __app.S.variant, text: document.getElementById('verdict').innerText }));
+  await page.screenshot({ path: path.join(OUT, 'site.png') });
+  console.log('site view:', JSON.stringify({ ...v0, text: undefined, tips: v0.tips.length }));
+  if (v0.date !== v0.today) errors.push('the default landing day is not today: ' + v0.date);
+  if (v0.rows !== 11 || v0.tips.length !== 11 || v0.tips.some((n) => n < 30)) errors.push('the eleven checks with their explanations are not all shown');
+  if (v0.strip !== 120 || v0.green !== v0.good || !new RegExp('^' + v0.good + '\\b').test(v0.count.trim())) errors.push('the landing day strip and its count disagree: ' + JSON.stringify([v0.strip, v0.green, v0.good, v0.count]));
+  if (/undefined|NaN|\{\w+\}/.test(v0.text)) errors.push('raw text in the answer panel');
+  if (v0.variant !== 'best' || !/^#site=\w+&land=\d{4}-\d\d-\d\d$/.test(v0.hash)) errors.push('not on the best spot, or the address is not short: ' + v0.variant + ' ' + v0.hash);
+  // The colours of the strip are the verdicts: clicking a green day must give SURVIVED, a red one LOST.
+  for (const cls of ['ok', 'bad']) {
+    if (!(await page.locator(`#verdict .day.${cls}:not(.now)`).count())) continue;
+    await page.locator(`#verdict .day.${cls}:not(.now)`).first().click(); await page.waitForTimeout(300);
+    if ((await page.evaluate(() => __verdict.ok)) !== (cls === 'ok')) errors.push(`a ${cls} day did not give the matching verdict`);
   }
-  await page.screenshot({ path: path.join(out, 'app-mission-anyday.png'), fullPage: true });
+
+  // 3. Any day, past or future: the date field, the year buttons, and the 3D clock follow.
+  await page.fill('#v-day', '2030-05-01'); await page.dispatchEvent('#v-day', 'change'); await page.waitForTimeout(500);
+  const v1 = await page.evaluate(() => ({ date: __verdict.date, clock: document.getElementById('d-time').textContent }));
+  if (v1.date !== '2030-05-01' || !v1.clock.startsWith('2030-05-01')) errors.push('picking a day in 2030 did not move the landing: ' + JSON.stringify(v1));
+  await page.click('.v-date button:has-text("−1")'); await page.waitForTimeout(300);
+  if ((await page.evaluate(() => __verdict.date)) !== '2029-05-01') errors.push('the minus one year button did not work');
+  await page.fill('#v-day', '2022-03-10'); await page.dispatchEvent('#v-day', 'change'); await page.waitForTimeout(300);
+  if ((await page.evaluate(() => __verdict.date)) !== '2022-03-10') errors.push('a past day did not work');
+
+  // 4. Play the stay in 3D, switch language, go back to the map.
+  await page.click('#play'); await page.waitForTimeout(2500);
+  const moved = await page.evaluate(() => document.getElementById('d-time').textContent);
+  if (moved.startsWith('2022-03-10 00:00')) errors.push('pressing play did not move the time');
+  await page.screenshot({ path: path.join(OUT, 'site-playing.png') });
+  for (const [l, re] of [['ru', /[а-яё]/i], ['ky', /[өүң]/i], ['en', /Longest night/]]) {
+    await page.selectOption('#lang', l);
+    const t = await page.evaluate(() => document.getElementById('verdict').innerText + [...document.querySelectorAll('#verdict .tip')].map((x) => x.dataset.tip).join(' '));
+    if (!re.test(t) || /undefined|NaN|\{\w+\}/.test(t)) errors.push(`language ${l} is not applied cleanly`);
+  }
+  await page.click('#back'); await page.waitForTimeout(800);
+  if (!(await page.evaluate(() => document.body.classList.contains('mode-overview')))) errors.push('the South pole button did not return to the map');
+
+  // 5. Phone width: no sideways scroll.
   await page.setViewportSize({ width: 390, height: 844 });
-  const w390 = await page.evaluate(() => document.documentElement.scrollWidth);
-  if (w390 > 390) errors.push('any-day step scrolls sideways at 390 px: ' + w390);
-  await page.locator('table.report').scrollIntoViewIfNeeded();
-  await page.screenshot({ path: path.join(out, 'app-mission-anyday-390.png') });
-  await page.setViewportSize({ width: 1440, height: 900 });
-  // Served over http the verdict shows the 3D view from the spot (app/surface) in place of the 2D sky: same spot, same day.
-  {
-    const http = require('http'), fs = require('fs'), root = path.join(__dirname, '..', 'app');
-    const types = { html: 'text/html', js: 'text/javascript', css: 'text/css', json: 'application/json', bin: 'application/octet-stream' };
-    const srv = http.createServer((q, r) => { const f = path.join(root, decodeURIComponent(q.url.split('?')[0]).replace(/\/$/, '/index.html'));
-      if (!f.startsWith(root) || !fs.existsSync(f)) { r.writeHead(404); return r.end(); }
-      r.writeHead(200, { 'content-type': types[f.split('.').pop()] || 'application/octet-stream' }); fs.createReadStream(f).pipe(r); });
-    await new Promise((ok) => srv.listen(0, '127.0.0.1', ok));
-    // The hosted front page is the 3D app: every site on a clickable 3D map, then the answer panel for any day 2021 to 2031.
-    const p4 = await browser.newPage({ viewport: { width: 1440, height: 900 } });
-    p4.on('pageerror', (e) => errors.push('front page: ' + e.message));
-    await p4.goto(`http://127.0.0.1:${srv.address().port}/`);
-    await p4.waitForFunction(() => window.__app && window.__app.ready, null, { timeout: 60000 });
-    const front = await p4.evaluate(() => ({ url: location.pathname, sites: document.querySelectorAll('#sites li').length, pins: document.querySelectorAll('#pins > *').length }));
-    await p4.waitForTimeout(1500); await p4.screenshot({ path: path.join(out, 'front-map.png') });
-    await p4.click('#sites li:nth-child(1) button');
-    await p4.waitForFunction(() => window.__verdict && document.body.classList.contains('mode-surface'), null, { timeout: 90000 });
-    await p4.waitForTimeout(2500);
-    const v0 = await p4.evaluate(() => ({ ...__verdict, rows: document.querySelectorAll('.v-rows tr').length, tips: document.querySelectorAll('.v-rows .tip').length, strip: document.querySelectorAll('#verdict .day').length, head: document.querySelector('.v-head').innerText, today: new Date().toISOString().slice(0, 10) }));
-    await p4.screenshot({ path: path.join(out, 'front-site.png') });
-    await p4.fill('#v-day', '2030-05-01'); await p4.dispatchEvent('#v-day', 'change'); await p4.waitForTimeout(600);
-    const v1 = await p4.evaluate(() => ({ date: __verdict.date, ok: __verdict.ok, good: __verdict.good, tl: document.getElementById('d-time').textContent }));
-    await p4.click('#verdict .day.ok, #verdict .day.bad:nth-child(5)'); await p4.waitForTimeout(400);
-    const v2 = await p4.evaluate(() => __verdict.date);
-    await p4.selectOption('#lang', 'ru'); const ru = await p4.evaluate(() => document.querySelector('.v-rows').innerText);
-    await p4.selectOption('#lang', 'en');
-    await p4.click('#play'); await p4.waitForTimeout(2500); await p4.screenshot({ path: path.join(out, 'front-site-2030.png') });
-    console.log('front page:', JSON.stringify({ front, v0: { ...v0, rows: v0.rows }, v1, v2 }).slice(0, 700));
-    const old = await browser.newPage(); await old.goto(`http://127.0.0.1:${srv.address().port}/index.html#mode=mission`); await old.waitForTimeout(1500);
-    if (!old.url().includes('/surface/')) errors.push('the old guided story is still reachable on the hosted site: ' + old.url());
-    await old.close();
-    const count = await p4.evaluate(() => document.querySelector('.v-count')?.innerText || '');
-    if (!/^\d+/.test(count.trim())) errors.push('the number of surviving landing days is not shown: ' + count);
-    if (!front.url.includes('/surface/') || front.sites < 6) errors.push('the front page is not the 3D app with every site: ' + JSON.stringify(front));
-    if (v0.date !== v0.today || v0.rows !== 11 || v0.tips !== 11 || v0.strip < 100 || /undefined|NaN|\{\w+\}/.test(v0.head)) errors.push('answer panel incomplete: ' + JSON.stringify({ ...v0, rows: v0.rows }));
-    if (v1.date !== '2030-05-01' || !v1.tl.startsWith('2030-05-01')) errors.push('picking a day in 2030 did not move the landing: ' + JSON.stringify(v1));
-    if (v2 === '2030-05-01') errors.push('clicking a day in the strip did not move the landing');
-    if (!/[а-яё]/i.test(ru)) errors.push('the answer panel did not switch to Russian');
-    await p4.setViewportSize({ width: 390, height: 844 }); await p4.waitForTimeout(600); await p4.screenshot({ path: path.join(out, 'front-site-390.png') });
-    await p4.close(); srv.close();
-  }
-  await page.click('#mOpenPlanner');
-  if (await hidden('.results')) errors.push('the full planner did not open from the mission');
+  await page.click('#sites li:nth-child(4) button');
+  await page.waitForFunction(() => document.body.classList.contains('mode-surface'), null, { timeout: 90000 }); await page.waitForTimeout(2000);
+  const w = await page.evaluate(() => document.documentElement.scrollWidth);
+  await page.screenshot({ path: path.join(OUT, 'site-390.png') });
+  if (w > 390) errors.push('sideways scroll at 390 px: ' + w);
+  app.close();
 
-  await page.goto(APP + '#mode=planner');
-  await page.reload();
-  await page.waitForFunction(() => window.__app && window.__app.sites.length > 0, null, { timeout: 30000 });
-  const summary = await page.evaluate(() => ({
-    sites: __app.sites.map((s) => s.name),
-    samples: __app.times.length,
-    table: [...document.querySelectorAll('#table tr')].map((r) => r.innerText.replace(/\s+/g, ' ')),
-    now: document.getElementById('nowState').innerText,
-  }));
-  console.log(JSON.stringify(summary, null, 1));
-  await page.screenshot({ path: path.join(out, 'app-full.png'), fullPage: true });
-  await page.click('#best');
-  await page.locator('#scrub').fill('500');
-  await page.screenshot({ path: path.join(out, 'app-best-date.png'), fullPage: true });
-  // Neighbourhood map: the centre cell must equal the site's own numbers over the whole span (same pipeline).
-  const t1 = Date.now();
-  await page.click('#hoodBtn');
-  await page.waitForFunction(() => window.__hood, null, { timeout: 120000 });
-  const hood = await page.evaluate(() => {
-    const s = __app.sites.find((x) => x.name === __hood.name), n = __app.times.length;
-    return { ...__hood, siteSun: (100 * s.track.cumSun[n]) / n, text: document.getElementById('hoodText').textContent };
-  });
-  console.log(`neighbourhood in ${Date.now() - t1} ms:`, hood.text);
-  if (Math.abs(hood.centre.sun - hood.siteSun) > 0.01) errors.push(`neighbourhood centre ${hood.centre.sun} != site ${hood.siteSun}`);
-  await page.locator('#hood').screenshot({ path: path.join(out, 'app-neighbourhood.png') });
-  // Live shadows: time one full computation and keep a picture for the deck.
-  const t2 = Date.now();
-  await page.check('#shadowToggle');
-  console.log('shadow map in', Date.now() - t2, 'ms');
-  await page.locator('#map').screenshot({ path: path.join(out, 'app-shadows.png') });
-  await page.uncheck('#shadowToggle');
-  await page.check('#slopeToggle');
-  await page.locator('#map').screenshot({ path: path.join(out, 'app-slope.png') });
-  // Add a custom site by clicking the map centre (the pole).
-  const box = await page.locator('#map').boundingBox();
-  await page.mouse.click(box.x + box.width * 0.47, box.y + box.height * 0.5);
-  console.log('after map click:', await page.evaluate(() => __app.sites.map((s) => s.name).join(', ')));
+  // 6. The explainer page: loads, no broken images.
+  const ex = await serve(path.join(ROOT, 'explainer'));
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto(`http://127.0.0.1:${ex.address().port}/`); await page.waitForTimeout(500);
+  const broken = await page.evaluate(() => [...document.images].filter((i) => !i.naturalWidth).map((i) => i.getAttribute('src')));
+  if (broken.length) errors.push('explainer: broken images ' + broken.join());
+  ex.close(); await browser.close();
 
-  // Shared link: restores sites and inputs, and a hostile site name never becomes markup.
-  const evil = '<img src=x onerror="window.__pwned=1">';
-  const hash = new URLSearchParams({ start: '2027-01-01', span: '90', stay: '5', mast: '10', margin: '1', landing: '40',
-    sites: [`${evil}|-89.78|-156.25`, 'Apollo 11|0.674081|23.472969', "Chang'e 4 (far side)|-45.5|177.6"].join(';') });
-  await page.goto('file://' + path.join(__dirname, '..', 'app', 'index.html') + '#' + hash);
-  await page.reload();
-  await page.waitForFunction(() => window.__app && window.__app.sites.length === 3, null, { timeout: 30000 });
-  const shared = await page.evaluate(() => ({
-    names: __app.sites.map((s) => s.name), landing: __app.landing, start: document.getElementById('start').value,
-    mast: document.getElementById('mast').value, imgs: document.querySelectorAll('#sites img, #table img, #windows img').length,
-    pwned: !!window.__pwned, rows: [...document.querySelectorAll('#table tr')].map((r) => r.innerText.replace(/\s+/g, ' ')),
-  }));
-  console.log('shared link:', JSON.stringify(shared, null, 1));
-  if (shared.imgs || shared.pwned) errors.push('site name from the URL was rendered as markup');
-  if (shared.start !== '2027-01-01' || shared.mast !== '10' || shared.landing !== 40) errors.push('shared link did not restore inputs');
-  // A broken link must fall back to defaults, not crash.
-  await page.goto('file://' + path.join(__dirname, '..', 'app', 'index.html') + '#span=9999&start=xyz&stay=-4&sites=Apollo%2011|0.67|23.47');
-  await page.reload();
-  await page.waitForFunction(() => window.__app && window.__app.sites.length === 1, null, { timeout: 30000 });
-  console.log('broken link ->', await page.evaluate(() => [document.getElementById('span').value, document.getElementById('start').value, document.getElementById('stay').value].join(' ')));
-  await page.click('#viewGlobe');
-  await page.locator('#globeMap').screenshot({ path: path.join(out, 'app-globe.png') });
-  // Russian and Kyrgyz: the switch re-renders static and dynamic text; screenshots go to the reviewer.
-  for (const [code, word] of [['ru', 'Место'], ['ky', 'Орун']]) {
-    await page.goto('file://' + path.join(__dirname, '..', 'app', 'index.html') + '#lang=' + code);
-    await page.reload();
-    await page.waitForFunction(() => window.__app && window.__app.sites.length > 0, null, { timeout: 30000 });
-    const ui = await page.evaluate(() => ({ lang: document.documentElement.lang, h1: document.querySelector('h1').textContent,
-      th: document.querySelector('#table th').textContent, draft: !document.getElementById('draftNote').hidden }));
-    console.log(`lang ${code}:`, JSON.stringify(ui));
-    if (ui.lang !== code || ui.th !== word || !ui.draft) errors.push(`language ${code} not applied: ${JSON.stringify(ui)}`);
-    await page.screenshot({ path: path.join(out, `app-${code}.png`), fullPage: true });
-  }
-  await page.evaluate(() => { try { localStorage.removeItem('lang'); } catch (e) {} });
-
-  // Phone and projector: the page never scrolls sideways (wide tables scroll inside their card).
-  for (const [w, h] of [[390, 844], [1920, 1080]]) {
-    const p = await browser.newPage({ viewport: { width: w, height: h } });
-    p.on('pageerror', (e) => errors.push(e.message));
-    await p.goto('file://' + path.join(__dirname, '..', 'app', 'index.html'));
-    await p.waitForFunction(() => window.__app && window.__app.sites.length > 0, null, { timeout: 30000 });
-    const sw = await p.evaluate(() => document.documentElement.scrollWidth);
-    console.log(`layout ${w}x${h}: page width ${sw}`);
-    if (sw > w) errors.push(`page scrolls sideways at ${w}px (${sw}px wide)`);
-    await p.screenshot({ path: path.join(out, `app-${w}.png`) });
-    if (w === 390) { // the app links to the explainer, and the explainer (assets from tools/explainer-assets.cjs) renders whole
-      const link = await p.evaluate(() => document.querySelector('a.explain')?.href);
-      if (link !== 'https://lunar-navigator-explained.web.app/') errors.push(`explainer link missing in the app header: ${link}`);
-    }
-    await p.goto('file://' + path.join(__dirname, '..', 'explainer', 'index.html'));
-    await p.waitForLoadState('load');
-    await p.evaluate(() => Promise.all([...document.images].map((i) => { i.loading = 'eager'; return i.decode().catch(() => {}); })));
-    const ex = await p.evaluate(() => ({ sw: document.documentElement.scrollWidth,
-      broken: [...document.images].filter((i) => !i.complete || !i.naturalWidth).map((i) => i.getAttribute('src')),
-      app: [...document.querySelectorAll('a')].some((a) => a.href === 'https://lunar-navigator-404.web.app/') }));
-    console.log(`explainer ${w}x${h}: page width ${ex.sw}, broken images ${ex.broken.length}`);
-    if (ex.sw > w || ex.broken.length || !ex.app) errors.push(`explainer at ${w}px: ${JSON.stringify(ex)}`);
-    await p.screenshot({ path: path.join(out, `explainer-${w}.png`), fullPage: w === 390 ? false : true });
-    await p.close();
-  }
-  await browser.close();
-  if (errors.length) { console.error('PAGE ERRORS:\n' + errors.join('\n')); process.exit(1); }
-  console.log('no page errors');
+  if (errors.length) { console.error('ERRORS:\n' + errors.join('\n')); process.exit(1); }
+  console.log('no errors');
 })();

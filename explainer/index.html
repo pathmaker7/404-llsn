@@ -3,509 +3,84 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>How the Lunar Navigator Works</title>
-<meta name="description" content="A lunar mission that anyone can play in two minutes, built on a checked planner for experts. The problem, the NASA Space Apps challenge, the rules a submission must follow, and how our Lunar Landing Site Navigator works, why, and where it falls short.">
+<title>Lunar Landing Site Navigator: how it works</title>
+<meta name="description" content="How the Lunar Landing Site Navigator answers one question: will a solar robot survive a landing at this site on this day.">
 <style>
-:root {
-  --bg: #0b0e14; --panel: #131824; --line: #232b3b; --text: #e6e9ef; --muted: #9aa3b5;
-  --sun: #ffc83d; --earth: #4aa3ff; --both: #5fd38d; --bad: #ff6b6b;
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-}
-* { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-body { margin: 0; background: var(--bg); color: var(--text); font-size: 17px; line-height: 1.6; }
-a { color: var(--earth); overflow-wrap: anywhere; }
-nav { position: sticky; top: 0; z-index: 5; background: rgba(11,14,20,.94); border-bottom: 1px solid var(--line); backdrop-filter: blur(6px); }
-nav .in { max-width: 1040px; margin: 0 auto; padding: 10px 16px; display: flex; gap: 16px; overflow-x: auto; white-space: nowrap; font-size: 14px; }
-nav a { color: var(--muted); text-decoration: none; }
-nav a:hover { color: var(--text); }
-.wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
-header.hero { padding: 64px 0 40px; border-bottom: 1px solid var(--line); background: radial-gradient(circle at 80% 0%, #1e2a44 0, var(--bg) 60%); }
-h1 { font-size: clamp(32px, 6vw, 56px); line-height: 1.1; margin: 0 0 16px; letter-spacing: -1px; }
-h2 { font-size: clamp(24px, 4vw, 34px); margin: 64px 0 12px; letter-spacing: -.5px; scroll-margin-top: 60px; }
-h3 { font-size: 20px; margin: 32px 0 8px; }
-.lead { font-size: 20px; color: var(--muted); max-width: 760px; margin: 0 0 24px; }
-.btns { display: flex; gap: 12px; flex-wrap: wrap; }
-.btn { display: inline-block; padding: 12px 18px; border-radius: 8px; border: 1px solid var(--line); color: var(--text); text-decoration: none; font-weight: 600; }
-.btn.main { background: var(--sun); color: #1a1300; border-color: var(--sun); }
-.nums { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 32px 0 0; }
-.num { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
-.num b { display: block; font-size: 28px; }
-.num span { color: var(--muted); font-size: 14px; }
-.sun { color: var(--sun); } .earth { color: var(--earth); } .both { color: var(--both); } .bad { color: var(--bad); }
-.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin: 16px 0; }
-.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
-blockquote { margin: 16px 0; padding: 12px 18px; border-left: 3px solid var(--sun); background: var(--panel); border-radius: 0 10px 10px 0; color: #d6dbe6; }
-blockquote cite { display: block; font-size: 14px; color: var(--muted); margin-top: 6px; font-style: normal; }
-.tw { overflow-x: auto; margin: 16px 0; border: 1px solid var(--line); border-radius: 10px; }
-table { border-collapse: collapse; width: 100%; font-size: 15px; }
-th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
-th { background: var(--panel); color: var(--muted); font-weight: 600; }
-tr:last-child td { border-bottom: 0; }
-td.n { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
-code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: .88em; background: #1a2030; padding: 1px 5px; border-radius: 4px; }
-figure { margin: 16px 0; }
-figure img, video { width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line); display: block; background: #000; }
-figcaption { color: var(--muted); font-size: 14px; margin-top: 6px; }
-svg { width: 100%; height: auto; display: block; }
-.tag { display: inline-block; font-size: 12px; padding: 1px 8px; border-radius: 99px; border: 1px solid var(--line); color: var(--muted); }
-.tag.ok { color: var(--both); border-color: #2c5a3e; } .tag.wait { color: var(--sun); border-color: #5a4a20; }
-dl { margin: 0; } dt { font-weight: 600; margin-top: 14px; } dd { margin: 2px 0 0; color: #cfd5e1; }
-ol, ul { padding-left: 22px; } li { margin: 4px 0; }
-footer { margin: 80px 0 0; padding: 24px 0 48px; border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; }
-.muted { color: var(--muted); }
+  :root { --bg: #0a0c10; --panel: #11141a; --line: #222732; --text: #eceef2; --muted: #8b93a3; --sun: #ffc83d; --ok: #5fd38d; --bad: #ff6b6b; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 48px 20px 80px; }
+  h1 { font-size: clamp(30px, 6vw, 46px); line-height: 1.05; letter-spacing: -.03em; margin: 0 0 14px; }
+  h2 { font-size: 22px; letter-spacing: -.01em; margin: 44px 0 10px; }
+  p, li { color: #c9ced8; } .lead { font-size: 20px; color: var(--muted); }
+  a { color: var(--sun); }
+  .cta { display: inline-block; background: var(--sun); color: #1a1300; font-weight: 600; padding: 11px 22px; border-radius: 8px; text-decoration: none; margin: 10px 0 6px; }
+  img, video { width: 100%; border-radius: 12px; border: 1px solid var(--line); display: block; margin: 18px 0 6px; }
+  figure { margin: 0; } figcaption { color: var(--muted); font-size: 14px; }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; margin: 10px 0; }
+  th { text-align: left; color: var(--muted); font-weight: 500; padding: 6px 10px 6px 0; }
+  td { padding: 7px 10px 7px 0; border-top: 1px solid var(--line); color: #c9ced8; vertical-align: top; }
+  .ok { color: var(--ok); } .bad { color: var(--bad); }
+  .tw { overflow-x: auto; }
+  footer { color: var(--muted); font-size: 14px; margin-top: 48px; border-top: 1px solid var(--line); padding-top: 16px; }
 </style>
 </head>
 <body>
+<main>
+<h1>Will a solar robot survive a landing here, on this day?</h1>
+<p class="lead">Lunar Landing Site Navigator. Team 404 agents, Naryn. NASA Space Apps Challenge 2026.</p>
+<a class="cta" href="https://lunar-navigator-404.web.app">Open the app</a>
 
-<nav><div class="in">
-  <a href="#problem">Problem</a><a href="#challenge">Challenge</a><a href="#mission">Mission mode</a><a href="#spaceapps">Space Apps rules</a><a href="#built">What we built</a>
-  <a href="#how">How it works</a><a href="#why">Why this way</a><a href="#results">Results</a><a href="#proof">How we know</a>
-  <a href="#limits">Limits</a><a href="#next">Next</a><a href="#qa">Q&amp;A</a><a href="#glossary">Glossary</a><a href="#refs">Sources</a>
-</div></nav>
+<h2>The problem</h2>
+<p>At the Moon's south pole the Sun never climbs more than a couple of degrees above the horizon. It slides sideways along it. So one hill, kilometres away, can hide the Sun for days, and one ridge can hide Earth and cut the radio. A few hundred metres, or a few days of launch delay, can decide whether a mission lives.</p>
 
-<header class="hero"><div class="wrap">
-  <p class="muted">Team 404 agents · NASA Space Apps Challenge 2026 · Naryn, Kyrgyzstan</p>
-  <h1>Lunar Landing Site Navigator, explained</h1>
-  <p class="lead">A lunar mission that anyone can play in two minutes: you choose where a robot lands, real NASA data decides if it survives, then the launch slips and you must replan. For experts, the full planner is one click away.</p>
-  <p class="lead">Behind the mission is a planning tool for the question every mission planner asks: where on the Moon should astronauts land, and on which date, so the Sun keeps their solar panels charged and Earth stays in view for the radio? This page explains the problem, the NASA challenge, what a Space Apps submission needs, and exactly how our tool answers it: what works, why, and where it stops.</p>
-  <div class="btns">
-    <a class="btn main" href="https://lunar-navigator-404.web.app" target="_blank" rel="noopener">Open the app</a>
-    <a class="btn" href="#mission">How Mission mode works</a>
-    <a class="btn" href="#video">Watch the 29 second demo</a>
-  </div>
-  <div class="nums">
-    <div class="num"><b class="sun">86.9%</b><span>of the year in sunlight on the Shackleton crater rim</span></div>
-    <div class="num"><b class="earth">14.4 days</b><span>longest stretch there without Earth in the sky</span></div>
-    <div class="num"><b class="both">0% to 87%</b><span>sunlight range within 2.4 km of that same point</span></div>
-    <div class="num"><b>0.0047°</b><span>worst error of our Sun and Earth positions against NASA JPL Horizons</span></div>
-  </div>
-</div></header>
-
-<main class="wrap">
-
-<h2 id="problem">1. The problem</h2>
-<p>NASA's Artemis program plans to land astronauts near the Moon's <b>south pole</b>, mostly because craters there that never see sunlight may hold water ice. That location comes with two hard constraints:</p>
-<div class="grid2">
-  <div class="card"><h3 class="sun" style="margin-top:0">Power: the Sun barely rises</h3>The Moon's axis is tilted only about 1.5° relative to the plane in which Earth (and with it the Moon) circles the Sun, so at the pole the Sun never climbs more than a degree or two above the horizon. It slides sideways around the sky instead of rising. A ridge one degree high, tens of kilometres away, can block it and leave a solar powered lander in darkness for days or weeks.</div>
-  <div class="card"><h3 class="earth" style="margin-top:0">Radio: Earth wobbles out of view</h3>Seen from the Moon, Earth stays almost fixed in the sky, but the Moon's slow wobble (<b>libration</b>) moves it by several degrees. At the pole Earth sits right on the horizon, so that wobble makes it set and rise again. While Earth is below the skyline, a direct radio link is impossible.</div>
-</div>
-
-<figure>
-<svg viewBox="0 0 900 300" role="img" aria-label="Side view: at the pole the Sun grazes the horizon, so a crater rim is lit while the crater floor and the area behind a ridge are dark">
-  <defs><linearGradient id="g1" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#2a3550"/><stop offset="1" stop-color="#151b28"/></linearGradient></defs>
-  <rect width="900" height="300" fill="#0b0e14"/>
-  <circle cx="860" cy="128" r="16" fill="#ffc83d"/><text x="800" y="104" fill="#ffc83d" font-size="15">Sun, 1° up</text>
-  <line x1="845" y1="129" x2="470" y2="157" stroke="#ffc83d" stroke-width="1.5" stroke-dasharray="6 5" opacity=".9"/>
-  <line x1="470" y1="150" x2="0" y2="185" stroke="#ffc83d" stroke-width="1" stroke-dasharray="3 6" opacity=".45"/>
-  <path d="M0 300 L0 200 L90 192 L130 190 L200 178 L250 185 L300 250 L420 255 L470 150 L520 168 L640 172 L700 140 L760 175 L900 185 L900 300 Z" fill="url(#g1)" stroke="#4a5878"/>
-  <circle cx="470" cy="150" r="6" fill="#5fd38d"/><text x="440" y="132" fill="#5fd38d" font-size="15">rim: sunlit</text>
-  <circle cx="360" cy="252" r="6" fill="#ff6b6b"/><text x="300" y="282" fill="#ff6b6b" font-size="15">crater floor: dark for years</text>
-  <circle cx="130" cy="190" r="6" fill="#ff6b6b"/><text x="40" y="228" fill="#ff6b6b" font-size="15">in the rim's shadow: dark</text>
-  <text x="600" y="190" fill="#9aa3b5" font-size="14">behind the ridge: dark</text>
-  <text x="660" y="125" fill="#9aa3b5" font-size="14">distant ridge</text>
-  <text x="16" y="28" fill="#9aa3b5" font-size="14">Side view, heights exaggerated. Sunlight this flat grazes the distant ridge; only ground above the dashed lines is lit.</text>
-</svg>
-<figcaption>Why a few hundred metres matter: the same sunlight ray lights a rim and misses a floor next to it.</figcaption>
-</figure>
-
-<p>So the questions a mission planner asks are concrete: <b>at this spot, on these dates, what fraction of the time is the Sun up, how long is the longest night, how long is Earth gone, and how long until the next sunset or Earthset?</b> NASA has the data to answer them, but in tools built for specialists. That gap is the challenge.</p>
-
-<h2 id="challenge">2. The NASA challenge</h2>
-<p>Space Apps publishes a list of challenges each year. Ours is <b>Lunar Landing Site Navigator</b> (Intermediate/Advanced). In the challenge's own words:</p>
-<blockquote>"Your challenge is to create an intuitive tool or application that lets mission planners, educators, and the public compare landing sites and dates quickly, visualizing Sun and Earth positions relative to the horizon to assess power generation potential and direct-to-Earth communication windows."<cite>Challenge statement, spaceappschallenge.org</cite></blockquote>
-<blockquote>"Tools that provide this information, such as NASA's Quickmap, Moon Trek, and the JPL Horizons System, are built for detailed analysis and are often difficult for non-specialists to use effectively for rapid scenario comparison."<cite>Challenge statement, the gap it names</cite></blockquote>
-<p>The Naryn local info session describes the same challenge as "CLPS mission explorer: choosing landing sites on the Moon; web map of landing zones with filters for slope and light", so slope matters here too.</p>
-
-<h3>What the challenge asks for, and what covers it</h3>
-<div class="tw"><table>
-<tr><th>The statement asks</th><th>Our answer</th><th></th></tr>
-<tr><td>"choose from a curated list of notable landing sites" (Apollo, CLPS, commercial, other countries)</td><td>11 south pole sites plus 18 landed missions (Apollo, Luna, Chang'e, Chandrayaan-3, SLIM, IM-1, IM-2, Blue Ghost), each with its source</td><td><span class="tag ok">done</span></td></tr>
-<tr><td>"input custom lunar coordinates"</td><td>click either map, or type latitude and longitude</td><td><span class="tag ok">done</span></td></tr>
-<tr><td>"side-by-side or sequential comparison of multiple sites"</td><td>ranked comparison table, best value per column highlighted</td><td><span class="tag ok">done</span></td></tr>
-<tr><td>"select landing dates and times ... across different lunar days or seasons"</td><td>date range up to a year, date planner curve for every landing hour, "jump to best date"</td><td><span class="tag ok">done</span></td></tr>
-<tr><td>"Display the positions of the Sun and Earth relative to the horizon"</td><td>360° sky panorama with the real skyline and Sun and Earth tracks</td><td><span class="tag ok">done</span></td></tr>
-<tr><td>"how much time remains before sunset or Earthset"</td><td>live countdowns, and "Sun up after landing" per site</td><td><span class="tag ok">done</span></td></tr>
-<tr><td>"solar elevation angle ... displaying this prominently"</td><td>large Sun and Earth elevation readout; maximum Sun elevation per site</td><td><span class="tag ok">done</span></td></tr>
-<tr><td>"duration of sunlight, and Earth visibility windows"</td><td>sunlit %, longest night, list of radio windows, CSV export</td><td><span class="tag ok">done</span></td></tr>
-<tr><td>"2D maps, 3D surface visualizations, or other creative representations"; "animations or timeline views"</td><td>polar and whole Moon maps, slope layer, live shadows, panorama with play, neighbourhood map, timeline</td><td><span class="tag ok">done</span></td></tr>
-<tr><td>"Accessibility across skill levels", for mission planners, educators and the public</td><td>Mission mode (section 3): one guided mission with fixed numbers and one decision per step, built so a first-time visitor can follow it without reading anything else. The full planner for experts is one button away. Also "how to read this" help, hover explanations, English, Russian and Kyrgyz, phone and projector layouts</td><td><span class="tag ok">done</span></td></tr>
-<tr><td>An "educational game" is a valid format "as long as it makes rapid site evaluation clear and efficient"</td><td>Mission mode is the game: choose where a robot lands, read a verdict computed from real NASA data, then replan after a launch delay (section 3). The full planner behind it is the rapid site evaluation</td><td><span class="tag ok">done</span></td></tr>
-<tr><td>Consider "the Moon's actual topography", "Earth's libration", "steep slopes and deep craters", "why small location or date changes have large impacts", quick replanning when "schedule changes"</td><td>NASA laser altimeter terrain; true Moon orientation each hour; slope layer and Artemis III checks; neighbourhood map and date curve; shareable links; Mission mode's step 3: the launch slips 21 days, the landing moves to 12 August 2027 and the same spot is judged again, so you replan</td><td><span class="tag ok">done</span></td></tr>
-<tr><td>"Think about how to make the extreme differences between lunar and terrestrial conditions apparent"</td><td>The last screen of Mission mode compares the Sun over Naryn on 22 July 2027 (up to 72°, about 15 hours) with the four lunar spots (never more than 1° above a level horizon), and says there is no air, so no twilight and black shadows</td><td><span class="tag ok">done</span></td></tr>
-</table></div>
-
-<h2 id="mission">3. Mission mode: a lunar mission anyone can play</h2>
-<div class="card"><p style="font-size:20px;margin:0">A lunar mission that anyone can play in two minutes: you choose where a robot lands, real NASA data decides if it survives, then the launch slips and you must replan. For experts, the full planner is one click away.</p></div>
-<p>The idea is <b>teach by deciding</b>. We do not simulate a flight. Mission mode is the first screen of the app. It is <b>one guided mission</b> with fixed numbers, <b>one decision per step</b>, and a short explanation box at each step. The decision is always the same kind: where the robot lands. The same checked engine that drives the full planner (how it works is in section 6) judges the result. The full planner is one button away, labelled "Full planner (for experts)".</p>
-
-<h3>Why this design</h3>
-<ul>
-  <li><b>A first-time visitor must understand it without reading anything else.</b> When we tested an earlier version, we judged that a first-time visitor could not understand it: too many variables and dashboards. So we cut it down to one mission.</li>
-  <li><b>One decision at a time.</b> The landing day, the stay and the limits are fixed. The only thing you change is the landing spot, so the result has one visible cause.</li>
-  <li><b>It answers what the challenge asks.</b> The statement asks for "accessibility across skill levels" and names "an educational game" as a valid format "as long as it makes rapid site evaluation clear and efficient". The game is Mission mode; the rapid site evaluation is the full planner behind it.</li>
-</ul>
-<p>Step 3 comes from the challenge statement's own background:</p>
-<blockquote>"Hardware development challenges, launch delays, or other factors often force mission planners to reconsider their original landing date and location."<cite>Challenge statement, the background</cite></blockquote>
-
-<h3>The mission, step by step</h3>
-<div class="tw"><table>
-<tr><th>Screen</th><th>What you see</th><th>What you decide</th></tr>
-<tr><td>Start</td><td>The question "Can your robot survive 14 days on the Moon?" and two explanation boxes. <b class="sun">Power</b>: the robot runs on sunlight, and its battery lasts 2 days in the dark. <b class="earth">Radio</b>: it talks straight to Earth, and is lost if a ridge hides Earth for more than 3 days. One line says the hills come from NASA LRO LOLA laser measurements and the Sun and Earth positions are checked against NASA JPL Horizons.</td><td>Nothing yet. One button: "Start the mission"</td></tr>
-<tr><td>Step 1 of 3: choose where to land</td><td>The landing day is fixed: 22 July 2027 (00:00 UTC). The stay is fixed: 14 days. Four spots, shown as four buttons and marked on the south pole map: <b>Crater wall</b> (Shackleton rim, the Data Book point on its inner wall), <b>Ridge</b> (Connecting ridge), <b>Second rim</b> (de Gerlache rim) and <b>Plateau</b> (Leibnitz beta plateau)</td><td>One click on a spot lands the robot</td></tr>
-<tr><td>Step 2 of 3: what happened</td><td>"THE ROBOT SURVIVED" or "THE ROBOT WAS LOST". One plain sentence says why. Then the four deciding numbers with a tick or a cross, and a strip of landing days for that spot: one cell per day, green survives, red is lost, hover for the reason, click to land on that day. Then a mission report: eleven checks in one table, each with its result, its limit, its priority and a hover (or tap) explanation. Under it, an explanation box for the 360° sky view: yellow is the Sun, blue is Earth, grey is the hills</td><td>"Play the 14 days" to watch the sky, then "Try another spot" or "Next: news from the launch pad"</td></tr>
-<tr><td>Step 3 of 3: the rocket is late</td><td>The launch slipped 21 days, so the landing moves to 12 August 2027. The same spot is judged again on the new day</td><td>Replan with the same four spot buttons</td></tr>
-<tr><td>What you just learned</td><td><b>The place matters. The date matters. The Moon is not Earth</b> (the Sun over Naryn on the same date, next to the four spots). <b>This is a real job</b>: the full planner does it for any place and date</td><td>"Try any day, past or future", "Play again" or "Open the full planner"</td></tr>
-<tr><td>Any day: can we land?</td><td>Each of the four spots marked "survives" or "lost" for the chosen day, and the mission report of the spot you click. The Sun and Earth positions are calculated for that day, so a future date is a prediction; the terrain does not change</td><td>The landing day: 1 day back or forward, +1 month, +1 year, Today, Mission day, or any date from 1950 to 2100</td></tr>
-</table></div>
-
-<div class="grid2">
-  <figure><img src="img/app-mission.png" alt="Mission mode, the first screen: the question Can your robot survive 14 days on the Moon, two explanation boxes for power and radio, and the Start the mission button" loading="lazy"><figcaption>The first screen: one question, two explanation boxes (Power and Radio), one button.</figcaption></figure>
-  <figure><img src="img/app-mission-choose.png" alt="Mission mode, step 1 of 3: four landing spots as buttons, also marked on the south pole map" loading="lazy"><figcaption>Step 1 of 3: choose where to land. Four spots, one click.</figcaption></figure>
-  <figure><img src="img/app-mission-verdict.png" alt="Mission mode, step 2 of 3: the robot survived on the Ridge, with one sentence of why and the view from the spot" loading="lazy"><figcaption>Step 2 of 3: the robot survived on the Ridge. One sentence of why, the view from the spot, and the mission report one click away.</figcaption></figure>
-  <figure><img src="img/app-mission-learned.png" alt="Mission mode, the last screen: What you just learned" loading="lazy"><figcaption>The last screen: what you just learned.</figcaption></figure>
-</div>
-
-<h3>Stand on the spot: the 3D view</h3>
-<p>Under each verdict the app opens a first-person 3D view of the chosen spot on the chosen day. You stand 2 m above the real LOLA terrain, drag to look around, and press play to watch the Sun slide along the horizon and Earth drop behind a ridge. It starts minimal; the "Details" button brings back every number. It was built by our teammate <a href="https://github.com/steppekid/lunar_3d_nasa_hackathon">steppekid</a> on LOLA 80 m terrain and the JPL DE440 ephemeris, for 2027 and 2028, at six sites from NASA's Lunar Surface Data Book. The four mission spots are four of those points, so the verdict and the view describe the same place.</p>
-<figure><img src="img/app-mission-3d.png" alt="The 3D view from the Ridge on 22 July 2027: grey lunar ground, the Sun on the horizon and Earth above it" loading="lazy"><figcaption>The view from the Ridge on the landing day.</figcaption></figure>
-
-<h3>The mission report: eleven checks</h3>
-<div class="tw"><table>
-<tr><th>Rule</th><th>The robot survives if</th><th>Because</th></tr>
-<tr><td class="sun">Power</td><td>the longest night in the 14 days is at most 2 days (48 hours)</td><td>the robot runs on sunlight and its battery lasts 2 days in the dark</td></tr>
-<tr><td class="earth">Radio</td><td>the longest time without direct Earth contact is at most 3 days (72 hours)</td><td>it talks straight to Earth and is lost if a ridge hides Earth for more than 3 days</td></tr>
-<tr><td class="sun">Sun on the first day</td><td>the Sun is up at landing or rises within 24 hours</td><td>a robot that lands in the dark starts with a battery that only drains</td></tr>
-<tr><td>Ground slope</td><td>the ground at the spot is tilted less than 10°</td><td>a lander can tip over on steep ground (a NASA Artemis III requirement)</td></tr>
-</table></div>
-<p>These four checks have priority 1 and decide the verdict. The report also shows two more NASA Artemis III site rules with priority 2 (slope under 20° within 2 km, within 6° of the south pole) and five lines for information with priority 3 (time in sunlight, time with Earth in view, both together, the highest Sun, the number of radio windows). Each line has a small ⓘ mark: point at it or tap it to read what the line means. All are computed over the 14 day stay by the same engine as the planner, with landing at 00:00 UTC. "Sun up" means at least half of its disk is above the real terrain. The longest night in the verdict equals the planner's number for the same site, date and stay. <b>The 2 day battery, the 3 day radio limit, the first day Sun rule and the 21 day delay are teaching values chosen by our team, not NASA requirements.</b> The rules are in <code>app/mission.js</code>.</p>
-
-<h3>What the real data says</h3>
-<div class="tw"><table>
-<tr><th>Spot</th><th>Landing 22 July 2027</th><th>After the 21 day delay: landing 12 August 2027</th></tr>
-<tr><td>Crater wall</td><td class="bad">lost</td><td class="bad">lost</td></tr>
-<tr><td>Ridge</td><td class="both">survives</td><td class="bad">lost</td></tr>
-<tr><td>Second rim</td><td class="both">survives</td><td class="bad">lost</td></tr>
-<tr><td>Plateau</td><td class="bad">lost</td><td class="both">survives</td></tr>
-</table></div>
-<ul>
-  <li><b>The place matters.</b> On 22 July 2027 the Ridge and the Second rim keep the robot alive: they are never dark and lose Earth for at most 2.5 days. The Plateau is lost to a 4.4 day night.</li>
-  <li><b>The date matters.</b> After the delay the Ridge and the Second rim fail: Earth is hidden for 4.2 and 3.6 days, against the 3 day limit. The Plateau survives.</li>
-  <li><b>The Crater wall</b> fails on both days. It is dark for the whole stay and its slope is 32°.</li>
-  <li><b>Two engines agree.</b> Ours (LOLA 480 m) and the 3D view's (LOLA 80 m, JPL DE440) give the same eight verdicts; <code>npm test</code> fails if they stop agreeing.</li>
-  <li><b>The Moon is not Earth.</b> On 22 July 2027 the Sun over Naryn (41.43° N, 76.00° E) climbs to 69° and is up about 15 hours. At the four spots it never rises more than 1° above a level horizon.</li>
-</ul>
-<p>The browser test (<code>npm run smoke</code>) plays the whole mission and fails if who survives on each day stops being true. <b>Why 22 July 2027?</b> The team chose the landing day from the data, by searching the year of computed results for a day when both the place and the date change the outcome. On this day exactly one spot survives, and 21 days later that spot fails while two others survive. It is a teaching scenario, not a real mission.</p>
-
-<h3>What you can change, and what you cannot</h3>
-<div class="grid2">
-  <div class="card"><h3 class="both" style="margin-top:0">You can choose</h3>The landing spot, one of four. After the delay you choose again. Everything else is fixed on purpose, so you can see why the robot survived or was lost.</div>
-  <div class="card"><h3 class="bad" style="margin-top:0">You cannot set</h3>The landing day, the stay, the Sun or Earth. Their positions follow from the date. That is the lesson: you cannot move the Sun, so you move the landing.</div>
-</div>
-<p>For experts, the full planner is unchanged and one button away, labelled "Full planner (for experts)": maps, the date planner, a comparison table with NASA Artemis III checks, the sky panorama, the neighbourhood map, a timeline, CSV export, a share link, any site on the Moon and any date.</p>
-
-<h3>What makes it different</h3>
-<ul>
-  <li><b>It can be played in two minutes</b> by someone who has never seen it, with one decision per step.</li>
-  <li><b>It runs by opening one file</b>: no internet, no install, no server.</li>
-  <li><b>It speaks three languages</b>: English, Russian and Kyrgyz (Russian and Kyrgyz are drafts until a native speaker reviews them).</li>
-  <li><b>Its story is the challenge's own</b>: the launch slipped, so replan.</li>
-</ul>
-<p>What we chose not to build, and why, is in section 10.</p>
-
-<h2 id="spaceapps">4. NASA Space Apps, and what a submission needs</h2>
-<p>NASA Space Apps Challenge is an international hackathon held on the same weekend in local events around the world; each team works on one of the published challenges. In the FAQ's words, "NASA Space Apps is funded by NASA's Science Mission Directorate through a contract with Booz Allen Hamilton, Mindgrub, and SecondMuse." Our local event is in <b>Naryn, Kyrgyzstan, 14 to 15 November 2026</b>.</p>
-<div class="tw"><table>
-<tr><th>When (Naryn time)</th><th>What</th></tr>
-<tr><td>Sat 14 Nov, 11:00</td><td>hacking starts</td></tr>
-<tr><td>Sun 15 Nov, 16:30</td><td>local pitches to the jury (per the Naryn event page)</td></tr>
-<tr><td>Sun 15 Nov, 23:59</td><td>final deadline to submit on the team's project page ("before Sunday, November 15 at 11:59 p.m. local time", Judging and Awards Guide); our target is 20:00</td></tr>
-<tr><td>3 December 2026</td><td>Global Nominees announced</td></tr>
-<tr><td>17 December 2026</td><td>Global Finalists and Honorable Mentions announced</td></tr>
-<tr><td>26 January 2027</td><td>Global Winners announced</td></tr>
-</table></div>
-
-<h3>Rules a submission must follow</h3>
-<div class="tw"><table>
-<tr><th>Rule</th><th>Source (quotes are exact)</th><th>How we meet it</th></tr>
-<tr><td>Submit through the website</td><td>"teams must submit their project through their team's project page on spaceappschallenge.org"</td><td>text ready in <code>docs/submission-draft.md</code></td></tr>
-<tr><td>Describe AI use (called SI, Super Intelligence, in 2026)</td><td>"Each team's project submission must include a description of how SI tools were used during the development of their project."</td><td><code>docs/SI-usage.md</code> and section 14 below</td></tr>
-<tr><td>Team size</td><td>"Teams may have no more than six (6) members" ... "only permitted to work on one challenge"</td><td>one team, one challenge</td></tr>
-<tr><td>People under 18</td><td>should not "Use photo, video, voices, or likenesses of themselves or others under the age of 18 in their project demonstration or project submission."</td><td>no faces or names in the video; the voice is an adult or synthetic</td></tr>
-<tr><td>Cite every source</td><td>Participant Terms, in summary: every data source, program and image must be credited, open source included</td><td>section 15 lists every dataset and library</td></tr>
-<tr><td>Open source</td><td>Participant Terms, in summary: original work under an open source licence</td><td>Apache 2.0</td></tr>
-<tr><td>Demo format and length</td><td>Project Submission Guide: "Format: Video (30 seconds or less) or slide deck (up to seven slides including title and intro slides)." "Limitations: Adhere to the 30-second and 7-slide limits. Projects that exceed these limits will not be eligible for Global Judging."</td><td>the submitted demo is a 29 second video of Mission mode (<code>docs/demo-30s.mp4</code>, the video on this page). The older 2 minute walkthrough (<code>docs/demo.mp4</code>) is over the limit and is not the demo. Our pitch deck has 11 slides: fine for the local pitch, over the limit if it were submitted as the demo <span class="tag wait">to upload</span></td></tr>
-<tr><td>Where the demo is hosted</td><td>Guide: "Hosting: Use an external site (e.g., YouTube, Google Drive, GitHub, One Drive, Dropbox, etc.) for hosting your demo and ensure the link is publicly accessible."</td><td>a public YouTube or Drive link, tested in a private window <span class="tag wait">to do</span></td></tr>
-<tr><td>Language</td><td>Guide: "You must use English language on the project submission page and in any linked materials." A video may be spoken in another language, but "it MUST include English language subtitles".</td><td>the form text, this page and the README are English; the 29 second demo has English captions and no spoken voice. The app itself also offers Russian and Kyrgyz</td></tr>
-<tr><td>Mark SI generated media and code</td><td>Guide: "Images and videos: Must include a visible watermark to indicate SI generation." "Audio: Must acknowledge SI generation in descriptive text and metadata." "Code and data: Must acknowledge SI generation in descriptive text and metadata."</td><td>the 29 second demo has a visible watermark ("Made with AI (SI) tools: code, footage and captions by Claude, checked by team 404 agents") and the same words in the file's metadata comment; the video's description on the hosting site must say so too. The README, <code>docs/SI-usage.md</code> and the form say that Claude wrote the code <span class="tag wait">description to do</span></td></tr>
-<tr><td>Two checkboxes on the form</td><td>"I have read and understand the project submission requirements as contained in the NASA Space Apps Project Submission Guide, and I agree to the Participant Terms and Conditions and Privacy Policy." and "I confirm that the submitted project represents my team's original work and that all external resources including code, text and images (even if they are open source or freely available) used in the project are listed in the References field of the project submission form. In creating our solution, my team has not used any copyrighted materials (i.e., music, images, text, etc.) that we don't have permission to use."</td><td>every resource is in the References field (<code>docs/submission-draft.md</code>); no music, no stock images</td></tr>
-</table></div>
-<p class="muted">The first six rows come from the official Participant FAQ and Participant Terms and the last five from the Project Submission Guide, all read on 13 Nov 2026. The guide's form questions include: "What benefits does it have?", "What do you hope to achieve?", "What tools, coding languages, hardware, or software did you use to develop your project?", "Did you utilize any Super Intelligence (SI) tools and software in preparing your solution? If yes, how did you use them?", and a References field ("List all of the data, resources, and tools used in your project"). Answers to each are in <code>docs/submission-draft.md</code>.</p>
-
-<h3>How the judges score</h3>
-<p>The Judging and Awards Guide says: "Your project will be evaluated using five criteria: Impact, Creativity, Validity, Relevance, and Presentation." The right column is how we answer each one; the middle column is the guide's wording for the top score.</p>
-<div class="tw"><table>
-<tr><th>Criterion</th><th>Top score wording (exact)</th><th>How the project answers it</th></tr>
-<tr><td>Impact</td><td>"addressing a significant problem with proposed solutions"</td><td>Choosing a landing site and date is a hard planning problem that specialist tools make difficult for non-specialists. We answer it on one screen for planners, and Mission mode lets anyone, a school included, play the same trade-off in two minutes, offline.</td></tr>
-<tr><td>Creativity</td><td>"a groundbreaking approach that has never been attempted before"</td><td>We do not claim nobody has tried this. What we chose: teach by deciding, with one guided mission, one decision per step, built on the challenge's own "the launch slipped" story and a comparison with the Sun over Naryn, on top of the same checked engine as the full planner.</td></tr>
-<tr><td>Validity</td><td>"scientifically sound and technically feasible"</td><td>Sun and Earth directions match NASA JPL Horizons to 0.0047°; sunlight and Earth visibility match NASA's published illumination maps to a median 0.3 percentage points; every check was broken once to prove it can fail (section 9); limits are stated (section 10).</td></tr>
-<tr><td>Relevance</td><td>"NASA data is integral to the project's success"</td><td>NASA LRO LOLA terrain gives every horizon, NASA's Artemis III requirements give the planner's five site checks, and NASA JPL Horizons and the LOLA illumination maps are the referees. Without the terrain there is no answer.</td></tr>
-<tr><td>Presentation</td><td>"well-structured and compelling presentation"</td><td>A 30 second demo that follows the guide's beats and plays one mission from the first choice to the verdict, the delay and the replan; this page; the pitch for the local jury; a first screen with one question and one button.</td></tr>
-</table></div>
-
-<h3>What we will submit</h3>
-<ul>
-  <li><b>Project page text</b>: answers to the form questions, NASA data used, References, SI usage (ready in <code>docs/submission-draft.md</code>).</li>
-  <li><b>Live app</b>: <a href="https://lunar-navigator-404.web.app">lunar-navigator-404.web.app</a> (also runs offline from the files).</li>
-  <li><b>Demo</b>: the 29 second video below (the limit is 30 seconds, or a deck of up to seven slides) at a public link.</li>
-  <li><b>Source code</b> with the checks that prove the numbers: <a href="https://github.com/pathmaker7/404-llsn">github.com/pathmaker7/404-llsn</a></li>
-  <li><b>The two checkboxes</b>, then "Submit for Judging" before the deadline.</li>
-</ul>
-
-<h2 id="built">5. What we built</h2>
-<p>One web page with two levels. It opens on <b>Mission mode</b> (section 3). One button away, labelled "Full planner (for experts)", is the <b>full planner</b>, described here: pick sites, pick a date range, and it tells you for each site how much sunlight and Earth contact you get, how long the worst gaps are, and whether the site meets NASA's Artemis III landing rules.</p>
-<figure id="video">
-  <video controls preload="metadata" poster="img/poster.jpg" src="demo.mp4"></video>
-  <figcaption>The 29 second demo we submit (the rules allow 30 seconds or less): the guided mission, from the first choice to the 21 day delay and the replan. English captions, no spoken voice, and a visible "made with AI (SI) tools" watermark. An older 2 minute walkthrough of the full planner is in the repository as <code>docs/demo.mp4</code> and is not the demo.</figcaption>
-</figure>
-<figure><img src="img/app-1920.png" alt="The first screen of the guided mission on a 1920 pixel screen" loading="lazy"><figcaption>The first screen on a 1920 pixel monitor. The "Full planner (for experts)" button in the header opens the dashboard described below.</figcaption></figure>
-
-<div class="tw"><table>
-<tr><th>View</th><th>Answers</th></tr>
-<tr><td>Mission mode (first screen)</td><td>one guided mission: choose one of four spots, read the verdict with two real numbers and the sky view, face the 21 day launch delay and replan (section 3)</td></tr>
-<tr><td>South pole map (480 m terrain)</td><td>where candidate sites are; click to add one; red layer for slopes over 10°; live cast shadows for the chosen hour</td></tr>
-<tr><td>Whole Moon map</td><td>any place on the Moon, with past landing sites; click or type coordinates</td></tr>
-<tr><td>Date planner</td><td>for every possible landing hour in the range, how good the stay would be; jump to the best date</td></tr>
-<tr><td>Comparison table</td><td>per site: score, Artemis III checks (x of 5), sunlit %, Earth %, both at once, slope, highest Sun, Sun up after landing, longest night, longest Earth blackout, number of radio windows</td></tr>
-<tr><td>Sky panorama</td><td>the real 360° skyline from the site with the Sun and Earth paths; current elevations; time to sunset or Earthset; play the whole stay</td></tr>
-<tr><td>Neighbourhood map</td><td>sunlight and Earth for 121 points around the site: why moving 500 m changes everything</td></tr>
-<tr><td>Timeline and CSV</td><td>power and radio hour by hour; export radio windows</td></tr>
-<tr><td>Copy link</td><td>reopens the same sites, dates, settings and language on another computer</td></tr>
-</table></div>
-
-<div class="grid2">
-  <figure><img src="img/app-shadows.png" alt="South pole map with cast shadows" loading="lazy"><figcaption>Live shadows: one ray toward the Sun per 1.44 km cell.</figcaption></figure>
-  <figure><img src="img/app-slope.png" alt="South pole map with steep slopes in red" loading="lazy"><figcaption>Slope layer: red where the ground is steeper than 10°.</figcaption></figure>
-  <figure><img src="img/app-neighbourhood.png" alt="Neighbourhood heat maps of sunlight and Earth visibility" loading="lazy"><figcaption>Neighbourhood: Shackleton rim goes from 0% to 87% sunlit within 2.4 km.</figcaption></figure>
-  <figure><img src="img/app-globe.png" alt="Whole Moon map with landing sites" loading="lazy"><figcaption>Whole Moon: Apollo, Luna, Chang'e, Chandrayaan-3, SLIM and commercial landers.</figcaption></figure>
-</div>
-
-<h2 id="how">6. How it works</h2>
-<figure>
-<svg viewBox="0 0 900 250" role="img" aria-label="Pipeline: terrain to horizon; ephemeris to Sun and Earth directions; both compared every hour to give flags, then metrics">
-  <rect width="900" height="250" fill="#0b0e14"/>
-  <g font-size="14" fill="#e6e9ef">
-    <rect x="10" y="20" width="200" height="70" rx="8" fill="#131824" stroke="#4a5878"/><text x="24" y="48">NASA LOLA terrain</text><text x="24" y="70" fill="#9aa3b5">laser altimeter heights</text>
-    <rect x="250" y="20" width="200" height="70" rx="8" fill="#131824" stroke="#4a5878"/><text x="264" y="48">360° horizon</text><text x="264" y="70" fill="#9aa3b5">highest angle per degree</text>
-    <rect x="10" y="150" width="200" height="70" rx="8" fill="#131824" stroke="#4a5878"/><text x="24" y="178">Sun, Earth, Moon</text><text x="24" y="200" fill="#9aa3b5">astronomy-engine</text>
-    <rect x="250" y="150" width="200" height="70" rx="8" fill="#131824" stroke="#4a5878"/><text x="264" y="178">Moon's real orientation</text><text x="264" y="200" fill="#9aa3b5">IAU model, libration</text>
-    <rect x="490" y="85" width="180" height="70" rx="8" fill="#131824" stroke="#ffc83d"/><text x="504" y="113">every hour: above</text><text x="504" y="135">the skyline or not?</text>
-    <rect x="710" y="85" width="180" height="70" rx="8" fill="#131824" stroke="#5fd38d"/><text x="724" y="113">sunlit %, nights,</text><text x="724" y="135">blackouts, windows</text>
-  </g>
-  <g stroke="#9aa3b5" stroke-width="2" fill="none" marker-end="url(#ar)">
-    <path d="M210 55 H246"/><path d="M210 185 H246"/><path d="M450 55 C470 55 470 110 486 115"/><path d="M450 185 C470 185 470 130 486 125"/><path d="M670 120 H706"/>
-  </g>
-  <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#9aa3b5"/></marker></defs>
-</svg>
-<figcaption>The whole pipeline. Every step runs in your browser; nothing is sent to a server.</figcaption>
-</figure>
-
-<h3>Step 1: terrain</h3>
-<p>NASA's Lunar Reconnaissance Orbiter has been firing a laser at the Moon since 2009 (the <b>LOLA</b> instrument) and timing the echo, which gives surface heights to within metres. We use three of its published height maps:</p>
-<div class="tw"><table>
-<tr><th>Layer</th><th>NASA product</th><th>Pixel size</th><th>Used for</th></tr>
-<tr><td>South pole</td><td>LDEM_75S_240M, averaged 2 x 2</td><td class="n">480 m</td><td>everything south of 80° S</td></tr>
-<tr><td>Around 17 landing sites</td><td>LDEM_64, 75 km boxes cut out of a 530 MB file with HTTP range requests</td><td class="n">474 m</td><td>nearby horizon at Apollo, Luna, Chang'e and other sites</td></tr>
-<tr><td>Whole Moon</td><td>LDEM_4</td><td class="n">7.6 km</td><td>the world map, distant mountains, any custom point (labelled "coarse")</td></tr>
-</table></div>
-<p>All of it ships with the page (14 MB), so the app works with no internet.</p>
-
-<h3>Step 2: the horizon</h3>
-<p>From the site, for each of 360 compass directions, the code walks outward along the surface and, at each step, computes the angle up (or down) to that piece of ground. The highest angle in a direction is the skyline there. The Moon is round, so distant ground drops away below eye level; the code includes that curvature, which matters because the Moon's horizon is only about 2.5 km away for a person standing on flat ground. Walks stop at 300 km; we checked that this cap changes none of the results compared with longer walks.</p>
-
-<h3>Step 3: where the Sun and Earth are</h3>
-<p>The open source <b>astronomy-engine</b> library gives the positions of the Sun, Earth and Moon for any date. We then turn them into the Moon's own frame using the International Astronomical Union's model of how the Moon spins and wobbles. That wobble (libration) is exactly why Earth rises and sets at the pole, so it comes out right without being added by hand. Result: the compass direction and height in the sky of the Sun and of Earth, every hour.</p>
-
-<h3>Step 4: the hourly answer</h3>
-<ul>
-  <li><b class="sun">Power</b>: the Sun is half a degree wide and often grazes a ridge, so the code computes the fraction of the Sun's disc above the skyline. Half or more counts as "lit". A simple "is the centre up" test flickers on and off.</li>
-  <li><b class="earth">Radio</b>: Earth's centre must clear the skyline by a margin (0.5° by default) to allow for antenna beam width and terrain error. Direct to Earth only, as the challenge defines it.</li>
-  <li><b>Mast</b>: solar panels and antennas sit a couple of metres up (adjustable), which lowers the skyline slightly.</li>
-</ul>
-
-<h3>Step 5: from hours to answers</h3>
-<p>The hourly yes/no flags are turned into running totals (<b>prefix sums</b>). That makes "sunlit % between any two hours" a single subtraction, so the date planner can score every possible landing hour of a year (about 4,400 of them) instantly. The table shows the raw numbers plus one ranking score:</p>
-<p><code>score = 0.4 × sunlit % + 0.4 × Earth % + 20 × (1 − longest night ÷ stay)</code></p>
-<p class="muted">Power and radio weigh the same; the last term rewards short battery gaps. The weights are our choice, not physics, which is why the raw numbers sit next to the score.</p>
-
-<h3>Extra layers</h3>
-<dl>
-  <dt>Slope</dt><dd>From height differences across 960 m of terrain. NASA's Artemis III rule is "under 10° over 100 m", so real slopes are steeper than ours; we say so in the app.</dd>
-  <dt>Artemis III checks</dt><dd>Five of NASA's six "Key Artemis III Landing Requirements" are properties of a site: within 6° of the pole, landing slope under 10°, slope within 2 km for moonwalks under 20°, direct link to Earth, lighting. Each site gets x of 5 and the app names what fails. The sixth, landing within 100 m of a target, is about navigation, not the site.</dd>
-  <dt>Live shadows</dt><dd>For the chosen hour, one ray toward the Sun per 1.44 km map cell; dark where terrain blocks it. About 0.2 s per frame.</dd>
-  <dt>Neighbourhood</dt><dd>The full calculation for an 11 x 11 grid of points 480 m apart around a site.</dd>
-</dl>
-
-<h2 id="why">7. Why it is built this way</h2>
-<div class="tw"><table>
-<tr><th>Choice</th><th>Instead of</th><th>Because</th></tr>
-<tr><td>Real terrain horizon</td><td>flat ground</td><td>with the Sun 0 to 2° up, a 1° ridge decides day or night</td></tr>
-<tr><td>Fraction of the Sun's disc</td><td>Sun centre above the horizon</td><td>the disc is 0.53° wide and grazes ridges at the pole; centre only flickers</td></tr>
-<tr><td>Ephemeris in the browser</td><td>calling JPL Horizons live</td><td>works offline, any date, any site; Horizons is used as the referee instead</td></tr>
-<tr><td>No atmospheric refraction</td><td>Earth-style refraction</td><td>the Moon has no atmosphere</td></tr>
-<tr><td>480 m at the pole, 474 m near sites, 7.6 km elsewhere</td><td>474 m everywhere</td><td>the full high resolution Moon is 530 MB; detail goes where the answers are</td></tr>
-<tr><td>Preset sites computed</td><td>typing coordinates in by hand</td><td>crater centres from the USGS gazetteer, then the best-lit point on the rim found by the same code: reproducible</td></tr>
-<tr><td>One static page, no server</td><td>a web app with a backend</td><td>opens from a USB stick at the event, nothing to break, nothing to pay</td></tr>
-<tr><td>Prefix sums</td><td>recounting hours for each date</td><td>scoring all 4,400 landing hours of a year stays instant</td></tr>
-</table></div>
-
-<h2 id="results">8. Results: one year from 14 Nov 2026</h2>
-<p class="muted">2 m mast, 0.5° Earth margin, 2 hour steps. Generated by <code>npm run results</code> from the same code as the app.</p>
-<div class="tw"><table>
-<tr><th>Site</th><th>Sunlit</th><th>Earth</th><th>Both</th><th>Longest night</th><th>Longest Earth blackout</th><th>Slope</th></tr>
-<tr><td>Shackleton rim</td><td class="n">86.9%</td><td class="n">48.7%</td><td class="n">43.0%</td><td class="n">3.0 d</td><td class="n">14.4 d</td><td class="n">9.9°</td></tr>
-<tr><td>de Gerlache rim</td><td class="n">82.2%</td><td class="n">53.5%</td><td class="n">44.4%</td><td class="n">7.8 d</td><td class="n">13.3 d</td><td class="n">2.8°</td></tr>
-<tr><td>Haworth rim (Malapert massif side)</td><td class="n">83.1%</td><td class="n">85.2%</td><td class="n both">69.0%</td><td class="n">11.6 d</td><td class="n">4.8 d</td><td class="n">3.9°</td></tr>
-<tr><td>Nobile rim</td><td class="n">85.9%</td><td class="n">65.7%</td><td class="n">53.1%</td><td class="n">11.3 d</td><td class="n">10.1 d</td><td class="n">4.4°</td></tr>
-<tr><td>Malapert rim</td><td class="n">60.7%</td><td class="n">78.5%</td><td class="n">46.1%</td><td class="n">15.9 d</td><td class="n">6.5 d</td><td class="n">4.7°</td></tr>
-<tr><td>Mons Mouton (best-lit point)</td><td class="n">54.7%</td><td class="n">100.0%</td><td class="n">54.7%</td><td class="n">16.1 d</td><td class="n">0.0 d</td><td class="n">3.9°</td></tr>
-<tr><td>Slater rim</td><td class="n">56.0%</td><td class="n">42.0%</td><td class="n">25.4%</td><td class="n">20.3 d</td><td class="n">16.7 d</td><td class="n">2.3°</td></tr>
-<tr><td>Shoemaker rim</td><td class="n">50.4%</td><td class="n">45.4%</td><td class="n">25.4%</td><td class="n">25.7 d</td><td class="n">15.3 d</td><td class="n">0.4°</td></tr>
-<tr><td>Faustini rim</td><td class="n">56.3%</td><td class="n">38.0%</td><td class="n">20.5%</td><td class="n">21.0 d</td><td class="n">17.6 d</td><td class="n">4.2°</td></tr>
-<tr><td>Shackleton floor (shadowed)</td><td class="n bad">0.0%</td><td class="n bad">0.0%</td><td class="n">0.0%</td><td class="n">365.1 d</td><td class="n">365.1 d</td><td class="n">4.3°</td></tr>
-<tr><td>Apollo 11</td><td class="n">51.2%</td><td class="n">100.0%</td><td class="n">51.2%</td><td class="n">14.8 d</td><td class="n">0.0 d</td><td class="n">0.8°</td></tr>
-<tr><td>IM-2 Athena</td><td class="n">46.8%</td><td class="n">77.9%</td><td class="n">37.2%</td><td class="n">19.0 d</td><td class="n">6.8 d</td><td class="n">2.2°</td></tr>
-<tr><td>Chandrayaan-3</td><td class="n">49.7%</td><td class="n">100.0%</td><td class="n">49.6%</td><td class="n">16.0 d</td><td class="n">0.0 d</td><td class="n">0.8°</td></tr>
-<tr><td>Chang'e 4 (far side)</td><td class="n">48.9%</td><td class="n bad">0.0%</td><td class="n">0.0%</td><td class="n">15.2 d</td><td class="n">365.1 d</td><td class="n">0.0°</td></tr>
-</table></div>
-<h3>What the numbers say</h3>
-<ul>
-  <li><b>No site wins everything.</b> Shackleton rim has the most sunlight but loses Earth for up to 14.4 days, and the crater wall within 2 km is 33.7° steep, so it passes 4 of 5 Artemis III checks.</li>
-  <li><b>Best balance:</b> Haworth rim on the Malapert massif side has Sun and Earth up together 69.0% of the year.</li>
-  <li><b>Location is everything:</b> within 2.4 km of the Shackleton rim point, sunlight ranges from 0% to 87%.</li>
-  <li><b>The far side can't call home:</b> Chang'e 4 sees Earth 0% of the year, which is why China launched the Queqiao relay satellite. Apollo 11 always sees Earth but sits through 14.8 day nights.</li>
-</ul>
-
-<h2 id="proof">9. How we know it's right</h2>
-<p>Every check below runs from one command and was <b>deliberately broken once</b> to prove it can fail. A check that cannot fail proves nothing.</p>
-<div class="tw"><table>
-<tr><th>Check</th><th>Result</th><th>Proven able to fail by</th></tr>
-<tr><td>Sun and Earth directions vs NASA JPL Horizons, 5 sites (3 polar, Apollo 11, Chang'e 4), 30 days</td><td>worst error 0.0047°, limit 0.1° (the Sun's disc is 0.53° wide)</td><td>adding a 0.2° error: fails</td></tr>
-<tr><td>Sunlight and Earth visibility vs NASA's published LOLA illumination maps, 131 points, 18.6 years</td><td>median difference 0.3 percentage points (Sun), 0.2 (Earth)</td><td>rotating our map 180°: fails at 14.9 and 22.8 points</td></tr>
-<tr><td>Unit checks: disc fraction, night and blackout runs, countdowns, slope, Artemis rule boundaries, map orientation, 474 m patch alignment (median 4.5 m), shadow rays agree with horizons, every translation present</td><td>pass</td><td>off by one, wrong slope baseline, flipped longitude, shifted patch, deleted translation: each fails</td></tr>
-<tr><td>Browser test: loads with no errors, shared links restore, a hostile site name stays text, phone (390 px) and projector (1920 px) never scroll sideways</td><td>pass</td><td>removing the name filter, link guard or layout fix: each fails</td></tr>
-</table></div>
-<h3>The comparison with NASA's own maps</h3>
-<p>NASA's LOLA team publishes the average Sun and Earth visibility of every 120 m pixel near the south pole over 18.6 years (Mazarico et al. 2011). Using their exact definitions (any part of the disc visible, surface level), our numbers match theirs to a median 0.3 percentage points. Where they differ, we checked why:</p>
-<ul>
-  <li>On sharp ridges ours runs 0 to 5 points high (Shackleton rim: ours 90.2%, NASA's best pixel within 240 m 85.8%). Our 480 m terrain smooths the skyline a little.</li>
-  <li>Averaging 16 NASA pixels around a ridge point gives 61% at Shackleton rim, because one pixel off the crest is already in shadow. That is not an error in either map; it is the problem itself.</li>
-  <li>Nobile rim is the outlier: 10.6 points above NASA's best pixel within 240 m, 1.6 within 480 m.</li>
-</ul>
-<p class="muted">Why 90.2% here and 86.9% in the results table: the comparison uses NASA's definitions (18.6 years, any part of the Sun, surface level); the app uses half the disc, a 2 m mast and one year.</p>
-<h3>What about Mission mode?</h3>
-<p>Mission mode computes its verdicts with the same engine, so the checks above cover the numbers it shows. Two more checks are specific to it. <code>npm test</code> checks that each rule passes exactly at its limit and fails just past it (48 hours of night, 72 hours without Earth), that a synthetic three day night fails a five day stay and passes when the landing comes after it, that our engine and the 3D view's independent data give the same eight verdicts for the four spots, and that the Sun over Naryn is sane (high at midsummer, low at midwinter). <code>npm run smoke</code> plays the whole mission in the browser: on 22 July 2027 the Ridge and the Second rim survive and the Crater wall is lost; the verdict's longest night equals the planner's number for the same site, date and stay; after the 21 day delay the landing is on 12 August 2027, the Ridge is lost and only the Plateau survives; replanning to the Plateau passes; served over http, the 3D view opens at the chosen spot and day; and the last screen names the surviving spots. The limits themselves (the 2 day battery, the 3 day radio limit and the 21 day delay) are teaching values we chose, so there is no NASA reference to check them against. The rules are in <code>app/mission.js</code>.</p>
-
-<h2 id="limits">10. Where it falls short</h2>
-<div class="tw"><table>
-<tr><th>Limit</th><th>What it means</th></tr>
-<tr><td>480 m terrain</td><td>boulders, small craters and metre scale slopes are invisible. Real landing hazards need NASA's 5 m maps.</td></tr>
-<tr><td>Slope over 960 m</td><td>real slope under a lander is steeper; treat the 10° warning as a minimum filter.</td></tr>
-<tr><td>Coarse terrain for custom points away from the pole and curated sites</td><td>7.6 km pixels, labelled "coarse" in the app.</td></tr>
-<tr><td>Direct to Earth only</td><td>no relay satellites, as the challenge scopes it.</td></tr>
-<tr><td>Not modelled</td><td>the lander's own shadow, temperature, solar panel angle (so no watts), Earth ground station schedules.</td></tr>
-<tr><td>Translations</td><td>Russian and Kyrgyz are machine drafts, marked "draft" in the app until a native speaker reviews them.</td></tr>
-<tr><td>Mission mode limits are teaching values</td><td>the 2 day battery, the 3 day radio limit and the 21 day delay are chosen by our team, not NASA requirements. The landing day, 22 July 2027, was also chosen by the team, from the data, because on that day both the place and the date change the outcome.</td></tr>
-<tr><td>Mission mode is one fixed mission, not a flight simulator</td><td>it does not fly the landing. You choose one of four spots, and the data judges the 14 day stay. The day, the stay, the Sun and Earth cannot be changed in the mission; the full planner is for that.</td></tr>
-</table></div>
-
-<h3>Deliberately not built, and why</h3>
-<div class="tw"><table>
-<tr><th>Left out</th><th>Why</th></tr>
-<tr><td>A 3D scene or a landing descent</td><td>The terrain is 480 m per pixel, so a 3D view would look more exact than the data is. The altitude and speed of a descent would be invented numbers. During a ten minute descent the Sun and Earth barely move, while the challenge is about change over days.</td></tr>
-<tr><td>The amount of water or ice</td><td>There is no such data in the tool.</td></tr>
-<tr><td>A recommendation of which vehicle to use</td><td>There are no vehicle specifications in the data.</td></tr>
-</table></div>
-
-<h2 id="next">11. What would come next</h2>
+<h2>What you do</h2>
+<figure><img src="map.png" alt="A 3D map of the lunar south pole with six labelled landing sites" loading="lazy"><figcaption>1. Pick one of six candidate sites on the 3D map.</figcaption></figure>
+<figure><img src="site.png" alt="Standing on a site: a panel says the robot was lost, shows 27 of 120 days in green, and lists eleven checks" loading="lazy"><figcaption>2. You stand on the site. The panel answers for the chosen landing day.</figcaption></figure>
 <ol>
-  <li>Relay satellite visibility (the far side's only option).</li>
-  <li>NASA's 5 m terrain around the Artemis III candidate regions.</li>
-  <li>Solar panel orientation, to give power in watts, not just "lit".</li>
-  <li>A thermal estimate from the same Sun track.</li>
-  <li>A class mode on top of Mission mode: the whole class plays the same mission and compares verdicts.</li>
+  <li><b>Read the verdict.</b> <span class="ok">THE ROBOT SURVIVED</span> or <span class="bad">THE ROBOT WAS LOST</span>, with one sentence of why.</li>
+  <li><b>Read the strip.</b> One cell for each of the next 120 landing days. Green survives, red is lost. Click a day to land on it.</li>
+  <li><b>Change the day.</b> A day, a month or a year back or forward, any day from 2021 to 2031.</li>
+  <li><b>Press play.</b> Watch the 14 days in 3D: the Sun circling the horizon, Earth dipping behind a ridge.</li>
 </ol>
-<p class="muted">Not on this list on purpose: a 3D descent, water or ice amounts and a vehicle recommendation (see the table in section 10).</p>
 
-<h2 id="qa">12. Questions people ask</h2>
-<dl>
-  <dt>Is this a game or a tool?</dt>
-  <dd>Both, on one engine. Mission mode is the game: anyone can play it in two minutes, you choose where a robot lands, and real NASA data gives the verdict. The full planner is the tool for people who want every control. The challenge statement names "an educational game" as a valid format "as long as it makes rapid site evaluation clear and efficient", which is why the planner is one button away. The numbers in the game are the planner's numbers.</dd>
-  <dt>Why only one mission with fixed numbers?</dt>
-  <dd>A first-time visitor must understand it without reading anything else. When we tested an earlier version, we judged that it had too many variables and dashboards. Now the landing day, the stay, the battery and the radio limit are fixed, so the only thing you change is the landing spot and you can see why the robot survived or was lost. Anyone who wants every variable uses the full planner.</dd>
-  <dt>Are the 2 day and 3 day limits NASA rules?</dt>
-  <dd>No. The 2 day battery, the 3 day radio limit and the 21 day launch delay are teaching values chosen by our team. The planner's five Artemis III checks are NASA's own site requirements.</dd>
-  <dt>Why 22 July 2027?</dt>
-  <dd>The team chose it from the data. We searched the year of computed results for a landing day when both the place and the date change the outcome. On 22 July 2027 the Ridge and the Second rim survive (never dark, Earth hidden at most 2.5 days), the Plateau is lost to a 4.4 day night, and the Crater wall is dark and too steep (32°). After the 21 day delay, on 12 August 2027, the Ridge and the Second rim are lost because Earth is hidden for 4.2 and 3.6 days, and the Plateau survives. It is a teaching scenario, not a real mission.</dd>
-  <dt>Why is there no 3D?</dt>
-  <dd>The terrain is 480 m per pixel, so a 3D view would look more exact than the data is. A descent needs an altitude and a speed that we do not have, so they would be invented. And in a ten minute descent the Sun and Earth barely move, while the challenge is about how they change over days. We spent the time on numbers that are checked.</dd>
-  <dt>Does it tell me how much ice there is, or which vehicle to use?</dt>
-  <dd>No. The tool has no water or ice data and no vehicle specifications, so it does not guess.</dd>
-  <dt>How is this different from NASA's Quickmap, Moon Trek and JPL Horizons?</dt>
-  <dd>Those are built for specialists, and the challenge says so. We answer one planning question on one screen (which site, which date) with countdowns, a best-date jump, Artemis checks and a shareable link, offline, in three languages.</dd>
-  <dt>Is 480 m terrain enough?</dt>
-  <dd>For the horizon, yes: what blocks the Sun is ridges kilometres to hundreds of kilometres away, and the comparison with NASA's 120 m maps agrees to 0.3 points in the median. For landing hazards, no; that needs 5 m data.</dd>
-  <dt>Does it handle libration and the seasons?</dt>
-  <dd>Yes. The Moon's real orientation is applied every hour, which includes libration; the date planner shows the seasons over a year.</dd>
-  <dt>Does it work outside the south pole?</dt>
-  <dd>Yes, anywhere: 7.6 km terrain for the whole Moon plus 474 m around 17 landing sites.</dd>
-  <dt>What about relay satellites?</dt>
-  <dd>The challenge defines communication as direct to Earth, and NASA's Artemis III requirements say to assume no relay. Relays are our first extension.</dd>
-  <dt>What does the score mean?</dt>
-  <dd>0.4 × sunlit % + 0.4 × Earth % + 20 × (1 − longest night ÷ stay). A ranking aid, not physics; the raw numbers are next to it.</dd>
-</dl>
+<h2>The checks</h2>
+<div class="tw"><table>
+<tr><th>Check</th><th>Limit</th><th>Why</th></tr>
+<tr><td>Longest night</td><td>at most 2 days</td><td>the battery carries the robot through two days of darkness</td></tr>
+<tr><td>Longest radio silence</td><td>at most 3 days</td><td>with Earth hidden, no commands go up and no data comes down</td></tr>
+<tr><td>Sun on the first day</td><td>within 24 hours</td><td>a robot that lands in the dark starts with a battery that only drains</td></tr>
+<tr><td>Ground slope at the spot</td><td>under 10°</td><td>a lander can tip over on steep ground (NASA Artemis III requirement)</td></tr>
+<tr><td>Steepest ground within 2 km</td><td>under 20°</td><td>astronauts and rovers must cross it (NASA Artemis III requirement)</td></tr>
+<tr><td>Distance from the pole</td><td>within 6°</td><td>where the water ice is (NASA Artemis III requirement)</td></tr>
+</table></div>
+<p>The first four decide the verdict. Five more lines are shown for information: time in sunlight, time with Earth in view, both together, the highest Sun, and the number of radio windows. The 2 day, 3 day and 24 hour limits are teaching values chosen by our team, not NASA requirements.</p>
 
-<h2 id="glossary">13. Glossary</h2>
-<dl>
-  <dt>LOLA</dt><dd>Lunar Orbiter Laser Altimeter, on NASA's Lunar Reconnaissance Orbiter (LRO). Measures surface height by laser.</dd>
-  <dt>DEM</dt><dd>Digital elevation model: a grid of surface heights.</dd>
-  <dt>Libration</dt><dd>The Moon's slow apparent wobble as seen from Earth (and Earth's wobble as seen from the Moon), a few degrees each way.</dd>
-  <dt>Permanently shadowed region</dt><dd>A crater floor near the pole the Sun never reaches; may hold water ice.</dd>
-  <dt>Direct to Earth (DTE)</dt><dd>Radio straight from the surface to an antenna on Earth, with no relay satellite.</dd>
-  <dt>Artemis III</dt><dd>The NASA mission planned to land astronauts near the lunar south pole.</dd>
-  <dt>CLPS</dt><dd>Commercial Lunar Payload Services: NASA buying robotic deliveries to the Moon from companies (Intuitive Machines, Firefly and others).</dd>
-  <dt>Ephemeris</dt><dd>A table or model of where bodies are in the sky at a given time.</dd>
-  <dt>JPL Horizons</dt><dd>NASA JPL's reference service for positions of solar system bodies; our referee.</dd>
-  <dt>Percentage point (pp)</dt><dd>The difference between two percentages: 86% vs 84% is 2 pp.</dd>
-  <dt>SI</dt><dd>Super Intelligence, the name Space Apps 2026 uses for AI tools.</dd>
-</dl>
-
-<h2 id="si">14. How we used AI (SI)</h2>
-<p>Claude (Anthropic), in Claude Code, wrote most of the code, the checks, these pages and drafts of the texts. Every number was then checked by a command against a NASA reference, and each check was broken on purpose to prove it can fail. The model's own mistakes caught that way are listed in the repository's <code>docs/SI-usage.md</code>; for example, its first method of comparing with NASA's maps was misleading at ridges and was replaced. Coordinates of landing sites come from cited sources, not from the model's memory.</p>
-<p>On 13 November (evening) Claude also read the official Project Submission Guide and Judging and Awards Guide, compared the public READMEs of other projects for this challenge, proposed the Mission mode direction with the team's owner, and wrote Mission mode and the latest document updates. After the owner tested the app and said a first-time visitor could not understand it, Claude simplified Mission mode to one guided mission and searched the year of computed data for a landing day where both the place and the date change the outcome. A council of five AI advisors reviewed the idea of a 3D landing simulator and advised against it; section 10 gives the reasons. The full list is in <code>docs/SI-usage.md</code>.</p>
-
-<h2 id="refs">15. Sources</h2>
+<h2>Where the numbers come from</h2>
 <ul>
-  <li>Challenge statement, Lunar Landing Site Navigator: <a href="https://www.spaceappschallenge.org/2026/challenges/lunar-landing-site-navigator/">spaceappschallenge.org</a></li>
-  <li>Space Apps Participant FAQ: <a href="https://www.spaceappschallenge.org/resources/participant-faqs/">spaceappschallenge.org/resources/participant-faqs</a></li>
-  <li>Space Apps Project Submission Guide: <a href="https://www.spaceappschallenge.org/resources/project-submission-guide/">spaceappschallenge.org/resources/project-submission-guide</a></li>
-  <li>Space Apps Judging and Awards Guide: <a href="https://www.spaceappschallenge.org/resources/judging-awards-guide/">spaceappschallenge.org/resources/judging-awards-guide</a></li>
-  <li>NASA LRO LOLA polar terrain LDEM_75S_240M: <a href="https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/polar/img/">PDS Geosciences Node</a></li>
-  <li>NASA LRO LOLA global terrain LDEM_4 and LDEM_64: <a href="https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/cylindrical/img/">PDS Geosciences Node</a></li>
-  <li>NASA LOLA polar illumination maps, PGDA product 69: <a href="https://pgda.gsfc.nasa.gov/products/69">pgda.gsfc.nasa.gov</a>; Mazarico, E., et al. (2011), Illumination conditions of the lunar polar regions using LOLA topography, Icarus 211, 1066 to 1081</li>
-  <li>NASA Artemis Overview for the International Space Apps Challenge (Artemis III landing requirements): <a href="https://ntrs.nasa.gov/api/citations/20250009323/downloads/ArtemisOverview2025IntSPAPPSChallenge.pdf">NTRS 20250009323</a></li>
-  <li>NASA JPL Horizons: <a href="https://ssd.jpl.nasa.gov/horizons/">ssd.jpl.nasa.gov/horizons</a></li>
-  <li>IAU WGCCRE 2009 report (lunar rotation model): <a href="https://astropedia.astrogeology.usgs.gov/download/Docs/WGCCRE/WGCCRE2009reprint.pdf">USGS Astropedia</a></li>
-  <li>USGS Gazetteer of Planetary Nomenclature (crater centres): <a href="https://planetarynames.wr.usgs.gov/">planetarynames.wr.usgs.gov</a></li>
-  <li>Landing site coordinates: Wikipedia, <a href="https://en.wikipedia.org/wiki/List_of_landings_on_extraterrestrial_bodies">List of landings on extraterrestrial bodies</a> (citing LROC and NSSDCA); IM-2 from <a href="https://en.wikipedia.org/wiki/IM-2">Wikipedia IM-2</a> and <a href="https://www.lroc.asu.edu/images/1408">LROC image 1408</a></li>
-  <li>astronomy-engine 2.1.19, MIT licence: <a href="https://github.com/cosinekitty/astronomy">github.com/cosinekitty/astronomy</a></li>
+  <li><b>Terrain:</b> NASA Lunar Reconnaissance Orbiter laser altimeter (LOLA), <code>LDEM_80S_80M</code>, 80 m per pixel. The skyline around each site is traced on it.</li>
+  <li><b>Sites:</b> six regions from NASA's <i>Lunar Surface Data Book</i> (M2M-30044). For five of them we also found the best-lit flat point within 500 m, and that is where you stand.</li>
+  <li><b>Sun and Earth:</b> positions are calculated for every hour from 2021 to 2031 with astronomy-engine and the IAU lunar rotation model. A past day is history, a future day is a prediction; the terrain does not change.</li>
 </ul>
 
-</main>
+<h2>How we know it is right</h2>
+<ul>
+  <li>Our Sun and Earth positions agree with NASA JPL Horizons to 0.005°.</li>
+  <li>They also agree, to better than 0.01°, with a separate calculation made with NASA's DE440 ephemeris by a different program, at four sites over two years. A test fails if they stop agreeing.</li>
+  <li>Each rule is tested exactly at its limit and just past it.</li>
+  <li>A browser test plays the whole app and checks that every green or red day equals the verdict you get when you click it.</li>
+</ul>
 
-<footer><div class="wrap">
-  Team 404 agents, NASA Space Apps Challenge 2026, Naryn. Code under Apache 2.0; NASA data is public domain. This page is not an official NASA page.
-  <br><a href="https://lunar-navigator-404.web.app">Open the app</a>
-</div></footer>
+<h2>What it does not do</h2>
+<ul>
+  <li>Six regions only. A new site needs its terrain to be prepared first.</li>
+  <li>Nothing smaller than 80 m is in the data: no rocks, no small craters.</li>
+  <li>It does not plan a descent, a trajectory or fuel. It answers power and radio.</li>
+</ul>
+
+<footer>
+Code: <a href="https://github.com/pathmaker7/404-llsn">github.com/pathmaker7/404-llsn</a>. The 3D view and terrain pipeline are by our teammate <a href="https://github.com/steppekid/lunar_3d_nasa_hackathon">steppekid</a>. Made with AI (SI) tools, checked by the team. An independent student project, not a NASA product.
+</footer>
+</main>
 </body>
 </html>

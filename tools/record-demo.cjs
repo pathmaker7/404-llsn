@@ -1,87 +1,68 @@
-// Records the demo footage for the 2-minute cut in docs/video-script.md (screen column, same timings).
-// Output: docs/video/demo-footage.mp4 at 1920x1080, 25 fps. Frames are timestamped screenshots joined by the system
-// ffmpeg (/opt/homebrew/bin/ffmpeg), so Playwright needs no video download. Voice and cards are joined afterwards.
-// Run: node tools/record-demo.cjs
+// Records the 29 second demo film of the app, with English captions and a visible SI (AI) watermark drawn by this
+// recorder on top of the page. No audio. Space Apps rules: video of 30 seconds or less, SI-made video carries a watermark.
+// Output: docs/demo-30s.mp4, 1920x1080, 25 fps. Run: node tools/record-demo.cjs
 const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright-core');
 const { execFileSync } = require('child_process');
+const { serve } = require('./smoke.cjs');
 const FFMPEG = '/opt/homebrew/bin/ffmpeg';
-
-const OUT = path.join(__dirname, '..', 'docs', 'video');
-const W = 1920, H = 1080;
+const ROOT = path.join(__dirname, '..'), FRAMES = path.join(ROOT, 'docs', 'frames'), DEST = path.join(ROOT, 'docs', 'demo-30s.mp4');
+const SECONDS = 29;
 
 (async () => {
-  fs.mkdirSync(OUT, { recursive: true });
+  fs.rmSync(FRAMES, { recursive: true, force: true }); fs.mkdirSync(FRAMES, { recursive: true });
+  const srv = await serve(path.join(ROOT, 'app'));
   const browser = await chromium.launch({ executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' });
-  const ctx = await browser.newContext({ viewport: { width: W, height: H } });
-  const FRAMES = path.join(OUT, 'frames');
-  fs.rmSync(FRAMES, { recursive: true, force: true }); fs.mkdirSync(FRAMES);
-  const page = await ctx.newPage();
+  const page = await (await browser.newContext({ viewport: { width: 1920, height: 1080 } })).newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  const t0 = Date.now();
-  const frames = []; let recording = true;
-  const capture = (async () => { // screenshot loop running alongside the scripted actions
+  await page.goto(`http://127.0.0.1:${srv.address().port}/`);
+  await page.waitForFunction(() => window.__app && window.__app.ready, null, { timeout: 60000 });
+  await page.evaluate(() => {
+    const box = (css, text) => { const d = document.createElement('div'); d.style.cssText = 'position:fixed;z-index:99;font-family:system-ui;pointer-events:none;' + css; d.textContent = text; document.body.appendChild(d); return d; };
+    box('right:16px;top:60px;font-size:16px;color:#fff;background:#000c;padding:5px 10px;border-radius:6px', 'Made with AI (SI) tools: Claude. Checked by team 404 agents');
+    window.__cap = box('left:50%;transform:translateX(-50%);bottom:230px;width:max-content;max-width:1500px;text-align:center;font-size:38px;font-weight:700;color:#fff;background:#000d;padding:14px 26px;border-radius:12px', '');
+  });
+  const t0 = Date.now(), frames = []; let recording = true;
+  const capture = (async () => {
     while (recording) {
       const f = path.join(FRAMES, `f${String(frames.length).padStart(5, '0')}.jpg`);
-      try { await page.screenshot({ path: f, type: 'jpeg', quality: 85 }); frames.push({ f, t: Date.now() - t0 }); } catch (e) { /* page busy during navigation */ }
+      try { await page.screenshot({ path: f, type: 'jpeg', quality: 88 }); frames.push({ f, t: Date.now() - t0 }); } catch (e) { /* page busy */ }
     }
   })();
   const until = async (sec) => { const wait = sec * 1000 - (Date.now() - t0); if (wait > 0) await page.waitForTimeout(wait); };
-  const mark = (txt) => console.log(`${((Date.now() - t0) / 1000).toFixed(1).padStart(5)} s  ${txt}`);
+  const say = (text) => page.evaluate((t) => { window.__cap.textContent = t; }, text);
 
-  await page.goto('file://' + path.join(__dirname, '..', 'app', 'index.html'));
-  await page.waitForFunction(() => window.__app && window.__app.sites.length > 0);
-  mark('app loaded (title card covers 0:00 to 0:12 in the edit)');
-  await until(12);
-
-  mark('whole Moon, then back to the pole');
-  await page.click('#viewGlobe'); await until(19);
-  await page.click('#viewPole'); await until(25);
-
-  mark('live shadows on, play the stay');
-  await page.check('#shadowToggle');
-  await page.click('#play'); await until(45);
+  await say('Team 404 agents, Naryn. Lunar Landing Site Navigator'); await until(3);
+  await say("At the Moon's south pole, one hill can hide the Sun or Earth for days."); await until(6);
+  await say('Pick a landing site. Fly down. Stand on real NASA terrain.');
+  await page.click('#sites li:nth-child(4) button');
+  await page.waitForFunction(() => window.__verdict && document.body.classList.contains('mode-surface'), null, { timeout: 60000 });
+  await until(11);
+  await say('Would a solar robot survive 14 days here? One answer, eleven checks.'); await until(15);
+  await say('Press play: the Sun slides along the horizon, Earth dips behind a ridge.');
+  await page.click('#play'); await until(19.5);
   await page.click('#play');
-
-  mark('Shackleton rim: table, Artemis III, panorama');
-  await page.locator('#sites .site', { hasText: 'Shackleton rim' }).click();
-  await page.locator('#table tr', { hasText: 'Shackleton rim' }).locator('span[title]').hover();
-  await until(65);
-
-  mark('neighbourhood map');
-  await page.locator('#hoodBtn').scrollIntoViewIfNeeded();
-  await page.click('#hoodBtn');
-  await page.waitForFunction(() => window.__hood);
-  await until(80);
-
-  mark("add Chang'e 4 (far side) and Apollo 11");
-  await page.evaluate(() => window.scrollTo(0, 0));
-  await page.selectOption('#addPreset', "Chang'e 4 (far side)"); await until(87);
-  await page.selectOption('#addPreset', 'Apollo 11'); await until(95);
-
-  mark('comparison table, then end');
-  await page.locator('#table').scrollIntoViewIfNeeded(); await until(110);
-  await page.evaluate(() => window.scrollTo(0, 0)); await until(120);
-  mark('done');
+  await say('Green days are safe to land, red days are not. Click any day.');
+  if (await page.locator('#verdict .day.ok:not(.now)').count()) await page.locator('#verdict .day.ok:not(.now)').first().click();
+  await until(23);
+  await say('Any day from 2021 to 2031: history and prediction.');
+  await page.click('.v-date button:has-text("+1 ")'); await until(24.5);
+  await page.locator('.v-date button', { hasText: /^\+1 year|^\+1 год|^\+1 жыл/ }).click(); await until(26);
+  await say('Built on NASA LRO LOLA terrain. Checked against NASA JPL ephemerides.'); await until(SECONDS);
 
   recording = false; await capture;
-  await browser.close();
-  // Resample to exactly 25 fps: output frame i (time i * 40 ms) is the newest capture taken by then.
-  const total = Math.round(frames[frames.length - 1].t / 40);
-  for (let i = 0, k = 0; i <= total; i++) {
+  await browser.close(); srv.close();
+  const total = SECONDS * 25; // exactly 29 s at 25 fps: frame i is the newest capture taken by i * 40 ms
+  for (let i = 0, k = 0; i < total; i++) {
     while (k + 1 < frames.length && frames[k + 1].t <= i * 40) k++;
     fs.linkSync(frames[k].f, path.join(FRAMES, `o${String(i).padStart(5, '0')}.jpg`));
   }
-  const dest = path.join(OUT, 'demo-footage.mp4');
-  execFileSync(FFMPEG, ['-y', '-loglevel', 'error', '-framerate', '25', '-i', path.join(FRAMES, 'o%05d.jpg'), '-vf', 'format=yuv420p', '-c:v', 'libx264', dest]);
+  execFileSync(FFMPEG, ['-y', '-loglevel', 'error', '-framerate', '25', '-i', path.join(FRAMES, 'o%05d.jpg'), '-vf', 'format=yuv420p', '-c:v', 'libx264', '-crf', '20',
+    '-metadata', 'comment=Screen footage and captions made with SI (AI) tools: Claude (Anthropic). Checked by team 404 agents.', DEST]);
   fs.rmSync(FRAMES, { recursive: true, force: true });
-  console.log(`${frames.length} frames, ${(frames.length / (frames[frames.length - 1].t / 1000)).toFixed(1)} captured per second`);
+  console.log(`${frames.length} captures, ${(frames.length / SECONDS).toFixed(1)} per second`);
   if (errors.length) { console.error('PAGE ERRORS:\n' + errors.join('\n')); process.exit(1); }
-  console.log(`wrote ${dest}`);
-  console.log('Join (after recording voice.m4a and exporting title.png / end.png from the deck):');
-  console.log('ffmpeg -loop 1 -t 12 -i title.png -i docs/video/demo-footage.mp4 -loop 1 -t 10 -i end.png -i voice.m4a ' +
-    '-filter_complex "[0:v]scale=1920:1080,setsar=1[a];[1:v]trim=12:110,setpts=PTS-STARTPTS,scale=1920:1080,setsar=1[b];[2:v]scale=1920:1080,setsar=1[c];[a][b][c]concat=n=3:v=1:a=0[v]" ' +
-    '-map "[v]" -map 3:a -c:v libx264 -pix_fmt yuv420p -c:a aac -shortest docs/demo.mp4');
+  console.log('wrote', DEST);
 })();

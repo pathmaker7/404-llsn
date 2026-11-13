@@ -1,125 +1,139 @@
 <!doctype html>
 <html lang="en">
 <head>
-<script>/* Hosted: there is one product, the 3D app in surface/. This page is only the offline 2D copy (opened as a file). */
-if (location.protocol !== "file:") location.replace("surface/");</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lunar Landing Site Navigator</title>
-<link rel="stylesheet" href="style.css">
+<meta name="description" content="Stand at a lunar south-pole landing site: see where the Sun and Earth sit against the real LOLA horizon, and when you lose power and the link home.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%23101318'/%3E%3Cpath d='M2 20 L9 14 L14 18 L21 10 L30 19 L30 32 L2 32Z' fill='%238a94a6'/%3E%3Ccircle cx='23' cy='8' r='3' fill='%23ffb547'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="css/app.css">
 </head>
-<body class="mission">
-<header>
-  <div>
-    <h1 data-i18n="title">Lunar Landing Site Navigator</h1>
-    <p class="sub" data-i18n="sub"></p>
+<body class="mode-overview">
+<canvas id="gl"></canvas>
+<canvas id="overlay"></canvas>
+<div id="pins"></div>
+<div id="fade"></div>
+
+<header id="topbar">
+  <div class="brand">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="none" stroke="currentColor" stroke-opacity=".35"/><path d="M3 21 L9 15 L14 18 L21 10 L29 19" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="23" cy="7.5" r="2.6" fill="#ffb547"/></svg>
+    <div>
+      <div class="title">Lunar Landing Site Navigator</div>
+      <div class="sub">South pole · Sun · Earth · real horizon</div>
+    </div>
   </div>
-  <div class="team">404 agents · NASA Space Apps 2026 · Naryn · <a class="explain" href="https://lunar-navigator-explained.web.app" target="_blank" rel="noopener" data-i18n="explainLink">How it works</a> <button id="modeBtn" data-i18n="mPlanner">Expert planner</button> <select id="lang" aria-label="Language"></select></div>
+  <button id="back" class="ghost surface-only" title="Back to the south-pole map">◂ South pole</button>
+  <nav>
+    <select id="lang" aria-label="Language"></select>
+    <button data-panel="validation">How do we know?</button>
+    <button data-panel="about">About &amp; data</button>
+  </nav>
 </header>
 
-<main>
-  <section id="mission" class="card"><div id="missionBody"><p>Loading NASA terrain (about 9 MB)…</p></div></section>
+<aside id="sitelist" class="overview-only">
+  <h2>Candidate sites</h2>
+  <p class="muted small"><b>Click a site</b>, here or on the map, to stand on it and see if a solar robot survives a landing there.</p>
+  <ol id="sites"></ol>
+  <p class="muted tiny">Map: LOLA LDEM_80S_80M averaged to 1.28 km, vertical exaggeration ×2, lighting illustrative. Up = 0° E (Earth-facing side).</p>
+</aside>
 
-  <aside class="controls">
-    <section>
-      <h2 data-i18n="mission"></h2>
-      <label><span data-i18n="spanStart"></span><input id="start" type="date" value="2026-11-14"></label>
-      <label><span data-i18n="spanLen"></span>
-        <select id="span">
-          <option value="30" data-i18n="d30"></option>
-          <option value="90" data-i18n="d90"></option>
-          <option value="365" selected data-i18n="y1"></option>
+<section id="hud" class="surface-only">
+  <div id="verdict" class="verdict"></div>
+  <div class="hud-site">
+    <div class="site-name" id="h-name">—</div>
+    <div class="coords" id="h-coords">—</div>
+    <div class="seg" id="h-variant" role="tablist" aria-label="Evaluated point">
+      <button data-v="databook" role="tab" title="The centre of the region, as listed in NASA's Lunar Surface Data Book. A marker for the region, not a chosen landing point.">Region centre</button>
+      <button data-v="best" role="tab" title="The flat point with the most sunlight within 500 m of the region centre. This is where you would actually land.">Best spot nearby</button>
+    </div>
+    <div class="tiny muted" id="h-variant-note"></div>
+  </div>
+  <div class="hud-time" id="h-time">—</div>
+  <div class="hud-block sun">
+    <div class="hb-head"><span class="dot"></span>SUN <span class="chip" id="h-power">—</span></div>
+    <div class="hb-grid">
+      <div><label>Elevation</label><b id="h-sun-el">—</b></div>
+      <div><label>Disc visible</label><b id="h-sun-frac">—</b></div>
+      <div><label>Azimuth</label><b id="h-sun-az">—</b></div>
+      <div><label>Horizon there</label><b id="h-sun-mask">—</b></div>
+    </div>
+    <div class="countdown" id="h-sun-next">—</div>
+  </div>
+  <div class="hud-block earth">
+    <div class="hb-head"><span class="dot"></span>EARTH <span class="chip" id="h-link">—</span></div>
+    <div class="hb-grid">
+      <div><label>Elevation</label><b id="h-earth-el">—</b></div>
+      <div><label>Margin over terrain</label><b id="h-earth-margin">—</b></div>
+      <div><label>Azimuth</label><b id="h-earth-az">—</b></div>
+      <div><label>Phase (lit)</label><b id="h-earth-phase">—</b></div>
+    </div>
+    <div class="countdown" id="h-earth-next">—</div>
+  </div>
+</section>
+
+<div id="viewtools" class="surface-only">
+  <div class="vt-row">
+    <button id="look-sun" class="sunbtn">Look at Sun</button>
+    <button id="look-earth" class="earthbtn">Look at Earth</button>
+  </div>
+  <label class="tog"><input type="checkbox" id="opt-horizon" checked><span>Computed horizon line</span></label>
+  <label class="tog"><input type="checkbox" id="opt-paths"><span>Sun &amp; Earth paths (mission)</span></label>
+  <label class="tog"><input type="checkbox" id="opt-fill"><span>Enhanced visibility <em>display aid, not a measurement</em></span></label>
+  <label class="tog"><input type="checkbox" id="opt-mag"><span>Magnify Earth ×4 <em>not to scale</em></span></label>
+  <label class="tog"><input type="checkbox" id="opt-detail" checked><span>Surface texture <em>illustrative, below 80 m data resolution</em></span></label>
+  <label class="tog"><input type="checkbox" id="opt-lowq"><span>Low-power shadows</span></label>
+  <div class="tiny muted vt-hint">Drag to look · wheel to zoom · <span id="fovlabel">60°</span> FOV</div>
+</div>
+
+<footer id="dock" class="surface-only">
+  <div class="dock-row">
+    <button id="play" class="play" aria-label="Play">▶</button>
+    <select id="speed" aria-label="Playback speed">
+      <option value="1">1 h/s</option>
+      <option value="6">6 h/s</option>
+      <option value="24" selected>1 day/s</option>
+      <option value="72">3 days/s</option>
+    </select>
+    <div class="now" id="d-time">—</div>
+    <input type="range" id="scrub" min="0" max="1000" value="0" step="1" aria-label="Time scrubber">
+    <div class="mission">
+      <label>Landing <input type="datetime-local" id="m-start" step="3600"></label>
+      <label>Mission
+        <select id="m-days">
+          <option value="7">7 days</option>
+          <option value="14">14 days</option>
+          <option value="30" selected>30 days</option>
+          <option value="60">60 days</option>
+          <option value="90">90 days</option>
         </select>
       </label>
-      <label><span data-i18n="stay"></span><input id="stay" type="number" min="1" max="60" step="0.5" value="7"></label>
-      <label><span data-i18n="mast"></span><input id="mast" type="number" min="0" max="50" step="1" value="2"></label>
-      <label data-i18n-title="marginTip"><span data-i18n="margin"></span><input id="margin" type="number" min="0" max="5" step="0.25" value="0.5"></label>
-    </section>
-    <section>
-      <h2><span data-i18n="sites"></span> <span class="hint" data-i18n="sitesHint"></span></h2>
-      <div id="sites"></div>
-      <select id="addPreset"><option value="" data-i18n="addPreset"></option></select>
-      <form id="coordForm" class="coords">
-        <input id="latIn" type="number" step="any" min="-90" max="90" data-i18n-placeholder="latPh" aria-label="Latitude, degrees north" required>
-        <input id="lonIn" type="number" step="any" min="-180" max="360" data-i18n-placeholder="lonPh" aria-label="Longitude, degrees east" required>
-        <button data-i18n="add"></button>
-      </form>
-    </section>
-    <section class="explain">
-      <h2 data-i18n="howTitle"></h2>
-      <p data-i18n="how1"></p>
-      <p data-i18n-html="how2"></p>
-    </section>
-  </aside>
-
-  <section class="map-wrap">
-    <div class="tabs"><button id="viewPole" class="on" data-i18n="pole"></button><button id="viewGlobe" data-i18n="globe"></button></div>
-    <canvas id="map" width="1266" height="1266"></canvas>
-    <canvas id="globeMap" width="1440" height="720" hidden></canvas>
-    <div id="mapInfo" class="overlay">LOLA elevation, polar view, 0° longitude up</div>
-    <label class="maptoggle" data-i18n-title="slopeTip"><input id="slopeToggle" type="checkbox"> <span data-i18n="slopeToggle"></span></label>
-    <label class="maptoggle second" data-i18n-title="shadowTip"><input id="shadowToggle" type="checkbox"> <span data-i18n="shadowToggle"></span></label>
-  </section>
-
-  <section class="results">
-    <div class="card">
-      <div class="card-head">
-        <h2><span data-i18n="landingDate"></span> <span id="landing" class="mono"></span></h2>
-        <div><button id="play" data-i18n-title="playTip">▶</button> <button id="best" data-i18n="best"></button> <button id="share" data-i18n-title="shareTip" data-i18n="copy"></button></div>
-      </div>
-      <canvas id="planner" height="190"></canvas>
-      <p class="hint" data-i18n="plannerHint"></p>
     </div>
-    <div class="card">
-      <h2 data-i18n="compare"></h2>
-      <div class="tablewrap"><table id="table"></table></div>
-      <p class="hint" id="artemisNote" data-i18n-html="artemisNote"></p>
-    </div>
-    <div class="card">
-      <div class="card-head">
-        <h2 data-i18n="hoodTitle"></h2>
-        <button id="hoodBtn" data-i18n-title="hoodTip" data-i18n="hoodBtn"></button>
-      </div>
-      <div id="hood" hidden>
-        <div class="hoodmaps"><figure><canvas id="hoodSun" width="220" height="220"></canvas><figcaption data-i18n="hoodSun"></figcaption></figure><figure><canvas id="hoodEarth" width="220" height="220"></canvas><figcaption data-i18n="hoodEarth"></figcaption></figure></div>
-        <p id="hoodText" class="hint"></p>
-      </div>
-    </div>
-  </section>
+  </div>
+  <canvas id="timeline"></canvas>
+  <div class="legend tiny">
+    <span><i style="background:#ffb547"></i>Generating (full disc)</span>
+    <span><i style="background:#8a6a32"></i>Partial disc</span>
+    <span><i style="background:#5fb4ff"></i>Earth in view</span>
+    <span><i style="background:#1a1d24;border:1px solid #333"></i>Dark / blocked</span>
+    <span class="muted">Click or drag the strip to jump</span>
+  </div>
+</footer>
 
-  <section class="sky card">
-    <div class="card-head">
-      <h2><span data-i18n="skyFrom"></span> <span id="focusName"></span> <span data-i18n="at"></span> <span id="now" class="mono"></span></h2>
-      <div id="nowState" class="mono"></div>
-    </div>
-    <canvas id="panorama" height="260"></canvas>
-    <input id="scrub" type="range" min="0" max="1000" value="0" data-i18n-aria="scrubLabel">
-    <p class="hint" data-i18n="skyHint"></p>
-  </section>
+<aside id="panel" aria-hidden="true">
+  <button class="close" id="panel-close" aria-label="Close">×</button>
+  <div id="panel-body"></div>
+</aside>
 
-  <section class="timeline card">
-    <div class="card-head">
-      <h2 data-i18n="timeline"></h2>
-      <button id="csv" data-i18n="csv"></button>
-    </div>
-    <canvas id="timeline" height="200"></canvas>
-    <div id="windows"></div>
-  </section>
-</main>
-
-<footer data-i18n="footer"></footer>
-<p id="draftNote" class="hint" hidden></p>
+<div id="disclaimer">Independent NASA Space Apps Challenge 2026 project — not a NASA product. Built on NASA LOLA data and JPL ephemerides.</div>
+<button id="more" class="ghost" title="Show or hide the numbers and options">Details</button>
+<div id="loading">Loading terrain…</div>
 
 <script src="i18n.js"></script>
 <script src="vendor/astronomy.browser.min.js"></script>
-<script src="data/dem.js"></script>
-<script src="data/sites.js"></script>
 <script src="sky.js"></script>
-<script src="data/global.js"></script>
-<script src="terrain.js"></script>
-<script src="globe.js"></script>
-<script src="analysis.js"></script>
 <script src="mission.js"></script>
-<script src="app.js"></script>
+<script type="module" src="src/main.js"></script>
 </body>
 </html>
