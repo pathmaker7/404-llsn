@@ -62,6 +62,14 @@ if (require.main !== module) return;
     el: __app.overview.mat.uniforms.sunEl.value, dir: __app.overview.mat.uniforms.sunDir.value.length(), marks: document.querySelectorAll('.skymark').length }));
   await page.click('#a-play');
   if (!(pl.t > t0 + 3600) || pl.head !== 'block' || !/UTC/.test(pl.clock) || !(Math.abs(pl.el) < 0.03) || Math.abs(pl.dir - 1) > 1e-6 || pl.marks !== 2) errors.push('playing the sunlight on the Moon does not work: ' + JSON.stringify({ t0, ...pl }));
+  // The limits are the user's: a longer battery and radio limit can only add safe days, the address carries them, and reset restores the defaults.
+  const sum = () => page.evaluate(() => __all.rows.reduce((a, r) => a + r.good, 0));
+  const g0 = await sum();
+  await page.fill('#a-night', '10'); await page.dispatchEvent('#a-night', 'change'); await page.fill('#a-radio', '10'); await page.dispatchEvent('#a-radio', 'change');
+  const g1 = await sum(), hashL = await page.evaluate(() => location.hash);
+  await page.click('#a-reset');
+  const g2 = await sum();
+  if (!(g1 > g0) || g2 !== g0 || !/battery=10/.test(hashL) || !/radio=10/.test(hashL) || /battery|radio/.test(await page.evaluate(() => location.hash))) errors.push('changing the mission limits does not re-judge the sites: ' + JSON.stringify({ g0, g1, g2, hashL }));
   const order = await page.evaluate(() => [...document.querySelectorAll('#sites .cnt b')].map((b) => +b.textContent));
   if (order.some((n, i) => i && n > order[i - 1])) errors.push('sites are not listed best first: ' + order);
   await page.fill('#a-from', '2022-01-01'); await page.dispatchEvent('#a-from', 'change');

@@ -51,9 +51,11 @@ const missionEnd = () => Math.min(S.missionStart + S.missionDays * 86400, period
 
 function setHash() {
   // One short address: the site and the landing day. Expert state (stay length, clock time, centre point) is not kept in it.
-  const p = new URLSearchParams();
+  const p = new URLSearchParams(), Mi = globalThis.Mission;
   if (S.mode === 'surface') p.set('site', S.siteId);
   p.set('land', isoLocal(S.missionStart).slice(0, 10));
+  if (Mi.limits.nightH !== Mi.NIGHT_LIMIT_H) p.set('battery', Mi.limits.nightH / 24); // only when the user changed a limit
+  if (Mi.limits.silenceH !== Mi.SILENCE_LIMIT_H) p.set('radio', Mi.limits.silenceH / 24);
   history.replaceState(null, '', location.pathname + '#' + p.toString());
 }
 
@@ -72,6 +74,7 @@ function buildSiteList() {
     sites: S.index.sites.map((s) => { const v = s.variants[spot(s)]; return { id: s.id, name: s.name, ref: s.ref, dir: v.dir, slope: v.slope_deg, evaSlope: S.extra[v.dir] ?? v.slope_deg }; }),
     days: S.missionDays, p0: periodStart(), p1: periodEnd(),
     onHover: hot,
+    onLimits: () => { setHash(); drawVerdict(); },
     onTime: (t) => { S.mapT = t; S.mapPlay = false; },
     onPlay: () => { S.mapPlay = !S.mapPlay; },
     onPick: (id, t) => { if (t != null) { S.missionStart = t; S.t = t; } enterSite(id, spot(siteEntry(id))); },
@@ -568,6 +571,7 @@ function frame(now) {
     S.missionStart = Number.isFinite(landing) ? landing : periodStart();
     S.missionDays = 14; // the survival limits are set for a 14 day stay; "Details" can change it
     S.mapT = Math.floor(Date.now() / 1000);
+    for (const [k, f] of [['battery', 'nightH'], ['radio', 'silenceH']]) { const v = parseFloat(p.get(k)); if (v >= 0 && v <= 30) globalThis.Mission.limits[f] = v * 24; }
     buildSiteList();
     const t = S.missionStart;
     S.t = Number.isFinite(t) ? t : S.missionStart;

@@ -20,7 +20,8 @@ export function dayVerdicts(sky, slope, evaSlope, days) {
 }
 
 /** root: the panel element. sites: [{ id, name, ref, dir, slope, evaSlope }]. p0, p1: period (unix s). onPick(id, t or null). */
-export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}, onTime = () => {}, onPlay = () => {} }) {
+export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}, onTime = () => {}, onPlay = () => {}, onLimits = () => {} }) {
+  const Mi = globalThis.Mission;
   const nd = Math.floor(((p1 - p0) / 3600 + 1 - days * 24) / 24) + 1;
   const today = Math.floor(Date.now() / 1000 / DAY) * DAY, td = Math.round((today - p0) / DAY);
   const clampDay = (d) => Math.min(Math.max(d, 0), nd);
@@ -33,6 +34,7 @@ export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}
       <label><span></span> <input type="date" id="a-from" min="${iso(p0)}" max="${iso(p0 + (nd - 1) * DAY)}"></label>
       <label><span></span> <input type="date" id="a-to" min="${iso(p0 + DAY)}" max="${iso(p0 + nd * DAY)}"></label>
       <button data-y="2w"></button><button data-y="1m"></button><button data-y="0.25"></button><button data-y="1"></button><button data-y="5"></button><button data-y="0"></button></div></div>
+    <div class="a-mission"><span class="tip" tabindex="0">ⓘ</span> <label><span></span> <input id="a-night" type="number" min="0" max="30" step="0.5"></label><label><span></span> <input id="a-radio" type="number" min="0" max="30" step="0.5"></label><button id="a-reset"></button></div>
     <div class="a-row a-axis"><span></span><canvas></canvas><span></span></div>
     <ol id="sites"><div id="a-headline"></div></ol>
     <p class="v-key"><i class="ok"></i><span></span> <i class="bad"></i><span></span> <i class="cur"></i><span></span> <span class="tip" tabindex="0">ⓘ</span> <span class="a-hint"></span></p>
@@ -142,6 +144,10 @@ export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}
     const key = root.querySelectorAll('.v-key > span');
     key[0].textContent = L('mOkShort'); key[1].textContent = L('mLostShort'); key[2].textContent = L('aToday');
     key[3].dataset.tip = L('aTip'); key[4].textContent = L('aHint');
+    const [ln, lr] = root.querySelectorAll('.a-mission label span'); ln.textContent = L('aBattery'); lr.textContent = L('aRadio');
+    root.querySelector('.a-mission .tip').dataset.tip = L('aLimitsTip'); root.querySelector('#a-reset').textContent = L('aReset');
+    for (const [id, k] of [['#a-night', 'nightH'], ['#a-radio', 'silenceH']]) { const el = root.querySelector(id); if (document.activeElement !== el) el.value = +(Mi.limits[k] / 24).toFixed(1); }
+    root.querySelector('#a-reset').hidden = Mi.limits.nightH === Mi.NIGHT_LIMIT_H && Mi.limits.silenceH === Mi.SILENCE_LIMIT_H;
     paintAxis();
     for (const s of sites) {
       s.good = paintRow(s);
@@ -162,13 +168,25 @@ export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}
   redraw();
   (async () => {
     for (const s of sites) {
-      s.v = dayVerdicts(await loadSky(s.dir), s.slope, s.evaSlope, days);
+      s.sky = await loadSky(s.dir);
+      s.v = dayVerdicts(s.sky, s.slope, s.evaSlope, days);
       redraw();
       await new Promise((r) => setTimeout(r)); // let the row paint before the next site is computed
     }
     st.ready = true; redraw();
   })();
   root.querySelector('#a-play').onclick = () => onPlay();
+  // The mission's own limits: every site and day is judged again with them, here and on the site screen.
+  function setLimits(nightDays, radioDays) {
+    const ok = (v) => Number.isFinite(v) && v >= 0 && v <= 30;
+    if (ok(nightDays)) Mi.limits.nightH = nightDays * 24;
+    if (ok(radioDays)) Mi.limits.silenceH = radioDays * 24;
+    for (const s of sites) if (s.sky) s.v = dayVerdicts(s.sky, s.slope, s.evaSlope, days);
+    redraw(); onLimits();
+  }
+  root.querySelector('#a-night').onchange = (e) => setLimits(+e.target.value, NaN);
+  root.querySelector('#a-radio').onchange = (e) => setLimits(NaN, +e.target.value);
+  root.querySelector('#a-reset').onclick = () => setLimits(Mi.NIGHT_LIMIT_H / 24, Mi.SILENCE_LIMIT_H / 24);
   /** Moves the time line over the rows and writes the clock. t: unix s. */
   const head = root.querySelector('#a-headline'), clock = root.querySelector('#a-clock'), play = root.querySelector('#a-play');
   function setHead(t, playing) {
@@ -179,5 +197,5 @@ export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}
     if (clock.textContent !== txt) clock.textContent = txt;
     play.textContent = playing ? '❚❚' : '▶'; play.title = L('aPlay');
   }
-  return { redraw, setHead, range: () => [p0 + st.a * DAY, p0 + st.b * DAY] };
+  return { redraw, setHead, setLimits, range: () => [p0 + st.a * DAY, p0 + st.b * DAY] };
 }

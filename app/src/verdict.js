@@ -26,7 +26,8 @@ function cells(r) {
   const pct = (v) => L('vOfStay', { p: v.toFixed(0) }), deg = (v) => v.toFixed(1) + '°', d = (h) => L('vDays', { t: (h / 24).toFixed(1) });
   const value = { night: d, radio: d, light: (h) => (!h ? L('vUp') : h < Infinity ? L('vAfter', { t: h.toFixed(0) }) : L('vNone')), slope: deg, eva: deg, pole: deg,
     sunPct: pct, earthPct: pct, bothPct: pct, sunMax: deg, windows: (v) => v }[r.id](r.v);
-  return [value, r.pri === 'info' ? '' : L('l' + cap(r.id))];
+  const days = { night: Mi.limits.nightH / 24, radio: Mi.limits.silenceH / 24 }[r.id];
+  return [value, r.pri === 'info' ? '' : L('l' + cap(r.id), { n: +(days ?? 0).toFixed(1) })];
 }
 const iso = (t) => new Date(t * 1000).toISOString().slice(0, 10);
 const longDate = (t) => new Date(t * 1000).toLocaleDateString(I.lang, { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });

@@ -33,7 +33,7 @@ NASA Space Apps Challenge 2026, challenge "Lunar Landing Site Navigator". Team *
 | NASA site rule | Distance from the south pole | within 6° | NASA Artemis III requirement |
 | Good to know | Time in sunlight, time with Earth in view, both together, highest Sun, radio windows | none | shown only |
 
-The robot survives when the four "must pass" checks pass. The rules are in `app/mission.js`.
+The robot survives when the four "must pass" checks pass. The battery and radio limits are the user's to change on the first screen; every site and day is then judged again. The rules are in `app/mission.js`.
 
 ## How we know it is right
 
