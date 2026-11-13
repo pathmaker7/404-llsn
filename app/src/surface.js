@@ -160,22 +160,26 @@ void main() {
 const earthVert = /* glsl */`
 #include <common>
 #include <logdepthbuf_pars_vertex>
-varying vec3 vN;
+varying vec3 vN; varying vec2 vUv; varying vec3 vV;
 void main() {
-  vN = normalize(mat3(modelMatrix) * normal);
+  vN = normalize(mat3(modelMatrix) * normal); vUv = uv;
+  vV = normalize(cameraPosition - (modelMatrix * vec4(position, 1.0)).xyz);
   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   #include <logdepthbuf_vertex>
 }`;
 const earthFrag = /* glsl */`
 #include <common>
 #include <logdepthbuf_pars_fragment>
-uniform vec3 sunFromEarth;
-varying vec3 vN;
+uniform vec3 sunFromEarth; uniform sampler2D map;
+varying vec3 vN; varying vec2 vUv; varying vec3 vV;
 void main() {
   #include <logdepthbuf_fragment>
-  float l = dot(normalize(vN), sunFromEarth);
+  vec3 n = normalize(vN);
+  float l = dot(n, sunFromEarth);
   float day = smoothstep(-0.03, 0.12, l);
-  vec3 col = mix(vec3(0.0, 0.004, 0.012), vec3(0.42, 0.62, 1.0) * (0.35 + 0.75 * max(l, 0.0)), day);
+  // NASA Blue Marble. Which continents face the Moon is not modelled; the lit part (the phase) is.
+  vec3 col = mix(vec3(0.0, 0.004, 0.012), texture2D(map, vUv).rgb * (0.45 + 0.85 * max(l, 0.0)), day);
+  col += vec3(0.25, 0.5, 1.0) * pow(1.0 - max(dot(n, normalize(vV)), 0.0), 3.0) * 0.7 * day; // air at the limb
   gl_FragColor = vec4(col, 1.0);
 }`;
 
@@ -235,9 +239,10 @@ export class SurfaceView {
 
     // Earth: a sphere lit from the true Sun direction -> correct phase.
     this.earthMat = new THREE.ShaderMaterial({
-      uniforms: { sunFromEarth: { value: new THREE.Vector3(1, 0, 0) } },
+      uniforms: { sunFromEarth: { value: new THREE.Vector3(1, 0, 0) }, map: { value: new THREE.TextureLoader().load('data/earth.jpg') } },
       vertexShader: earthVert, fragmentShader: earthFrag });
     this.earth = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 32), this.earthMat);
+    this.earth.rotation.x = Math.PI; // seen from the Moon's south pole the Earth hangs south side up
     this.scene.add(this.earth);
 
     this.pathGroup = new THREE.Group();

@@ -296,3 +296,18 @@ body.mode-overview #more { display: none; }
 body.mode-surface .skymark { display: none !important; }
 .skymark { font-size: 12px; padding: 3px 10px; border-radius: 12px; }
 .skymark.sun { background: #ffb547; color: #1a1300; border-color: #ffb547; } .skymark.earth { background: #3f86e0; color: #fff; border-color: #3f86e0; }
+/* site screen: Sun and Earth against the horizon, always in view */
+#skybar { background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 8px 12px; font-size: 12px; }
+#skybar p { margin: 0 0 4px; font: 11px var(--mono); color: var(--muted); }
+#skybar div { display: flex; flex-wrap: wrap; gap: 2px 10px; align-items: center; padding: 3px 0; }
+#skybar div + div { border-top: 1px solid var(--line); }
+#skybar i { width: 12px; height: 12px; border-radius: 50%; flex: none; }
+#skybar .sun i { background: radial-gradient(#fff 35%, #ffd27a 70%); box-shadow: 0 0 8px #ffb547; }
+#skybar .earth i { background: url(../data/earth.jpg) 38% 50% / 200% 100%; box-shadow: inset -3px -2px 4px rgba(0,0,0,.6); }
+#skybar b { width: 38px; } #skybar span { font-family: var(--mono); } #skybar span:nth-of-type(n+2) { color: var(--muted); }
+#skybar em { font-style: normal; font-family: var(--mono); margin-left: auto; } #skybar .sun em { color: var(--sun); } #skybar .earth em { color: var(--earth); }
+/* Moon screen rim labels: a small Sun and a small real Earth instead of symbols */
+.skymark { display: flex; align-items: center; gap: 6px; }
+.skymark::before { content: ""; width: 16px; height: 16px; border-radius: 50%; flex: none; }
+.skymark.sun::before { background: radial-gradient(#fff 40%, #fff3c4 75%); box-shadow: 0 0 10px 2px #fff; }
+.skymark.earth::before { background: url(../data/earth.jpg) 38% 50% / 200% 100%; box-shadow: inset -4px -2px 5px rgba(0,0,0,.65); }

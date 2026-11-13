@@ -98,6 +98,9 @@ if (require.main !== module) return;
   await page.screenshot({ path: path.join(OUT, 'site.png') });
   console.log('site view:', JSON.stringify({ ...v0, text: undefined, tips: v0.tips.length }));
   if (v0.date !== v0.today) errors.push('the default landing day is not today: ' + v0.date);
+  // The challenge's required output is in view without opening anything: Sun and Earth elevation against the horizon, and time to the next change.
+  const sky = await page.evaluate(() => { const b = document.getElementById('skybar'), r = b.getBoundingClientRect(); return { text: b.innerText, shown: r.height > 30 && r.top >= 0 && r.bottom <= innerHeight }; });
+  if (!sky.shown || !/Sun[\s\S]*°\s*elevation[\s\S]*Earth[\s\S]*°\s*elevation/.test(sky.text) || !/(sunset|sunrise) in|Earth(set|rise) in/.test(sky.text) || /NaN|undefined/.test(sky.text)) errors.push('Sun and Earth positions are not shown by default on the site screen: ' + JSON.stringify(sky));
   if (v0.rows !== 11 || v0.tips.length !== 11 || v0.tips.some((n) => n < 30)) errors.push('the eleven checks with their explanations are not all shown');
   if (v0.strip !== 120 || v0.green !== v0.good || !new RegExp('^' + v0.good + '\\b').test(v0.count.trim())) errors.push('the landing day strip and its count disagree: ' + JSON.stringify([v0.strip, v0.green, v0.good, v0.count]));
   if (/undefined|NaN|\{\w+\}/.test(v0.text)) errors.push('raw text in the answer panel');

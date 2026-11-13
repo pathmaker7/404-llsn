@@ -206,7 +206,8 @@ function renderHudStatic() {
     b.disabled = !e.variants[b.dataset.v];
     if (b.dataset.v === 'best' && !e.variants.best) b.title = 'No DEM pixel with slope ≤ 10° within 500 m';
   }
-  $('h-variant-note').textContent = S.variant === 'best'
+  $('h-variant-note').textContent = e.ref === 'Team' ? 'You stand on a point picked by our team on NASA terrain: the best-lit point of this crater rim, or the lowest point of this crater floor. It is not a NASA candidate site.'
+    : S.variant === 'best'
     ? `You stand on the best-lit flat point, ${m.offset_m.toFixed(0)} m from the centre of this region.`
     : e.variants.best ? 'You stand on the centre of this region (NASA Data Book). It is a region marker, not a chosen landing point.'
       : 'You stand on the centre of this region (NASA Data Book). No flat, better-lit point was found within 500 m.';
@@ -240,6 +241,12 @@ function renderHud(s) {
 
   const ns = nextSunChange(S.site, s.t), ne = nextEarthChange(S.site, s.t);
   const lit = s.sunFrac > 0;
+  // Always in view (the challenge's core output): where the Sun and Earth stand against the real horizon at the moment shown,
+  // and how long until that changes.
+  const line = (cls, name, el, over, state, next) => `<div class="${cls}"><i></i><b>${name}</b><span title="${fmtDeg(over)} above the terrain in that direction">${fmtDeg(el)} elevation</span><span>${state}</span><em>${next}</em></div>`;
+  $('skybar').innerHTML = `<p>${fmtUTC(s.t)}</p>`
+    + line('sun', 'Sun', s.sunEl, s.sunEl - s.sunMask, `${(s.sunFrac * 100).toFixed(0)}% of the disc visible`, ns == null ? '' : `${lit ? 'sunset in' : 'sunrise in'} ${fmtDuration(ns - s.t)}`)
+    + line('earth', 'Earth', s.earthEl, s.earthEl - s.earthMask, s.earthVis ? 'in view: radio link' : 'hidden: no radio link', ne == null ? '' : `${s.earthVis ? 'Earthset in' : 'Earthrise in'} ${fmtDuration(ne - s.t)}`);
   $('h-sun-next').innerHTML = ns == null ? `<span class="muted">No change before end of data (${S.index.period.end.slice(0, 10)})</span>`
     : `${lit ? 'Sunlight lost in' : 'Sunlight returns in'} <b>${fmtDuration(ns - s.t)}</b>`;
   $('h-earth-next').innerHTML = ne == null ? `<span class="muted">No change before end of data</span>`

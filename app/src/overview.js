@@ -128,8 +128,13 @@ export class Overview {
     const disc = (stops) => { const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d'), gr = x.createRadialGradient(64, 64, 0, 64, 64, 64);
       for (const [o, col] of stops) gr.addColorStop(o, col); x.fillStyle = gr; x.fillRect(0, 0, 128, 128);
       const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthWrite: false })); this.scene.add(s); return s; };
-    this.sunBody = disc([[0, '#fff'], [0.18, '#fff6d8'], [0.3, 'rgba(255,200,90,.55)'], [1, 'rgba(255,170,60,0)']]); this.sunBody.scale.setScalar(7e6);
-    this.earthBody = disc([[0, '#9fd0ff'], [0.55, '#3f86e0'], [0.8, '#1c4fa8'], [0.86, 'rgba(120,180,255,.5)'], [1, 'rgba(120,180,255,0)']]); this.earthBody.scale.setScalar(2.4e6);
+    this.sunBody = disc([[0, '#fff'], [0.13, '#fff'], [0.16, 'rgba(255,244,214,.9)'], [0.22, 'rgba(255,214,140,.35)'], [0.5, 'rgba(255,190,110,.08)'], [1, 'rgba(255,170,60,0)']]); this.sunBody.scale.setScalar(9e6);
+    const earthTex = new THREE.TextureLoader().load('data/earth.jpg'); earthTex.colorSpace = THREE.SRGBColorSpace; // NASA Blue Marble
+    this.earthBody = new THREE.Mesh(new THREE.SphereGeometry(1.3e6, 64, 32), new THREE.ShaderMaterial({
+      uniforms: { map: { value: earthTex }, sun3: this.mat.uniforms.sun3 },
+      vertexShader: 'varying vec3 vN; varying vec2 vUv; varying vec3 vV; void main(){ vN = normalize(mat3(modelMatrix) * normal); vUv = uv; vec4 w = modelMatrix * vec4(position,1.0); vV = normalize(cameraPosition - w.xyz); gl_Position = projectionMatrix * viewMatrix * w; }',
+      fragmentShader: 'uniform sampler2D map; uniform vec3 sun3; varying vec3 vN; varying vec2 vUv; varying vec3 vV; void main(){ vec3 n = normalize(vN); float l = dot(n, sun3); float day = smoothstep(-0.03, 0.12, l); vec3 c = mix(vec3(0.0, 0.003, 0.01), texture2D(map, vUv).rgb * (0.4 + 0.9 * max(l, 0.0)), day); c += vec3(0.25, 0.5, 1.0) * pow(1.0 - max(dot(n, vV), 0.0), 3.0) * 0.7 * day; gl_FragColor = vec4(c, 1.0);\n#include <colorspace_fragment>\n}' }));
+    this.earthBody.rotation.x = Math.PI; this.scene.add(this.earthBody);
     this.ov = ov; this.edge = edge;
     this.sites = sites.map((s) => {
       const { X, Y } = latlonToMap(s.lat, s.lon);

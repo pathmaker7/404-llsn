@@ -32,6 +32,7 @@ IBM Plex Sans Condensed and IBM Plex Mono (SIL Open Font License 1.1), loaded fr
 
 ## Assets
 
-One third-party image is used: NASA's colour map of the Moon, on the globe around the polar terrain (credited at the end of this file). The Earth is a plain sphere lit from the true Sun direction. The fine surface texture on the near terrain is procedural noise, labelled in the app as illustrative and below the 80 m data resolution.
+Two NASA images are used: the colour map of the Moon on the globe around the polar terrain, and the Blue Marble picture of the Earth (both credited at the end of this file). The Earth is a sphere with NASA's Blue Marble picture, lit from the true Sun direction; which continents face the Moon is not modelled. The fine surface texture on the near terrain is procedural noise, labelled in the app as illustrative and below the 80 m data resolution.
 
 - Moon colour map on the globe around the polar terrain: NASA Scientific Visualization Studio, CGI Moon Kit (`lroc_color_poles_2k.tif`, from LRO LROC data), https://svs.gsfc.nasa.gov/4720. Converted to JPEG as `app/data/moon.jpg`.
+- Earth picture (the Earth in the sky and on labels): NASA Scientific Visualization Studio, Blue Marble flat map with clouds (`flat_earth03.jpg`), https://svs.gsfc.nasa.gov/3615. Stored as `app/data/earth.jpg`.
