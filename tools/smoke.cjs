@@ -108,7 +108,7 @@ if (require.main !== module) return;
   if (moved.startsWith('2022-03-10 00:00')) errors.push('pressing play did not move the time');
   await page.screenshot({ path: path.join(OUT, 'site-playing.png') });
   for (const [l, re] of [['ru', /[а-яё]/i], ['ky', /[өүң]/i], ['en', /Longest night/]]) {
-    await page.selectOption('#lang', l);
+    await page.click(`#lang button[data-l="${l}"]`);
     const t = await page.evaluate(() => document.getElementById('verdict').innerText + [...document.querySelectorAll('#verdict .tip')].map((x) => x.dataset.tip).join(' '));
     if (!re.test(t) || /undefined|NaN|\{\w+\}/.test(t)) errors.push(`language ${l} is not applied cleanly`);
   }

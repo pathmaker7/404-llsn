@@ -20,7 +20,7 @@ export function dayVerdicts(sky, slope, evaSlope, days) {
 }
 
 /** root: the panel element. sites: [{ id, name, ref, dir, slope, evaSlope }]. p0, p1: period (unix s). onPick(id, t or null). */
-export function allSites(root, { sites, days, p0, p1, onPick }) {
+export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {} }) {
   const nd = Math.floor(((p1 - p0) / 3600 + 1 - days * 24) / 24) + 1;
   const today = Math.floor(Date.now() / 1000 / DAY) * DAY, td = Math.round((today - p0) / DAY);
   const clampDay = (d) => Math.min(Math.max(d, 0), nd);
@@ -42,7 +42,8 @@ export function allSites(root, { sites, days, p0, p1, onPick }) {
 
   for (const s of sites) {
     const li = document.createElement('li');
-    li.className = 'a-row';
+    li.className = 'a-row'; li.dataset.id = s.id;
+    li.onmouseenter = () => onHover(s.id); li.onmouseleave = () => onHover(null);
     li.innerHTML = `<button title="${s.ref}">${s.name}<small>${s.ref}</small></button><canvas></canvas><span class="cnt"></span>`;
     li.querySelector('button').onclick = () => onPick(s.id, null);
     const cv = li.querySelector('canvas');
@@ -70,10 +71,20 @@ export function allSites(root, { sites, days, p0, p1, onPick }) {
   const xOf = (d, w) => ((d - st.a) / (st.b - st.a)) * w;
 
   function paintRow(s) {
-    const { g, w, h } = fit(s.cv, 12), span = st.b - st.a;
+    const { g, w, h, dpr } = fit(s.cv, 12), span = st.b - st.a;
     if (!s.v) { g.fillStyle = 'rgba(255,255,255,.07)'; g.fillRect(0, 0, w, h); return 0; }
     let good = 0;
     for (let d = st.a; d < st.b; d++) good += s.v[d] === 0;
+    if (w / span >= 6) { // room for it: every landing day is its own block, today has a white frame
+      const gap = w / span >= 16 ? 3 : 1;
+      g.clearRect(0, 0, w, h);
+      for (let d = st.a; d < st.b; d++) {
+        const x0 = Math.round(xOf(d, w)), x1 = Math.round(xOf(d + 1, w)) - gap;
+        g.fillStyle = `rgb(${(s.v[d] === 0 ? OK : BAD).join(',')})`; g.fillRect(x0, 0, x1 - x0, h);
+        if (d === td) { g.strokeStyle = '#fff'; const t = 1.5 * dpr; g.lineWidth = t; g.strokeRect(x0 + t / 2, t / 2, x1 - x0 - t, h - t); }
+      }
+      return good;
+    }
     for (let x = 0; x < w; x++) {
       const d0 = st.a + Math.floor((x * span) / w), d1 = Math.max(d0 + 1, st.a + Math.floor(((x + 1) * span) / w));
       let ok = 0;
@@ -96,7 +107,7 @@ export function allSites(root, { sites, days, p0, p1, onPick }) {
       for (let k = st.a; k < st.b; k++) {
         const x = xOf(k, w), dt = new Date((p0 + k * DAY) * 1000), first = dt.getUTCDate() === 1 || k === st.a;
         g.fillStyle = 'rgba(150,170,200,.35)'; g.fillRect(Math.round(x), h - 5 * dpr, 1, 5 * dpr);
-        if (x - last < (first ? 0 : 30) * dpr) continue;
+        if (x - last < (first ? 0 : 26) * dpr) continue;
         g.fillStyle = first ? '#dfe6f2' : 'rgba(200,210,230,.6)';
         g.fillText(first ? dt.toLocaleDateString(I.lang, { month: 'short', day: 'numeric', timeZone: 'UTC' }) : String(dt.getUTCDate()), x + 3 * dpr, 0);
         last = first ? x + 30 * dpr : x;

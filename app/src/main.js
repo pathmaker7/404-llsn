@@ -58,6 +58,12 @@ function setHash() {
 }
 
 // ------------------------------------------------------------- overview UI
+// One site is "hot" while the pointer is on its label or its row: both light up, so a row is easy to find on the Moon.
+function hot(id) {
+  S.hot = id;
+  for (const li of document.querySelectorAll('#sites li')) li.classList.toggle('hot', li.dataset.id === id);
+}
+
 function buildSiteList() {
   // Every site, every landing day (allsites.js). Each site is judged at the point the app stands on: the best-lit
   // flat point near the region centre when there is one.
@@ -65,6 +71,7 @@ function buildSiteList() {
   S.all = allSites($('sitelist'), {
     sites: S.index.sites.map((s) => { const v = s.variants[spot(s)]; return { id: s.id, name: s.name, ref: s.ref, dir: v.dir, slope: v.slope_deg, evaSlope: S.extra[v.dir] ?? v.slope_deg }; }),
     days: S.missionDays, p0: periodStart(), p1: periodEnd(),
+    onHover: hot,
     onPick: (id, t) => { if (t != null) { S.missionStart = t; S.t = t; } enterSite(id, spot(siteEntry(id))); },
   });
   const pins = $('pins');
@@ -73,6 +80,7 @@ function buildSiteList() {
     const el = document.createElement('div');
     el.className = 'pin';
     el.textContent = s.name;
+    el.onmouseenter = () => hot(s.id); el.onmouseleave = () => hot(null);
     el.onclick = () => enterSite(s.id, s.variants.best ? 'best' : 'databook') /* land on the best-lit point near the centre when there is one */;
     pins.appendChild(el);
     s.el = el;
@@ -87,6 +95,10 @@ function placePins() {
     const p = show ? overview.project(s.pos, w, h) : null;
     const g = show ? overview.project(s.pos, w, h, 0) : null;
     s.el.style.display = p ? '' : 'none';
+    const row = globalThis.__all?.rows.find((r) => r.id === s.id);
+    s.st = row && row.good >= 0 ? (row.good > 0 ? 'ok' : 'bad') : ''; // green: at least one safe landing day in the chosen period
+    if (s.el.dataset.s !== s.st) s.el.dataset.s = s.st;
+    s.el.classList.toggle('hot', S.hot === s.id);
     if (p) items.push({ s, p, g, x: p.x, y: p.y, wd: s.el.offsetWidth || 120 });
   }
   // greedy vertical de-overlap, then leader lines from the ground point
@@ -104,10 +116,12 @@ function placePins() {
     it.s.el.style.left = `${it.x}px`; it.s.el.style.top = `${it.y}px`;
   }
   if (show) {
-    og.strokeStyle = 'rgba(70,224,200,0.8)'; og.lineWidth = 1;
     for (const it of items) {
+      const col = it.s.st === 'ok' ? '63,191,127' : it.s.st === 'bad' ? '226,84,90' : '160,170,190', on = S.hot === it.s.id;
+      og.strokeStyle = `rgba(${col},${on ? 1 : 0.55})`; og.lineWidth = on ? 2 : 1;
       og.beginPath(); og.moveTo(it.g.x, it.g.y); og.lineTo(it.x, it.y); og.stroke();
-      og.fillStyle = '#46e0c8'; og.beginPath(); og.arc(it.g.x, it.g.y, 3, 0, Math.PI * 2); og.fill();
+      og.fillStyle = `rgba(${col},.25)`; og.beginPath(); og.arc(it.g.x, it.g.y, on ? 12 : 7, 0, Math.PI * 2); og.fill();
+      og.fillStyle = `rgb(${col})`; og.beginPath(); og.arc(it.g.x, it.g.y, on ? 5 : 3.5, 0, Math.PI * 2); og.fill();
     }
   }
 }
@@ -495,8 +509,11 @@ function frame(now) {
     S.extra = await fetch('data/extra.json').then((r) => r.json()).catch(() => ({}));
     const I18n = globalThis.I18n, sel = $('lang');
     try { I18n.set(localStorage.getItem('lang') || 'en'); } catch (e) { /* storage blocked */ }
-    sel.innerHTML = Object.entries(I18n.NAMES).map(([k, v]) => `<option value="${k}">${v}</option>`).join(''); sel.value = I18n.lang;
-    sel.onchange = () => { I18n.set(sel.value); try { localStorage.setItem('lang', sel.value); } catch (e) { /* storage blocked */ } drawVerdict(); S.all?.redraw(); };
+    // Three visible buttons, the current language lit: a closed dropdown did not say what it was for.
+    sel.innerHTML = Object.entries(I18n.NAMES).map(([k, v]) => `<button data-l="${k}" title="${v}">${k.toUpperCase()}</button>`).join('');
+    const mark = () => { for (const b of sel.children) b.classList.toggle('on', b.dataset.l === I18n.lang); };
+    for (const b of sel.children) b.onclick = () => { I18n.set(b.dataset.l); try { localStorage.setItem('lang', b.dataset.l); } catch (e) { /* storage blocked */ } mark(); drawVerdict(); S.all?.redraw(); };
+    mark();
     const ov = await loadOverview(S.index);
     overview.build(ov, S.index.sites);
     const p = new URLSearchParams(location.hash.slice(1));

@@ -275,3 +275,14 @@ body.mode-overview #more { display: none; }
 .pin, #sitelist h2, .a-row button { user-select: none; -webkit-user-select: none; }
 #sites { gap: 1px; } #sites li button { padding: 0; font-size: 12.5px; } .a-row canvas { height: 12px; }
 .a-axis canvas { height: 22px; }
+/* site labels on the Moon: a quiet pill with a status dot (green: a safe landing day exists in the chosen period) */
+.pin { font-size: 11.5px; font-weight: 500; padding: 2px 8px 2px 6px; border-radius: 10px; border: 1px solid rgba(150,170,200,.22); background: rgba(8,11,16,.72); color: #dfe6f2; }
+.pin::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; background: rgb(160,170,190); }
+.pin[data-s="ok"]::before { background: rgb(63,191,127); } .pin[data-s="bad"]::before { background: rgb(226,84,90); }
+.pin:hover, .pin.hot { background: rgba(8,11,16,.95); color: #fff; border-color: var(--teal); z-index: 2; }
+#sites li.hot button { color: var(--teal); } #sites li.hot { background: rgba(70,224,200,.07); }
+/* language: three buttons, the current one lit */
+#lang { display: inline-flex; padding: 0; overflow: hidden; }
+#topbar nav #lang button { display: inline-block; border: 0; border-radius: 0; background: none; padding: 6px 9px; font-size: 12px; font-weight: 600; letter-spacing: .04em; color: var(--muted); cursor: pointer; }
+#topbar nav #lang button + button { border-left: 1px solid var(--line); }
+#topbar nav #lang button.on { background: var(--teal); color: #001; }
