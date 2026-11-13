@@ -23,14 +23,16 @@ export function dayVerdicts(sky, slope, evaSlope, days) {
 export function allSites(root, { sites, days, p0, p1, onPick }) {
   const nd = Math.floor(((p1 - p0) / 3600 + 1 - days * 24) / 24) + 1;
   const today = Math.floor(Date.now() / 1000 / DAY) * DAY, td = Math.round((today - p0) / DAY);
-  const st = { a: td, b: Math.min(td + 365, nd), ready: false, rows: sites };
   const clampDay = (d) => Math.min(Math.max(d, 0), nd);
+  // The day index n years after today (0.25 = three months).
+  const y = (n) => { const d = new Date(today * 1000); d.setUTCMonth(d.getUTCMonth() + n * 12); return clampDay(Math.round((d.getTime() / 1000 - p0) / DAY)); };
+  const st = { a: td, b: y(0.25), ready: false, rows: sites }; // opens on the next three months; the buttons widen it
   const dayOf = (v) => Math.round((Date.parse(v + 'T00:00:00Z') / 1000 - p0) / DAY);
 
   root.innerHTML = `<div class="a-head"><h2></h2><div class="a-range">
       <label><span></span> <input type="date" id="a-from" min="${iso(p0)}" max="${iso(p0 + (nd - 1) * DAY)}"></label>
       <label><span></span> <input type="date" id="a-to" min="${iso(p0 + DAY)}" max="${iso(p0 + nd * DAY)}"></label>
-      <button data-y="1"></button><button data-y="5"></button><button data-y="0"></button></div></div>
+      <button data-y="0.25"></button><button data-y="1"></button><button data-y="5"></button><button data-y="0"></button></div></div>
     <div class="a-row a-axis"><span></span><canvas></canvas><span></span></div>
     <ol id="sites"></ol>
     <p class="v-key"><i class="ok"></i><span></span> <i class="bad"></i><span></span> <i class="cur"></i><span></span> <span class="tip" tabindex="0">ⓘ</span> <span class="a-hint"></span></p>
@@ -105,13 +107,12 @@ export function allSites(root, { sites, days, p0, p1, onPick }) {
   }
 
   function redraw() {
-    const y = (n) => { const d = new Date(today * 1000); d.setUTCFullYear(d.getUTCFullYear() + n); return clampDay(Math.round((d.getTime() / 1000 - p0) / DAY)); };
     root.querySelector('h2').textContent = L('aTitle');
     const [lf, lt] = root.querySelectorAll('.a-range label span'); lf.textContent = L('aFrom'); lt.textContent = L('aTo');
     from.value = iso(p0 + st.a * DAY); to.value = iso(p0 + st.b * DAY);
     for (const b of root.querySelectorAll('.a-range button')) {
       const n = +b.dataset.y, r = n ? [td, y(n)] : [0, nd];
-      b.textContent = L(n === 1 ? 'a1y' : n === 5 ? 'a5y' : 'aAll');
+      b.textContent = L(n === 0.25 ? 'a3m' : n === 1 ? 'a1y' : n === 5 ? 'a5y' : 'aAll');
       b.classList.toggle('on', r[0] === st.a && r[1] === st.b);
       b.onclick = () => { [st.a, st.b] = r; redraw(); };
     }

@@ -39,6 +39,7 @@ if (require.main !== module) return;
   // the site screen gives for that site and day.
   const days = (a, b) => Math.round((Date.parse(b) - Date.parse(a)) / 86400000);
   const all0 = await page.evaluate(() => ({ from: __all.from, to: __all.to, rows: __all.rows }));
+  if (days(all0.from, all0.to) < 89 || days(all0.from, all0.to) > 92 || all0.from !== new Date().toISOString().slice(0, 10)) errors.push('the timeline does not open on the next three months: ' + all0.from + ' ' + all0.to);
   if (all0.rows.length !== 15 || all0.rows.some((r) => r.total !== days(all0.from, all0.to) || !(r.good >= 0 && r.good <= r.total))) errors.push('timeline rows are wrong: ' + JSON.stringify(all0));
   if (!all0.rows.some((r) => r.good > 0) || !all0.rows.some((r) => r.good < r.total)) errors.push('the timeline shows no difference between sites or days');
   const order = await page.evaluate(() => [...document.querySelectorAll('#sites .cnt b')].map((b) => +b.textContent));
