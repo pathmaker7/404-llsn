@@ -50,6 +50,13 @@ if (require.main !== module) return;
     return { gaps, days: __all.rows[0].total, langs: document.querySelectorAll('#lang button').length, lit: document.querySelectorAll('#lang button.on').length };
   });
   if (clear.gaps !== clear.days || clear.langs !== 3 || clear.lit !== 1) errors.push('days are not separate blocks, or the language buttons are not clear: ' + JSON.stringify(clear));
+  // The Moon's own clock: play moves the time, the line on the rows and the Sun that casts the shadows.
+  const t0 = await page.evaluate(() => __app.S.mapT);
+  await page.click('#a-play'); await page.waitForTimeout(1500);
+  const pl = await page.evaluate(() => ({ t: __app.S.mapT, head: getComputedStyle(document.getElementById('a-headline')).display, clock: document.getElementById('a-clock').textContent,
+    el: __app.overview.mat.uniforms.sunEl.value, dir: __app.overview.mat.uniforms.sunDir.value.length(), marks: document.querySelectorAll('.skymark').length }));
+  await page.click('#a-play');
+  if (!(pl.t > t0 + 3600) || pl.head !== 'block' || !/UTC/.test(pl.clock) || !(Math.abs(pl.el) < 0.03) || Math.abs(pl.dir - 1) > 1e-6 || pl.marks !== 2) errors.push('playing the sunlight on the Moon does not work: ' + JSON.stringify({ t0, ...pl }));
   const order = await page.evaluate(() => [...document.querySelectorAll('#sites .cnt b')].map((b) => +b.textContent));
   if (order.some((n, i) => i && n > order[i - 1])) errors.push('sites are not listed best first: ' + order);
   await page.fill('#a-from', '2022-01-01'); await page.dispatchEvent('#a-from', 'change');

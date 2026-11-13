@@ -20,7 +20,7 @@ export function dayVerdicts(sky, slope, evaSlope, days) {
 }
 
 /** root: the panel element. sites: [{ id, name, ref, dir, slope, evaSlope }]. p0, p1: period (unix s). onPick(id, t or null). */
-export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {} }) {
+export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}, onTime = () => {}, onPlay = () => {} }) {
   const nd = Math.floor(((p1 - p0) / 3600 + 1 - days * 24) / 24) + 1;
   const today = Math.floor(Date.now() / 1000 / DAY) * DAY, td = Math.round((today - p0) / DAY);
   const clampDay = (d) => Math.min(Math.max(d, 0), nd);
@@ -29,12 +29,12 @@ export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}
   const st = { a: td, b: y(1 / 12), ready: false, rows: sites }; // opens on the next month; the buttons narrow or widen it
   const dayOf = (v) => Math.round((Date.parse(v + 'T00:00:00Z') / 1000 - p0) / DAY);
 
-  root.innerHTML = `<div class="a-head"><h2></h2><div class="a-range">
+  root.innerHTML = `<div class="a-head"><h2></h2><div class="a-play"><button id="a-play">▶</button><span id="a-clock"></span></div><div class="a-range">
       <label><span></span> <input type="date" id="a-from" min="${iso(p0)}" max="${iso(p0 + (nd - 1) * DAY)}"></label>
       <label><span></span> <input type="date" id="a-to" min="${iso(p0 + DAY)}" max="${iso(p0 + nd * DAY)}"></label>
       <button data-y="2w"></button><button data-y="1m"></button><button data-y="0.25"></button><button data-y="1"></button><button data-y="5"></button><button data-y="0"></button></div></div>
     <div class="a-row a-axis"><span></span><canvas></canvas><span></span></div>
-    <ol id="sites"></ol>
+    <ol id="sites"><div id="a-headline"></div></ol>
     <p class="v-key"><i class="ok"></i><span></span> <i class="bad"></i><span></span> <i class="cur"></i><span></span> <span class="tip" tabindex="0">ⓘ</span> <span class="a-hint"></span></p>
     <div id="a-tip"></div>`;
   const ol = root.querySelector('#sites'), tip = root.querySelector('#a-tip'), axis = root.querySelector('.a-axis canvas');
@@ -51,6 +51,7 @@ export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}
     cv.onpointermove = (e) => {
       if (!s.v) return;
       const d = dayAt(e), why = s.v[d];
+      onTime(p0 + d * DAY + DAY / 2); // the Moon above shows the sunlight at noon of the day under the pointer
       const date = new Date((p0 + d * DAY) * 1000).toLocaleDateString(I.lang, { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
       tip.textContent = `${s.name} · ${date}: ${why ? L('mLostShort') + ' (' + L('r' + cap(MUST[why - 1])) + ')' : L('mOkShort')}`;
       tip.style.display = 'block';
@@ -167,5 +168,16 @@ export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}
     }
     st.ready = true; redraw();
   })();
-  return { redraw };
+  root.querySelector('#a-play').onclick = () => onPlay();
+  /** Moves the time line over the rows and writes the clock. t: unix s. */
+  const head = root.querySelector('#a-headline'), clock = root.querySelector('#a-clock'), play = root.querySelector('#a-play');
+  function setHead(t, playing) {
+    const d = (t - p0) / DAY, cv = sites[0].cv, on = d >= st.a && d <= st.b;
+    head.style.display = on ? 'block' : 'none';
+    if (on) head.style.left = cv.offsetLeft + ((d - st.a) / (st.b - st.a)) * cv.clientWidth + 'px';
+    const txt = new Date(t * 1000).toLocaleString(I.lang, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone: 'UTC' }) + ' UTC';
+    if (clock.textContent !== txt) clock.textContent = txt;
+    play.textContent = playing ? '❚❚' : '▶'; play.title = L('aPlay');
+  }
+  return { redraw, setHead, range: () => [p0 + st.a * DAY, p0 + st.b * DAY] };
 }

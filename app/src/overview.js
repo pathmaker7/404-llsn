@@ -14,13 +14,29 @@ function curve(x, z, h) {
 }
 
 const vert = /* glsl */`
-attribute float hgt; attribute float rad;
-varying vec3 vN; varying float vH; varying float vR;
-void main(){ vN = normal; vH = hgt; vR = rad;
+attribute float hgt; attribute float rad; attribute vec2 mxz;
+varying vec3 vN; varying float vH; varying float vR; varying vec2 vM;
+void main(){ vN = normal; vH = hgt; vR = rad; vM = mxz;
   gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`;
 const frag = /* glsl */`
 uniform vec3 light; uniform float hMin; uniform float hMax; uniform float ringR; uniform float edge;
-varying vec3 vN; varying float vH; varying float vR;
+uniform sampler2D hmap; uniform vec2 sunDir; uniform float sunEl; uniform float pix; uniform float gridN;
+varying vec3 vN; varying float vH; varying float vR; varying vec2 vM;
+const float RM = 1737400.0;
+float hAt(vec2 p){ return texture2D(hmap, (p / pix + 0.5 * gridN) / gridN).r; }
+// Real shadow: walk from this point toward the Sun over the terrain; lit when no ground rises above the Sun's
+// elevation here (elevation at the pole plus the angle this point sits toward the Sun; the sphere drops d*d/2R).
+float sunlit(){
+  float h0 = hAt(vM) + 2.0, tanS = tan(sunEl + dot(vM, sunDir) / RM), half_ = 0.5 * (gridN - 1.0) * pix, d = pix, vis = 1.0;
+  for (int i = 0; i < 80; i++) {
+    vec2 q = vM + sunDir * d;
+    if (abs(q.x) > half_ || abs(q.y) > half_) break;
+    vis = min(vis, smoothstep(-0.004, 0.004, tanS - (hAt(q) - h0 - d * d / (2.0 * RM)) / d));
+    if (vis <= 0.0) break;
+    d = d * 1.06 + pix * 0.6;
+  }
+  return vis;
+}
 void main(){
   if (vR > edge) discard;
   vec3 n = normalize(vN);
@@ -32,6 +48,7 @@ void main(){
   float r = vR;
   float ring = 1.0 - smoothstep(0.0, 260.0, abs(mod(r + ringR * 0.5, ringR) - ringR * 0.5));
   col = mix(col, vec3(0.27, 0.88, 0.78), ring * 0.22);
+  col *= mix(0.2, 1.0, sunlit());
   col *= mix(1.0, 0.42, smoothstep(edge * 0.72, edge, vR)); // the cap dims into the plain globe around it
   gl_FragColor = vec4(col, 1.0);
   #include <colorspace_fragment>
@@ -50,13 +67,17 @@ export class Overview {
 
   build(ov, sites) {
     const n = ov.n, pix = ov.pixel_m, c0 = (n - 1) / 2;
-    const pos = new Float32Array(n * n * 3), hgt = new Float32Array(n * n), rad = new Float32Array(n * n);
+    const pos = new Float32Array(n * n * 3), hgt = new Float32Array(n * n), rad = new Float32Array(n * n), mxz = new Float32Array(n * n * 2);
+    const half16 = new Uint16Array(n * n); // heights as a texture for the shadow walk in the shader
+    for (let i = 0; i < n * n; i++) half16[i] = THREE.DataUtils.toHalfFloat(ov.h[i]);
+    const hmap = new THREE.DataTexture(half16, n, n, THREE.RedFormat, THREE.HalfFloatType);
+    hmap.magFilter = hmap.minFilter = THREE.LinearFilter; hmap.needsUpdate = true;
     // Round cap: beyond `edge` nothing is drawn, and in the outer band heights sink to the globe under it.
     const edge = c0 * pix * 0.97, low = ov.min_m * EXAG - 400;
     for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {
       const i = r * n + c, x = (c - c0) * pix, z = (r - c0) * pix, d = Math.hypot(x, z);
       const k = Math.min(Math.max((d - edge * 0.8) / (edge * 0.2), 0), 1), f = k * k * (3 - 2 * k);
-      hgt[i] = ov.h[i] * EXAG * (1 - f) + low * f; rad[i] = d;
+      hgt[i] = ov.h[i] * EXAG * (1 - f) + low * f; rad[i] = d; mxz[i * 2] = x; mxz[i * 2 + 1] = z;
       pos.set(curve(x, z, hgt[i]), i * 3);
     }
     const idx = new Uint32Array((n - 1) * (n - 1) * 6);
@@ -67,13 +88,14 @@ export class Overview {
     }
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    g.setAttribute('hgt', new THREE.BufferAttribute(hgt, 1)); g.setAttribute('rad', new THREE.BufferAttribute(rad, 1));
+    g.setAttribute('hgt', new THREE.BufferAttribute(hgt, 1)); g.setAttribute('rad', new THREE.BufferAttribute(rad, 1)); g.setAttribute('mxz', new THREE.BufferAttribute(mxz, 2));
     g.setIndex(new THREE.BufferAttribute(idx, 1));
     g.computeVertexNormals();
     this.mat = new THREE.ShaderMaterial({
       uniforms: { light: { value: new THREE.Vector3(0.5, 0.5, -0.7).normalize() },
         hMin: { value: ov.min_m * EXAG }, hMax: { value: ov.max_m * EXAG },
-        ringR: { value: 2 * 1737400 * Math.tan(0.5 * DEG) }, edge: { value: edge } },
+        ringR: { value: 2 * 1737400 * Math.tan(0.5 * DEG) }, edge: { value: edge },
+        hmap: { value: hmap }, sunDir: { value: new THREE.Vector2(0, -1) }, sunEl: { value: 0.02 }, pix: { value: pix }, gridN: { value: n } },
       vertexShader: vert, fragmentShader: frag });
     this.mesh = new THREE.Mesh(g, this.mat);
     this.scene.add(this.mesh);
@@ -88,7 +110,7 @@ export class Overview {
     for (let i = 0; i < 900; i++) { const u = Math.random() * 2 - 1, a = Math.random() * 2 * Math.PI, q = Math.sqrt(1 - u * u); st.set([6e6 * q * Math.cos(a), 6e6 * u - R, 6e6 * q * Math.sin(a)], i * 3); }
     const sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.BufferAttribute(st, 3));
     this.scene.add(new THREE.Points(sg, new THREE.PointsMaterial({ color: 0xcfd6e4, size: 1.6, sizeAttenuation: false })));
-    this.ov = ov;
+    this.ov = ov; this.edge = edge;
     this.sites = sites.map((s) => {
       const { X, Y } = latlonToMap(s.lat, s.lon);
       const p = new THREE.Vector3(...curve(X, -Y, this.heightAt(X, Y) * EXAG));
@@ -110,6 +132,17 @@ export class Overview {
   }
 
   /** lift: pixels to move the picture up, so the pole stays clear of the panel at the bottom of the map screen. */
+  /** The real Sun and Earth at a moment: sub-solar and sub-Earth longitude and latitude on the Moon, radians.
+   *  Shadows follow the Sun; the shading light keeps the Sun's direction but is raised so lit ground stays readable. */
+  setSky(sunLon, sunLat, earthLon) {
+    if (!this.mat) return;
+    this.mat.uniforms.sunDir.value.set(Math.sin(sunLon), -Math.cos(sunLon));
+    this.mat.uniforms.sunEl.value = -sunLat; // at the south pole the Sun stands as high as it is south of the equator
+    this.setSunAzimuth(sunLon / DEG);
+    const at = (lon) => new THREE.Vector3(...curve(Math.sin(lon) * this.edge * 1.04, -Math.cos(lon) * this.edge * 1.04, 0));
+    this.sunMark = at(sunLon); this.earthMark = at(earthLon);
+  }
+
   setSize(w, h, lift = 0) {
     this.camera.aspect = w / h;
     if (lift) this.camera.setViewOffset(w, h, 0, lift, w, h); else this.camera.clearViewOffset();

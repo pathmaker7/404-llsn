@@ -72,6 +72,8 @@ function buildSiteList() {
     sites: S.index.sites.map((s) => { const v = s.variants[spot(s)]; return { id: s.id, name: s.name, ref: s.ref, dir: v.dir, slope: v.slope_deg, evaSlope: S.extra[v.dir] ?? v.slope_deg }; }),
     days: S.missionDays, p0: periodStart(), p1: periodEnd(),
     onHover: hot,
+    onTime: (t) => { S.mapT = t; S.mapPlay = false; },
+    onPlay: () => { S.mapPlay = !S.mapPlay; },
     onPick: (id, t) => { if (t != null) { S.missionStart = t; S.t = t; } enterSite(id, spot(siteEntry(id))); },
   });
   const pins = $('pins');
@@ -114,6 +116,11 @@ function placePins() {
     }
     placed.push(it);
     it.s.el.style.left = `${it.x}px`; it.s.el.style.top = `${it.y}px`;
+  }
+  for (const [id, v] of [['sunmark', overview.sunMark], ['earthmark', overview.earthMark]]) { // where the Sun and Earth stand, on the rim of the cap
+    const q = show && v ? overview.project(v, w, h, 0) : null, el = $(id);
+    el.style.display = q ? '' : 'none';
+    if (q) { el.style.left = `${q.x}px`; el.style.top = `${q.y}px`; }
   }
   if (show) {
     for (const it of items) {
@@ -494,6 +501,16 @@ function frame(now) {
     if (S.dirty && now - S.lastHud > 60) { renderHud(s); S.lastHud = now; S.dirty = false; }
   } else {
     if (!S.held && !overview.anim && S.mode === 'overview') overview.theta += dt * 1.5; // slow turn until the user takes the map
+    if (S.all) { // the map's own clock: play sweeps it over the chosen period, and the sunlight on the Moon follows
+      const [a, b] = S.all.range();
+      if (S.mapPlay) { S.mapT += dt * Math.min((b - a) / 20, 2 * 86400); if (S.mapT >= b || S.mapT < a) S.mapT = a; }
+      if (S.mapT !== S.mapShown) {
+        const k = globalThis.Sky.bodiesMoonFixed(new Date(S.mapT * 1000)), lon = (v) => Math.atan2(v[1], v[0]);
+        overview.setSky(lon(k.sun), Math.asin(k.sun[2] / Math.hypot(...k.sun)), lon(k.earth));
+        S.all.setHead(S.mapT, S.mapPlay); S.mapShown = S.mapT;
+      }
+      if (S.mapPlay !== S.playShown) { S.all.setHead(S.mapT, S.mapPlay); S.playShown = S.mapPlay; }
+    }
     overview.render(now);
     drawOverlay(null);
   }
@@ -523,6 +540,7 @@ function frame(now) {
     const landing = p.get('land') ? Date.parse(p.get('land').slice(0, 10) + 'T00:00:00Z') / 1000 : Math.floor(Date.now() / 86400000) * 86400; // default: land today
     S.missionStart = Number.isFinite(landing) ? landing : periodStart();
     S.missionDays = 14; // the survival limits are set for a 14 day stay; "Details" can change it
+    S.mapT = Math.floor(Date.now() / 1000);
     buildSiteList();
     const t = S.missionStart;
     S.t = Number.isFinite(t) ? t : S.missionStart;

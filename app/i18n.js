@@ -3,6 +3,7 @@
 (function (root) {
   const S = {
   "en": {
+    "aPlay": "Play the sunlight over this period",
     "a1m": "Next month",
     "a2w": "Next 2 weeks",
     "a3m": "Next 3 months",
@@ -13,8 +14,8 @@
     "aTo": "To",
     "aToday": "today",
     "aTitle": "On which landing days does a robot survive?",
-    "aHint": "Click a day to land there. Drag the map to turn it.",
-    "aTip": "One column is one landing day, judged for a 14 day stay with the same checks as on the site. On long periods several days share one pixel and the colour is their mix. Six sites come from the NASA Lunar Surface Data Book. Nine more (marked Team) were picked by the team on NASA LOLA terrain: the best-lit point of a crater rim or the lowest point of a crater floor. Map: heights times 2, lighting illustrative.",
+    "aHint": "Click a day to land there. Press play to watch the sunlight move. Drag the Moon to turn it.",
+    "aTip": "One column is one landing day, judged for a 14 day stay with the same checks as on the site. On long periods several days share one pixel and the colour is their mix. Six sites come from the NASA Lunar Surface Data Book. Nine more (marked Team) were picked by the team on NASA LOLA terrain: the best-lit point of a crater rim or the lowest point of a crater floor. Moon: heights times 2. Shadows are cast by the real Sun position on 1.3 km terrain, so they are coarser than the checks, which use 80 m terrain.",
     "calAllOk": "Every later day works too.",
     "calNext": "Next safe landing day: {date}.",
     "calNone": "No safe day in this period.",
@@ -77,6 +78,7 @@
     "vYear": "year"
   },
   "ru": {
+    "aPlay": "Показать движение света за этот период",
     "a1m": "Месяц вперёд",
     "a2w": "2 недели вперёд",
     "a3m": "3 месяца вперёд",
@@ -87,7 +89,7 @@
     "aTo": "По",
     "aToday": "сегодня",
     "aTitle": "В какие дни посадки робот выживает?",
-    "aHint": "Нажмите на день, чтобы сесть там. Карту можно вращать мышью.",
+    "aHint": "Нажмите на день, чтобы сесть там. Кнопка пуска показывает, как движется солнечный свет. Луну можно вращать мышью.",
     "aTip": "Один столбец: один день посадки, оценка для 14 дней работы по тем же проверкам, что и на месте. На длинных периодах несколько дней попадают в один пиксель, и цвет показывает их смесь. Шесть мест взяты из NASA Lunar Surface Data Book. Ещё девять (с пометкой Team) выбрала команда по рельефу NASA LOLA: самая освещённая точка вала кратера или самая низкая точка его дна. Карта: высоты увеличены в 2 раза, освещение условное.",
     "calAllOk": "Все следующие дни тоже подходят.",
     "calNext": "Следующий безопасный день посадки: {date}.",
@@ -151,6 +153,7 @@
     "vYear": "год"
   },
   "ky": {
+    "aPlay": "Ушул мезгилдеги жарыктын жылышын көрсөтүү",
     "a1m": "Бир ай алдыга",
     "a2w": "2 жума алдыга",
     "a3m": "3 ай алдыга",
@@ -161,7 +164,7 @@
     "aTo": "Аягы",
     "aToday": "бүгүн",
     "aTitle": "Робот кайсы конуу күндөрүндө аман калат?",
-    "aHint": "Ошол жерге конуу үчүн күндү басыңыз. Картаны чычкан менен бурса болот.",
+    "aHint": "Ошол жерге конуу үчүн күндү басыңыз. Ойнотуу баскычы күн нурунун жылышын көрсөтөт. Айды чычкан менен бурса болот.",
     "aTip": "Бир тилке: бир конуу күнү, 14 күндүк иш үчүн ошол эле текшерүүлөр менен бааланат. Узак мезгилде бир пикселге бир нече күн туура келет, түсү алардын аралашмасы. Алты жер NASA Lunar Surface Data Book китебинен алынган. Дагы тогузун (Team белгиси менен) команда NASA LOLA рельефи боюнча тандады: кратер кырынын эң жарык чекити же түбүнүн эң төмөн чекити. Карта: бийиктиктер 2 эсе чоңойтулган, жарык шарттуу.",
     "calAllOk": "Кийинки күндөрдүн баары да жарайт.",
     "calNext": "Кийинки коопсуз конуу күнү: {date}.",
