@@ -1,0 +1,28 @@
+{
+  "name": "lunar-landing-site-navigator",
+  "version": "0.1.0",
+  "description": "Compare lunar south pole landing sites and dates by sunlight and direct-to-Earth visibility, from NASA LOLA terrain.",
+  "private": true,
+  "license": "Apache-2.0",
+  "type": "commonjs",
+  "scripts": {
+    "test": "node tools/test.cjs",
+    "validate": "node tools/validate-horizons.cjs",
+    "smoke": "node tools/smoke.cjs",
+    "results": "node tools/results.cjs",
+    "crosscheck": "node tools/crosscheck-illumination.cjs",
+    "i18n:review": "node tools/i18n-review.cjs",
+    "build:dem": "node tools/build-dem.cjs",
+    "build:sites": "node tools/build-sites.cjs",
+    "build:global": "node tools/build-global.cjs",
+    "video": "node tools/make-video.cjs",
+    "deploy": "node tools/explainer-assets.cjs && npx --yes firebase-tools@14.4.0 deploy --only hosting",
+    "live": "node tools/live-check.cjs"
+  },
+  "dependencies": {
+    "astronomy-engine": "2.1.19"
+  },
+  "devDependencies": {
+    "playwright-core": "1.64.1"
+  }
+}

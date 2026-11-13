@@ -1,0 +1,7 @@
+node_modules/
+*.img
+.DS_Store
+explainer/demo.mp4
+explainer/img/
+.firebase/
+docs/hackathon-session-prompt.md

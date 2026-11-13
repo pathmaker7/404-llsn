@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lunar Landing Site Navigator</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <div>
+    <h1 data-i18n="title">Lunar Landing Site Navigator</h1>
+    <p class="sub" data-i18n="sub"></p>
+  </div>
+  <div class="team">404 agents · NASA Space Apps 2026 · Naryn · <a class="explain" href="https://lunar-navigator-explained.web.app" target="_blank" rel="noopener" data-i18n="explainLink">How it works</a> <select id="lang" aria-label="Language"></select></div>
+</header>
+
+<main>
+  <aside class="controls">
+    <section>
+      <h2 data-i18n="mission"></h2>
+      <label><span data-i18n="spanStart"></span><input id="start" type="date" value="2026-11-14"></label>
+      <label><span data-i18n="spanLen"></span>
+        <select id="span">
+          <option value="30" data-i18n="d30"></option>
+          <option value="90" data-i18n="d90"></option>
+          <option value="365" selected data-i18n="y1"></option>
+        </select>
+      </label>
+      <label><span data-i18n="stay"></span><input id="stay" type="number" min="1" max="60" step="0.5" value="7"></label>
+      <label><span data-i18n="mast"></span><input id="mast" type="number" min="0" max="50" step="1" value="2"></label>
+      <label data-i18n-title="marginTip"><span data-i18n="margin"></span><input id="margin" type="number" min="0" max="5" step="0.25" value="0.5"></label>
+    </section>
+    <section>
+      <h2><span data-i18n="sites"></span> <span class="hint" data-i18n="sitesHint"></span></h2>
+      <div id="sites"></div>
+      <select id="addPreset"><option value="" data-i18n="addPreset"></option></select>
+      <form id="coordForm" class="coords">
+        <input id="latIn" type="number" step="any" min="-90" max="90" data-i18n-placeholder="latPh" aria-label="Latitude, degrees north" required>
+        <input id="lonIn" type="number" step="any" min="-180" max="360" data-i18n-placeholder="lonPh" aria-label="Longitude, degrees east" required>
+        <button data-i18n="add"></button>
+      </form>
+    </section>
+    <section class="explain">
+      <h2 data-i18n="howTitle"></h2>
+      <p data-i18n="how1"></p>
+      <p data-i18n-html="how2"></p>
+    </section>
+  </aside>
+
+  <section class="map-wrap">
+    <div class="tabs"><button id="viewPole" class="on" data-i18n="pole"></button><button id="viewGlobe" data-i18n="globe"></button></div>
+    <canvas id="map" width="1266" height="1266"></canvas>
+    <canvas id="globeMap" width="1440" height="720" hidden></canvas>
+    <div id="mapInfo" class="overlay">LOLA elevation, polar view, 0° longitude up</div>
+    <label class="maptoggle" data-i18n-title="slopeTip"><input id="slopeToggle" type="checkbox"> <span data-i18n="slopeToggle"></span></label>
+    <label class="maptoggle second" data-i18n-title="shadowTip"><input id="shadowToggle" type="checkbox"> <span data-i18n="shadowToggle"></span></label>
+  </section>
+
+  <section class="results">
+    <div class="card">
+      <div class="card-head">
+        <h2><span data-i18n="landingDate"></span> <span id="landing" class="mono"></span></h2>
+        <div><button id="play" data-i18n-title="playTip">▶</button> <button id="best" data-i18n="best"></button> <button id="share" data-i18n-title="shareTip" data-i18n="copy"></button></div>
+      </div>
+      <canvas id="planner" height="190"></canvas>
+      <p class="hint" data-i18n="plannerHint"></p>
+    </div>
+    <div class="card">
+      <h2 data-i18n="compare"></h2>
+      <div class="tablewrap"><table id="table"></table></div>
+      <p class="hint" id="artemisNote" data-i18n-html="artemisNote"></p>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <h2 data-i18n="hoodTitle"></h2>
+        <button id="hoodBtn" data-i18n-title="hoodTip" data-i18n="hoodBtn"></button>
+      </div>
+      <div id="hood" hidden>
+        <div class="hoodmaps"><figure><canvas id="hoodSun" width="220" height="220"></canvas><figcaption data-i18n="hoodSun"></figcaption></figure><figure><canvas id="hoodEarth" width="220" height="220"></canvas><figcaption data-i18n="hoodEarth"></figcaption></figure></div>
+        <p id="hoodText" class="hint"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sky card">
+    <div class="card-head">
+      <h2><span data-i18n="skyFrom"></span> <span id="focusName"></span> <span data-i18n="at"></span> <span id="now" class="mono"></span></h2>
+      <div id="nowState" class="mono"></div>
+    </div>
+    <canvas id="panorama" height="260"></canvas>
+    <input id="scrub" type="range" min="0" max="1000" value="0" data-i18n-aria="scrubLabel">
+    <p class="hint" data-i18n="skyHint"></p>
+  </section>
+
+  <section class="timeline card">
+    <div class="card-head">
+      <h2 data-i18n="timeline"></h2>
+      <button id="csv" data-i18n="csv"></button>
+    </div>
+    <canvas id="timeline" height="200"></canvas>
+    <div id="windows"></div>
+  </section>
+</main>
+
+<footer data-i18n="footer"></footer>
+<p id="draftNote" class="hint" hidden></p>
+
+<script src="i18n.js"></script>
+<script src="vendor/astronomy.browser.min.js"></script>
+<script src="data/dem.js"></script>
+<script src="data/sites.js"></script>
+<script src="sky.js"></script>
+<script src="data/global.js"></script>
+<script src="terrain.js"></script>
+<script src="globe.js"></script>
+<script src="analysis.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
