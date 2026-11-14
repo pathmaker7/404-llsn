@@ -13,6 +13,12 @@ Pick the voice together: https://lunar-navigator-explained.web.app/voices.html (
 short samples of fourteen). Then rebuild with the chosen name, about one minute, no re-recording:
 `npm run narrate -- "Samantha (English (US))"`. The default is Daniel (English (UK)).
 
+A recorded voice works too, for example the ElevenLabs voice "The Professional Presenter": paste
+docs/VOICE-TAKE.txt (the eight lines, numbers written as spoken, a blank line between lines) as ONE take, download
+the mp3, then `npm run narrate -- ~/Downloads/take.mp3 "ElevenLabs, The Professional Presenter"`. The take is cut at
+its seven longest pauses, one clip per caption; a clip may be sped up by at most 12 percent, otherwise the narrator
+stops and names the line that is too long. The metadata then names that voice instead of Apple text to speech.
+
 | Time | On screen (what the script clicks) | Voice and caption | Which judging criterion it serves |
 |---|---|---|---|
 | 0:00 to 0:03.6 | The whole Moon; the team's names under the caption | Team 404 agents, Naryn, Kyrgyzstan. | Presentation: who we are |

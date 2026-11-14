@@ -46,14 +46,14 @@ const SECONDS = 29;
   const period = (k) => page.click(`.a-range button[data-y="${k}"]`);
   // The voice reads each caption word for word (subtitles = speech), so each line is short enough to be spoken at a
   // calm pace in the time it stays on screen.
-  await say('Team 404 agents, Naryn, Kyrgyzstan.', true); await until(3.6);
+  await say('Team 404 agents, Naryn, Kyrgyzstan.', true); await until(3.4);
   await page.evaluate(() => window.__names.remove());
   await say('Which days can a Moon mission survive?', true);
-  await page.mouse.move(800, 260); await page.mouse.down(); await page.mouse.move(1150, 300, { steps: 40 }); await page.mouse.up(); await until(6.2);
+  await page.mouse.move(800, 260); await page.mouse.down(); await page.mouse.move(1150, 300, { steps: 40 }); await page.mouse.up(); await until(5.8);
   await period('1');
-  await say('Earth is up one week a month. The Sun has a dark season.', true); await until(10.2);
+  await say('Earth is up one week a month. The Sun has a dark season.', true); await until(9.6);
   await period('5');
-  await say('Over five years, it repeats every 354 days.', true); await until(14);
+  await say('Over five years, it repeats every 354 days.', true); await until(14.2);
   await period('1m');
   await say('Click a green day. Stand on NASA terrain.', true);
   // The best site's first green day after today: the film lands where the mission survives.
