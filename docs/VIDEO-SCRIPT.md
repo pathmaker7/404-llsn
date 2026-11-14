@@ -50,7 +50,7 @@ Measured in the app on 14 Nov 2026 (best site, Peak near Shackleton, 2021 to 203
 
 | Cycle | What you see | Why | Proof |
 |---|---|---|---|
-| Earth, about 27 days | One short green window a month | Seen from the pole, Earth is near the horizon and the Moon nods up and down (libration), so Earth rises for about a week and sets again | in Nov to Jan and Aug to Oct the failing check is "radio" on 22 to 24 days a month |
+| Earth, about 27 days | One short green window a month | Seen from the pole, Earth is near the horizon and the Moon nods up and down (libration), so Earth is up for about two weeks and hidden for about two weeks (measured: 13 to 17 days up at most sites); a 14 day stay that tolerates 3 days of silence fits only when it lands in the first days Earth is up, about a week of landing days | in Nov to Jan and Aug to Oct the failing check is "radio" on 22 to 24 days a month |
 | Sun, about a year | Months with almost no green (Feb to Jul 2027) | The Moon's axis tilts 1.5 degrees, so for part of the year the Sun stays so low that hills hide it for days | in Feb to Jul 2027 the failing check is "night" on 14 to 21 days a month |
 | Both together, 354 days | The green clusters return about 11 days earlier each calendar year | 12 lunar months = 354 days, shorter than our 365 day year (the same reason Orozo comes about 11 days earlier every year) | strongest repeat in the survival series at 354 days for 9 of the 10 sites with any green day (the tenth, Mons Mouton, peaks at 679, about two of these cycles) |
 
