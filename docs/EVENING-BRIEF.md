@@ -34,7 +34,7 @@ Lunar Landing Site Navigator answers one question: if a solar robot lands at thi
 | Judging | five criteria, each 1 to 5: Impact, Creativity, Validity, Relevance, Presentation | https://www.spaceappschallenge.org/resources/judging-awards-guide | read 14 Nov |
 | Submission | project page in English; demo is a video of 30 seconds or less, or 7 slides at most; all sources credited | https://www.spaceappschallenge.org/resources/project-submission-guide/ | address opens; the two limits above are quoted from the judging guide. Read this page fully and list every required field. |
 | FAQ | includes "Teams are not allowed to begin working on the challenges prior to the hackathon" | https://www.spaceappschallenge.org/resources/participant-faqs/ | address opens; see the risk below |
-| Naryn local event | submit between 09:00 14 Nov and 23:59 15 Nov local time; team of at most 6, all registered for the Naryn event; offline teams need no presentation, the jury scores the submitted project | PDF in `~/Downloads/NASA_Space_Apps_2026_*Naryn*.pdf` | read 14 Nov. An older memory note says "local pitch 16:30 Nov 15": the PDF says offline teams do not present. Ask the owner which is true. |
+| Naryn local event | submit between 09:00 14 Nov and 23:59 15 Nov local time; team of at most 6, all registered for the Naryn event; online teams prepare a presentation, offline teams do not; the participation type can change until 15 Nov | PDF in `~/Downloads/NASA_Space_Apps_2026_*Naryn*.pdf` | read 14 Nov. **We are online (owner, 14 Nov), so we present.** The PDF gives no format, length or time; an older note said 16:30 on 15 Nov, not confirmed. Watch the Naryn Telegram channel. Slides: https://lunar-navigator-explained.web.app/deck.html, PDF: https://lunar-navigator-explained.web.app/deck.pdf |
 
 ## Where we stand (harsh, 1 to 10, my marks on 14 Nov)
 
@@ -44,7 +44,7 @@ Lunar Landing Site Navigator answers one question: if a solar robot lands at thi
 | Validity | 8 | our Sun share on ridge tops is 11 points above NASA's map on average, cause not found |
 | Creativity | 8 | 3D Moon viewers are common; the real landing replay is the fresh part |
 | Impact | 6.5 | no real person outside the team has used it |
-| Presentation | 7.5 | nobody has rehearsed; Kyrgyz and Russian not read by a native speaker |
+| Presentation | 8.5 | film and 7 slides ready (14 Nov evening); nobody has rehearsed the online talk; Kyrgyz and Russian not read by a native speaker |
 
 ## How we know it is right
 
@@ -68,7 +68,7 @@ Two weak points to admit if asked:
 
 ## What only the team can do, by score gain
 
-1. Get five real people to use it (the venue is School No. 1: one teacher, the lesson sheet, one photo, one quote).
+1. Get five real people to use it (a school such as School No. 1: one teacher, the lesson sheet, one quote; photos of the teacher, the sheet or the screen only, never of anyone under 18, as the submission guide forbids it).
 2. A native speaker reads the Kyrgyz and Russian in the app and the lesson.
 3. Fill the project page in English and attach the 29 second film (`docs/demo-30s.mp4`).
 4. Decide what to say about two risks: code dated before 14 Nov (the FAQ line above; the owner chose on 12 Nov to build early, do not re-argue, point to the dates in the repo and `docs/SI-usage.md`), and the teammate's 3D repo having no licence.
@@ -110,4 +110,4 @@ Rival teams on the same challenge (read for comparison)
 
 ## When you finish
 
-End with the three things the team should do first tonight, and ask the owner whether there is a pitch on 15 Nov or not.
+End with the three things the team should do first tonight, The team is online, so it presents: rehearse the seven slides with the live app once, and confirm the time and format in the Naryn Telegram channel.

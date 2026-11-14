@@ -2,7 +2,7 @@
 
 NASA Space Apps Challenge 2026, challenge "Lunar Landing Site Navigator". Team **404 agents**, Naryn. An independent student project, not a NASA product.
 
-**Live app:** https://lunar-navigator-404.web.app · **How it works:** https://lunar-navigator-explained.web.app · **7 slides:** https://lunar-navigator-explained.web.app/deck.html · **Project page text:** `docs/SUBMISSION.md` · **Film script:** `docs/VIDEO-SCRIPT.md`
+**Live app:** https://lunar-navigator-404.web.app · **How it works:** https://lunar-navigator-explained.web.app · **7 slides (online presentation):** https://lunar-navigator-explained.web.app/deck.html (PDF: https://lunar-navigator-explained.web.app/deck.pdf) · **Project page text:** `docs/SUBMISSION.md` · **Film script:** `docs/VIDEO-SCRIPT.md`
 
 > If we land at this site on this day, will a solar robot survive, and on which days would it?
 
@@ -71,7 +71,7 @@ The app is static files, but it needs a web server (it loads ES modules and data
 | `app/data/` | terrain and horizon for the twenty points (fifteen sites, five with a best spot within 500 m) |
 | `app/data/polar320.bin` | LOLA `LDEM_80S_80M` averaged to 320 m, for added polar points (`pipeline-3d/pipeline/mid.py`) |
 | `pipeline-3d/` | the offline Python pipeline that built `app/data/`. `sh pipeline-3d/add-sites.sh` builds the team's nine sites, then `node tools/eva-slope.cjs` writes the 2 km slope values |
-| `tools/` | `test.cjs`, `smoke.cjs`, `validate-horizons.cjs`, `record-demo.cjs` |
+| `tools/` | `test.cjs`, `smoke.cjs`, `validate-horizons.cjs`, `record-demo.cjs`, `deck-pdf.cjs` (slides to PDF, `npm run deck`) |
 | `explainer/` | the "How it works" page and `lesson.html`, a 45 minute school lesson in English, Russian and Kyrgyz |
 | `tools/validate-pgda.cjs`, `app/data/pgda.json` | the comparison with NASA's polar illumination maps |
 

@@ -43,7 +43,10 @@
     .nums { grid-template-columns: 1fr; }
     .ai { position: static; display: block; margin: 0 16px 24px; }
   }
-  @media print { html { scroll-snap-type: none; } section { page-break-after: always; min-height: auto; } .ai { position: static; } }
+  /* tools/deck-pdf.cjs prints one slide per 16:10 page into deck.pdf, for an online jury that asks for a file. */
+  @page { size: 1440px 900px; margin: 0; }
+  @media print { html { scroll-snap-type: none; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    section { height: 900px; min-height: 0; overflow: hidden; break-after: page; } section:last-of-type { break-after: auto; } .ai { position: absolute; top: 864px; right: 14px; bottom: auto; } }
 </style>
 </head>
 <body>
@@ -154,6 +157,7 @@
       <a href="https://lunar-navigator-404.web.app">Open the app</a>
       <a class="ghost" href="https://github.com/pathmaker7/404-llsn">Code</a>
       <a class="ghost" href="lesson.html">School lesson</a>
+      <a class="ghost" href="deck.pdf">Slides as PDF</a>
     </p>
   </div>
   <p class="notes">End on the app link. "Next" items are plans, not built; say so if asked.</p>

@@ -8,6 +8,23 @@ Conditions" and "Confirm All Work is Original". Deadline: Sunday 15 November 202
 Do not attach any photo, video or voice of a person under 18 (the guide forbids it). A photo of the teacher, the lesson
 sheet or the screen is fine.
 
+## We take part online: the presentation
+
+The team is registered for the Naryn Local Event **online**. The Naryn info session PDF says online teams prepare a
+presentation of their work (offline teams do not). The PDF gives no format, length or time for it; watch the Naryn
+Telegram channel (link in its profile header) and ask the Local Lead. Every team member must be registered for the
+Naryn event, or the project is not eligible for awards; the participation type can be changed until 15 November.
+
+| What | Link |
+|---|---|
+| Slides to share on screen (N shows speaker notes, arrows move) | https://lunar-navigator-explained.web.app/deck.html |
+| The same seven slides as a PDF file, if they ask for a file | https://lunar-navigator-explained.web.app/deck.pdf |
+| Live demo during the talk | https://lunar-navigator-404.web.app |
+| The 29 second film, if they ask for a video | https://github.com/pathmaker7/404-llsn/raw/main/docs/demo-30s.mp4 |
+
+The slides are in English, as the guide requires for linked materials; you may speak Kyrgyz or Russian. After any change
+to the deck, run `npm run deck` to rebuild the PDF.
+
 ## Project Name
 
 Lunar Landing Site Navigator
@@ -20,7 +37,7 @@ We built a free web app that answers one question for the Moon's south pole: if 
 
 https://github.com/pathmaker7/404-llsn/raw/main/docs/demo-30s.mp4
 
-(29 seconds, English captions, no voice. Seven slide version: https://lunar-navigator-explained.web.app/deck.html . Submit the film as the demo; the deck is backup.)
+(29 seconds, English captions, no voice. Put the film in this field. The seven slides are for the Naryn online presentation, see below.)
 
 ## Link to Final Project
 
