@@ -26,7 +26,8 @@ const html = `<!doctype html>
 <style>
   body { margin: 0 auto; max-width: 860px; padding: 16px; font: 16px/1.5 system-ui, sans-serif; background: #0b0e13; color: #e6ebf3; }
   h1 { font-size: 24px; margin: 8px 0; } h2 { margin: 32px 0 8px; font-size: 20px; color: #46e0c8; } h2 small { font-weight: 400; color: #8a94a6; font-size: 13px; }
-  .lead { color: #b9c2d0; } nav a { color: #46e0c8; margin-right: 14px; white-space: nowrap; }
+  .lead { color: #b9c2d0; } nav { display: flex; flex-wrap: wrap; gap: 6px 16px; } nav a { color: #46e0c8; white-space: nowrap; }
+  section p, code { overflow-wrap: anywhere; }
   section { border: 1px solid #232a36; border-radius: 8px; padding: 8px 12px; margin: 8px 0; background: #11161e; }
   section p { margin: 4px 0; } code { color: #8a94a6; font-size: 12px; } b { display: inline-block; min-width: 28px; font-size: 11px; color: #8a94a6; }
   p[lang="en"] { color: #9aa5b8; }
