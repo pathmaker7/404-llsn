@@ -94,7 +94,7 @@ function makePin(s) {
   {
     const el = document.createElement('div');
     el.className = 'pin';
-    el.textContent = s.name;
+    el.dataset.name = s.name; el.textContent = globalThis.I18n.place(s.name);
     el.onmouseenter = () => hot(s.id); el.onmouseleave = () => hot(null);
     el.onclick = () => enterSite(s.id, s.variants.best ? 'best' : 'databook') /* land on the best-lit point near the centre when there is one */;
     pins.appendChild(el);
@@ -237,20 +237,21 @@ function selfCheck(site) {
 
 function renderHudStatic() {
   const e = siteEntry(S.siteId), m = S.site.meta;
-  $('h-name').innerHTML = `${e.name}<span class="ref">${e.ref}</span>`;
-  $('h-coords').textContent = `${fmtLat(m.lat)} ${fmtLon(m.lon)} · ground ${m.ground_height_m.toFixed(0)} m · slope ${m.slope_deg}° @80 m`;
+  const I = globalThis.I18n, T = I.t;
+  $('h-name').innerHTML = `${I.place(e.name)}<span class="ref">${I.place(e.ref)}</span>`;
+  $('h-coords').textContent = `${fmtLat(m.lat)} ${fmtLon(m.lon)} · ${T('uCoords', { h: m.ground_height_m.toFixed(0), s: m.slope_deg })}`;
   for (const b of $('h-variant').querySelectorAll('button')) {
     b.classList.toggle('on', b.dataset.v === S.variant);
     b.disabled = !e.variants[b.dataset.v];
-    if (b.dataset.v === 'best' && !e.variants.best) b.title = 'No DEM pixel with slope ≤ 10° within 500 m';
+    if (b.dataset.v === 'best' && !e.variants.best) b.title = T('uNoBest');
   }
-  $('h-variant-note').textContent = e.custom === 'coarse' ? 'A site you added. The horizon and the ground here come from NASA terrain averaged to 320 m, so the horizon can be off by about 1 degree, and by up to 2 on a narrow peak. The fifteen prepared sites use 80 m terrain.'
-    : e.custom === 'smooth' ? 'A site you added. The app has no terrain outside the south pole, so the horizon here is the smooth curve of the Moon and the ground is flat. Sun and Earth positions are exact; the slope checks do not apply.'
-    : e.ref === 'Team' ? 'You stand on a point picked by our team on NASA terrain: the best-lit point of this crater rim, or the lowest point of this crater floor. It is not a NASA candidate site.'
+  $('h-variant-note').textContent = e.custom === 'coarse' ? T('uNoteCoarse')
+    : e.custom === 'smooth' ? T('uNoteSmooth')
+    : e.ref === 'Team' ? T('uNoteTeam')
     : S.variant === 'best'
-    ? `You stand on the best-lit flat point, ${m.offset_m.toFixed(0)} m from the centre of this region.`
-    : e.variants.best ? 'You stand on the centre of this region (NASA Data Book). It is a region marker, not a chosen landing point.'
-      : 'You stand on the centre of this region (NASA Data Book). No flat, better-lit point was found within 500 m.';
+    ? T('uNoteBest', { m: m.offset_m.toFixed(0) })
+    : e.variants.best ? T('uNoteCentre')
+      : T('uNoteCentreOnly');
 }
 
 function renderHud(s) {
@@ -261,13 +262,13 @@ function renderHud(s) {
   $('h-sun-mask').textContent = fmtDeg(s.sunMask);
   $('h-sun-frac').textContent = `${(s.sunFrac * 100).toFixed(s.sunFrac > 0 && s.sunFrac < 0.995 ? 1 : 0)}%`;
   const pw = $('h-power');
-  pw.textContent = SUN_STATE_LABEL[s.sunState];
+  pw.textContent = globalThis.I18n.t(['uStDark', 'uStPart', 'uStGen'][s.sunState]);
   pw.className = 'chip ' + ['dark', 'part', 'gen'][s.sunState];
   $('h-earth-el').textContent = fmtDeg(s.earthEl);
   $('h-earth-az').textContent = `${s.earthAz.toFixed(1)}°`;
   $('h-earth-margin').textContent = fmtDeg(s.earthEl - s.earthMask);
   const lk = $('h-link');
-  lk.textContent = s.earthVis ? 'DTE link: in view' : 'DTE link: blocked';
+  lk.textContent = globalThis.I18n.t(s.earthVis ? 'uDteIn' : 'uDteOut');
   lk.className = 'chip ' + (s.earthVis ? 'link' : 'nolink');
   // Earth phase: illuminated fraction k = (1 + cos(phase angle)) / 2,
   // phase angle = angle Sun-Earth-observer.
@@ -284,15 +285,15 @@ function renderHud(s) {
   // Always in view (the challenge's core output): where the Sun and Earth stand against the real horizon at the moment shown,
   // and how long until that changes.
   const T = globalThis.I18n.t;
-  const line = (cls, name, el, over, state, next) => `<div class="${cls}"><i></i><b>${name}</b><strong title="${fmtDeg(over)} above the terrain in that direction">${fmtDeg(el)}</strong><span>${T('sElev')}<br>${state}</span><em>${next}</em></div>`;
+  const line = (cls, name, el, over, state, next) => `<div class="${cls}"><i></i><b>${name}</b><strong title="${T('uAboveTip', { d: fmtDeg(over) })}">${fmtDeg(el)}</strong><span>${T('sElev')}<br>${state}</span><em>${next}</em></div>`;
   $('sky-at').firstElementChild.textContent = T('sAt');
   if (document.activeElement !== $('sky-when')) $('sky-when').value = new Date(s.t * 1000).toISOString().slice(0, 19); // to the second; typing is not overwritten
   $('sky-lines').innerHTML = line('sun', T('sSun'), s.sunEl, s.sunEl - s.sunMask, T('sDisc', { p: (s.sunFrac * 100).toFixed(0) }), ns == null ? '' : `${T(lit ? 'sSunset' : 'sSunrise')} ${fmtDuration(ns - s.t)}`)
     + line('earth', T('sEarth'), s.earthEl, s.earthEl - s.earthMask, T(s.earthVis ? 'sIn' : 'sHid'), ne == null ? '' : `${T(s.earthVis ? 'sEset' : 'sErise')} ${fmtDuration(ne - s.t)}`);
-  $('h-sun-next').innerHTML = ns == null ? `<span class="muted">No change before end of data (${S.index.period.end.slice(0, 10)})</span>`
-    : `${lit ? 'Sunlight lost in' : 'Sunlight returns in'} <b>${fmtDuration(ns - s.t)}</b>`;
-  $('h-earth-next').innerHTML = ne == null ? `<span class="muted">No change before end of data</span>`
-    : `${s.earthVis ? 'Earth link lost in' : 'Earth link returns in'} <b>${fmtDuration(ne - s.t)}</b>`;
+  $('h-sun-next').innerHTML = ns == null ? `<span class="muted">${T('uNoChange')} (${S.index.period.end.slice(0, 10)})</span>`
+    : `${T(lit ? 'uSunLost' : 'uSunBack')} <b>${fmtDuration(ns - s.t)}</b>`;
+  $('h-earth-next').innerHTML = ne == null ? `<span class="muted">${T('uNoChange')}</span>`
+    : `${T(s.earthVis ? 'uEarthLost' : 'uEarthBack')} <b>${fmtDuration(ne - s.t)}</b>`;
 }
 
 // ------------------------------------------------------------- time/mission
@@ -440,7 +441,7 @@ function drawOverlay(s) {
     og.beginPath(); og.moveTo(x, y0 + 30); og.lineTo(x - 5, y0 + 38); og.lineTo(x + 5, y0 + 38); og.fill();
     og.fillText(Math.abs(d) > span / 2 ? (d < 0 ? `◂ ${label}` : `${label} ▸`) : label, x, y0 + 50);
   };
-  mark(s.sunAz, '#ffb547', 'SUN'); mark(s.earthAz, '#5fb4ff', 'EARTH');
+  mark(s.sunAz, '#ffb547', globalThis.I18n.t('uSunLabel')); mark(s.earthAz, '#5fb4ff', globalThis.I18n.t('uEarthLabel'));
   og.fillStyle = '#46e0c8'; og.fillRect(w / 2 - 1, y0 - 4, 2, 6);
   og.fillText(`${surface.yaw.toFixed(0).padStart(3, '0')}°`, w / 2, y0 - 7);
 
@@ -455,8 +456,8 @@ function drawOverlay(s) {
     og.fillStyle = col; og.textAlign = 'left'; og.font = '600 11px "IBM Plex Mono", monospace';
     og.fillText(text, p.x + rr + 6, p.y - 4);
   };
-  lab(s.sunAz, s.sunEl, s.sunR, 'rgba(255,181,71,0.9)', `SUN ${fmtDeg(s.sunEl)} · ${(s.sunFrac * 100).toFixed(0)}% disc`);
-  lab(s.earthAz, s.earthEl, s.earthR * surface.opts.earthMag, 'rgba(95,180,255,0.9)', `EARTH ${fmtDeg(s.earthEl)}${surface.opts.earthMag > 1 ? ' (×4)' : ''}`);
+  lab(s.sunAz, s.sunEl, s.sunR, 'rgba(255,181,71,0.9)', `${globalThis.I18n.t('uSunLabel')} ${fmtDeg(s.sunEl)} · ${(s.sunFrac * 100).toFixed(0)}% ${globalThis.I18n.t('uDisc')}`);
+  lab(s.earthAz, s.earthEl, s.earthR * surface.opts.earthMag, 'rgba(95,180,255,0.9)', `${globalThis.I18n.t('uEarthLabel')} ${fmtDeg(s.earthEl)}${surface.opts.earthMag > 1 ? ' (×4)' : ''}`);
   og.textAlign = 'center';
 }
 
@@ -566,6 +567,7 @@ function renderAbout() {
 }
 
 // --------------------------------------------------------------------- loop
+let relabel = () => {}; // set at boot: puts every fixed label and place name into the chosen language
 let lastNow = performance.now();
 function frame(now) {
   const dt = Math.min((now - lastNow) / 1000, 0.5);  // real time, so slow machines keep pace
@@ -613,8 +615,8 @@ function frame(now) {
     // Three visible buttons, the current language lit: a closed dropdown did not say what it was for.
     sel.innerHTML = Object.entries(I18n.NAMES).map(([k, v]) => `<button data-l="${k}" title="${v}">${k.toUpperCase()}</button>`).join('');
     const mark = () => { for (const b of sel.children) b.classList.toggle('on', b.dataset.l === I18n.lang); };
-    for (const b of sel.children) b.onclick = () => { I18n.set(b.dataset.l); try { localStorage.setItem('lang', b.dataset.l); } catch (e) { /* storage blocked */ } mark(); drawVerdict(); S.all?.redraw(); S.dirty = true; };
-    mark();
+    for (const b of sel.children) b.onclick = () => { I18n.set(b.dataset.l); try { localStorage.setItem('lang', b.dataset.l); } catch (e) { /* storage blocked */ } mark(); relabel(); drawVerdict(); S.all?.redraw(); if (S.site) renderHudStatic(); S.dirty = true; };
+    mark(); I18n.apply(document);
     const ov = await loadOverview(S.index);
     overview.build(ov, S.index.sites);
     overview.intro();
@@ -623,7 +625,8 @@ function frame(now) {
     // The numbers and view options are open by default and the Details button closes them. Closed on load on a phone
     // (no room) and when embedded in the guided mission (min=1), which shows its own verdict. On <html>: the app replaces body.className.
     document.documentElement.classList.toggle('min', p.get('min') === '1' || window.innerWidth <= 760); document.documentElement.classList.toggle('embed', p.get('min') === '1');
-    const moreText = () => { $('more').textContent = document.documentElement.classList.contains('min') ? 'Details' : 'Hide details'; };
+    const moreText = () => { $('more').textContent = I18n.t(document.documentElement.classList.contains('min') ? 'uMore' : 'uLess'); };
+    relabel = () => { I18n.apply(document); moreText(); for (const el of $('pins').children) if (el.dataset.name) el.textContent = I18n.place(el.dataset.name); };
     $('more').onclick = () => { document.documentElement.classList.toggle('min'); moreText(); resize(); }; moreText();
     const landing = p.get('land') ? Date.parse(p.get('land').slice(0, 10) + 'T00:00:00Z') / 1000 : Math.floor(Date.now() / 86400000) * 86400; // default: land today
     S.missionStart = Number.isFinite(landing) ? landing : periodStart();

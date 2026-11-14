@@ -6,16 +6,20 @@ and the two cycles that decide which days work. Order follows the Space Apps sub
 challenge, the title, how it works with NASA data, what it does for people. No voice and no person appear in it (no one
 under 18 may appear). A visible "Made with AI (SI) tools" watermark stays in the top right corner the whole time.
 
-| Time | On screen | Caption |
-|---|---|---|
-| 0:00 to 0:02.5 | The whole Moon, gliding to the south pole | Manuchehr, Aruzhan, Kairat, Arsen, Amirbek: team 404 agents, Naryn, Kyrgyzstan |
-| 0:02.5 to 0:05 | The Moon is dragged and turns | Challenge: Lunar Landing Site Navigator. A free tool to teach how Moon landings are planned. |
-| 0:05 to 0:09 | "Next year" pressed: one green window per month, and a dark season with almost none | One year at the south pole. Green: a solar robot survives. Earth is up one week a month; the Sun has a dark season. |
-| 0:09 to 0:13 | "Next 5 years" pressed: the green clusters come back every year | Five years: the same pattern every 354 days, 12 lunar months. Mission planners pick dates from cycles like this. |
-| 0:13 to 0:16.5 | Back to one month; the best site's first green day is clicked; fly down; look at the Sun | Built on NASA LOLA terrain and JPL ephemerides. Click a green day and stand on the site. |
-| 0:16.5 to 0:20 | The answer panel and play: the Sun moves along the horizon | One answer, eleven checks. Press play: the Sun slides along the horizon, Earth dips behind a ridge. |
-| 0:20 to 0:25 | Chandrayaan-3 replayed at its real touchdown, with the "what really happened" box | A real landing, replayed: Chandrayaan-3, 2023. Our sunset is 4 September, the day India put it to sleep. |
-| 0:25 to 0:29 | The replay box and the 3D view | For schools in Kyrgyzstan and Central Asia: a ready lesson in Kyrgyz, Russian and English. |
+| Time | On screen | Caption | Words per second |
+|---|---|---|---|
+| 0:00 to 0:03 | The whole Moon, gliding to the south pole | Team 404 agents, Naryn: Manuchehr, Aruzhan, Kairat, Arsen, Amirbek | 3.0 |
+| 0:03 to 0:06 | The Moon is dragged and turns; the app title is in the top bar | Lunar Landing Site Navigator: which days can a Moon mission survive? | 3.6 |
+| 0:06 to 0:10 | "Next year" pressed: one green window per month, and a dark season with almost none | One year: green, the mission survives. Earth is up one week a month. | 3.3 |
+| 0:10 to 0:13.5 | "Next 5 years" pressed: the green clusters come back every year | Five years: with the Sun's dark season, it repeats every 354 days. | 3.4 |
+| 0:13.5 to 0:16.5 | Back to one month; the best site's first green day is clicked; fly down; look at the Sun | Click a green day. Stand on real NASA terrain. | 3.0 |
+| 0:16.5 to 0:20 | MISSION SURVIVED, eleven checks, and play: the Sun moves along the horizon | One answer, eleven checks. The Sun slides along the horizon. | 2.9 |
+| 0:20 to 0:25 | Chandrayaan-3 replayed at its real touchdown, with the "what really happened" box | Chandrayaan-3, replayed: our sunset matches the day India put it to sleep. | 2.4 |
+| 0:25 to 0:29 | The replay box and the 3D view | Built for schools in Kyrgyzstan and Central Asia: Kyrgyz, Russian, English. | 2.8 |
+
+Words per second are measured by the recorder from the real time each caption stayed on screen; it fails if any
+caption is faster than 3.7, since a judge watches once. The film: https://lunar-navigator-explained.web.app/demo-30s.mp4
+(plays in the browser; the GitHub file link downloads instead).
 
 ## What the two cycles are (so whoever speaks can explain them)
 
@@ -36,11 +40,11 @@ The guide allows speech in another language only with English subtitles; the cap
 Read calmly, one line per row, about 2.5 words per second:
 
 1. "We are team 404 agents from Naryn, Kyrgyzstan."
-2. "Our tool teaches how Moon landings are planned."
+2. "Lunar Landing Site Navigator: which days can a Moon mission survive?"
 3. "In one year at the south pole, Earth is up one week a month, and the Sun has a dark season."
 4. "Over five years the pattern repeats every 354 days. Planners pick dates from cycles like this."
 5. "It is built on NASA terrain. Click a green day and stand on the site."
-6. "One answer, eleven checks. Watch the Sun slide along the horizon."
+6. "Mission survived: one answer, eleven checks. Watch the Sun slide along the horizon."
 7. "We replayed Chandrayaan-3: our sunset matches the day India put it to sleep."
 8. "For schools in Kyrgyzstan and Central Asia, in Kyrgyz, Russian and English."
 

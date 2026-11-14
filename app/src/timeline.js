@@ -46,8 +46,8 @@ export class Timeline {
     const y1 = 4, y2 = y1 + laneH + 5;
     const span = this.t1 - this.t0;
     g.font = '600 10px "IBM Plex Mono", ui-monospace, monospace';
-    g.fillStyle = '#ffb547'; g.fillText('SUNLIGHT', 4, y1 + laneH / 2 + 4);
-    g.fillStyle = '#5fb4ff'; g.fillText('EARTH', 4, y2 + laneH / 2 + 4);
+    g.fillStyle = '#ffb547'; g.fillText(globalThis.I18n.t('uSunlight'), 4, y1 + laneH / 2 + 4);
+    g.fillStyle = '#5fb4ff'; g.fillText(globalThis.I18n.t('uEarthLabel'), 4, y2 + laneH / 2 + 4);
     // one rect per pixel column (max state in column for sun, any for earth)
     for (let x = 0; x < w; x++) {
       const ta = this.t0 + (x / w) * span, tb = this.t0 + ((x + 1) / w) * span;

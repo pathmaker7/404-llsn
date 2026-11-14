@@ -20,7 +20,8 @@ Naryn event, or the project is not eligible for awards; the participation type c
 | Slides to share on screen (N shows speaker notes, arrows move) | https://lunar-navigator-explained.web.app/deck.html |
 | The same seven slides as a PDF file, if they ask for a file | https://lunar-navigator-explained.web.app/deck.pdf |
 | Live demo during the talk | https://lunar-navigator-404.web.app |
-| The 29 second film, if they ask for a video | https://github.com/pathmaker7/404-llsn/raw/main/docs/demo-30s.mp4 |
+| What to say, minute by minute, and the hard questions | `docs/PRESENTATION-SCRIPT.md` |
+| The 29 second film, if they ask for a video | https://lunar-navigator-explained.web.app/demo-30s.mp4 |
 
 The slides are in English, as the guide requires for linked materials; you may speak Kyrgyz or Russian. After any change
 to the deck, run `npm run deck` to rebuild the PDF.
@@ -35,9 +36,9 @@ We built a free web app that answers one question for the Moon's south pole: if 
 
 ## Link to Project Demo
 
-https://github.com/pathmaker7/404-llsn/raw/main/docs/demo-30s.mp4
+https://lunar-navigator-explained.web.app/demo-30s.mp4
 
-(29 seconds, English captions, no voice. Put the film in this field. The seven slides are for the Naryn online presentation, see below.)
+(29 seconds, English captions, no voice; it plays in the browser. Do not use the GitHub file link: GitHub sends it as a download. Put the film in this field. The seven slides are for the Naryn online presentation, see below.)
 
 ## Link to Final Project
 
@@ -50,7 +51,7 @@ https://lunar-navigator-404.web.app
 2. Fifteen sites: six from NASA's Lunar Surface Data Book and nine the team picked on NASA LOLA terrain. Any latitude and longitude can be added, and known landings can be picked (Apollo 11 and 17, Chandrayaan-3, IM-1, Chang'e 6, IM-2).
 3. Any day from 2021 to 2031, from a two week view up to the whole period. Zoomed out, the cycles show: one short window a month while Earth is above the horizon, months with almost no good day while the Sun is in its low season (Feb to Jul 2027 at the best site), and the whole pattern returning about every 354 days, 12 lunar months, measured in the app's own verdicts for 9 of the 10 sites that have any good day.
 4. Click a day and you stand 2 m above the real terrain at that site. The Sun and Earth sit at their true positions; the Sun's height, "sunset in" and "Earthset in" are shown.
-5. One answer panel: THE ROBOT SURVIVED or THE ROBOT WAS LOST, one sentence why, the next 120 landing days, and eleven checks with a tick or a cross (longest night, longest radio silence, first sunlight, slope, and NASA Artemis III site rules for slope within 2 km and distance from the pole).
+5. One answer panel: MISSION SURVIVED or MISSION LOST, one sentence why, the next 120 landing days, and eleven checks with a tick or a cross (longest night, longest radio silence, first sunlight, slope, and NASA Artemis III site rules for slope within 2 km and distance from the pole).
 6. Your own mission: change how many days the battery lasts without Sun and how many days of radio silence are allowed; every site and day is judged again. The table downloads as CSV, and the page address keeps your sites and limits so a comparison can be shared as a link.
 7. Replay a real landing: the app stands you on the site at the moment of touchdown and shows what really happened next to the model.
 8. English, Russian and Kyrgyz, and a ready 45 minute school lesson in the same three languages: https://lunar-navigator-explained.web.app/lesson.html

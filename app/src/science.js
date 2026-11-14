@@ -92,9 +92,10 @@ export function fmtDuration(sec) {
   if (sec == null) return '—';
   const m = Math.round(sec / 60);
   const d = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60), mm = m % 60;
-  if (d > 0) return `${d} d ${h} h`;
-  if (h > 0) return `${h} h ${mm} min`;
-  return `${mm} min`;
+  const T = globalThis.I18n ? globalThis.I18n.t : (k, v) => ({ uDurDH: `${v.d} d ${v.h} h`, uDurHM: `${v.h} h ${v.m} min`, uDurM: `${v.m} min` })[k];
+  if (d > 0) return T('uDurDH', { d, h });
+  if (h > 0) return T('uDurHM', { h, m: mm });
+  return T('uDurM', { m: mm });
 }
 
 // ---- geometry helpers ---------------------------------------------------

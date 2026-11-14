@@ -18,13 +18,13 @@ Lunar Landing Site Navigator answers one question: if a solar robot lands at thi
 
 1. First screen: the whole Moon in 3D, gliding to the south pole. Under it one row per site and one block per landing day: tall green survives, short dark red is lost. Best site listed first. Play button moves the sunlight.
 2. Click a day: you fly down and stand on the site, 2 m above real terrain, with the Sun and Earth where they really are.
-3. One panel: THE ROBOT SURVIVED or THE ROBOT WAS LOST, one sentence why, the next 120 landing days, eleven checks with a tick or cross.
+3. One panel: MISSION SURVIVED or MISSION LOST, one sentence why, the next 120 landing days, eleven checks with a tick or cross.
 4. Your own mission: change battery days and radio silence days; add any latitude and longitude.
 5. Replay a real landing (new today): Chandrayaan-3, IM-1, Chang'e 6, IM-2. A box shows what really happened next to what the model says.
 6. Download the table as CSV (new today).
 7. English, Russian, Kyrgyz.
 8. "How do we know?" panel: checks against JPL Horizons, against NASA's illumination maps (new today), against four real landings (new today).
-9. A 45 minute school lesson in three languages (new today).
+9. A 45 minute school lesson plan in three languages (new today; no lesson has been held).
 
 ## Requirements and where they come from
 
@@ -68,7 +68,7 @@ Two weak points to admit if asked:
 
 ## What only the team can do, by score gain
 
-1. Get five real people to use it (a school such as School No. 1: one teacher, the lesson sheet, one quote; photos of the teacher, the sheet or the screen only, never of anyone under 18, as the submission guide forbids it).
+1. (Dropped 14 Nov evening: two hours left, no school visit. The lesson stays a plan; say so if asked.)
 2. A native speaker reads the Kyrgyz and Russian in the app and the lesson.
 3. Fill the project page in English and attach the 29 second film (`docs/demo-30s.mp4`).
 4. Decide what to say about two risks: code dated before 14 Nov (the FAQ line above; the owner chose on 12 Nov to build early, do not re-argue, point to the dates in the repo and `docs/SI-usage.md`), and the teammate's 3D repo having no licence.

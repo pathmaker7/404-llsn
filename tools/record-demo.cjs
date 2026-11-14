@@ -33,22 +33,24 @@ const SECONDS = 29;
   })();
   const until = async (sec) => { const wait = sec * 1000 - (Date.now() - t0); if (wait > 0) await page.waitForTimeout(wait); };
   // On the map screen the caption sits at the top, clear of the timeline it talks about; on the site screen it sits above the time bar.
-  const say = (text, top = false) => page.evaluate(([t, up]) => { const c = window.__cap; c.textContent = t; c.style.top = up ? '120px' : 'auto'; c.style.bottom = up ? 'auto' : '230px'; c.style.left = up ? '50%' : '60%'; c.style.maxWidth = up ? '1500px' : '1300px'; }, [text, top]);
+  // Every caption with the moment it appeared: after recording, each must be readable in the time it stays on screen.
+  const caps = [];
+  const say = (text, top = false) => (caps.at(-1)?.text !== text && caps.push({ text, t: (Date.now() - t0) / 1000 }), page.evaluate(([t, up]) => { const c = window.__cap; c.textContent = t; c.style.top = up ? '120px' : 'auto'; c.style.bottom = up ? 'auto' : '230px'; c.style.left = up ? '50%' : '60%'; c.style.maxWidth = up ? '1500px' : '1300px'; }, [text, top]));
 
   // Order follows the Space Apps project submission guide: who we are, the challenge, the title, how it works with
   // NASA data, then what it can do for people. The story is a lesson: the two cycles that decide landing days, seen by
   // zooming out from one year to five (measured: the best sites repeat every 354 days, 12 lunar months; in the dark
   // season "night" fails, in the other months "radio" fails, so the monthly window is Earth's).
   const period = (k) => page.click(`.a-range button[data-y="${k}"]`);
-  await say('Manuchehr, Aruzhan, Kairat, Arsen, Amirbek: team 404 agents, Naryn, Kyrgyzstan', true); await until(2.5);
-  await say('Challenge: Lunar Landing Site Navigator. A free tool to teach how Moon landings are planned.', true);
-  await page.mouse.move(800, 260); await page.mouse.down(); await page.mouse.move(1150, 300, { steps: 40 }); await page.mouse.up(); await until(5);
+  await say('Team 404 agents, Naryn: Manuchehr, Aruzhan, Kairat, Arsen, Amirbek', true); await until(3);
+  await say('Lunar Landing Site Navigator: which days can a Moon mission survive?', true);
+  await page.mouse.move(800, 260); await page.mouse.down(); await page.mouse.move(1150, 300, { steps: 40 }); await page.mouse.up(); await until(6);
   await period('1');
-  await say('One year at the south pole. Green: a solar robot survives. Earth is up one week a month; the Sun has a dark season.', true); await until(9);
+  await say('One year: green, the mission survives. Earth is up one week a month.', true); await until(10);
   await period('5');
-  await say('Five years: the same pattern every 354 days, 12 lunar months. Mission planners pick dates from cycles like this.', true); await until(13);
+  await say("Five years: with the Sun's dark season, it repeats every 354 days.", true); await until(13.5);
   await period('1m');
-  await say('Built on NASA LOLA terrain and JPL ephemerides. Click a green day and stand on the site.', true);
+  await say('Click a green day. Stand on real NASA terrain.', true);
   // The best site's first green day after today: the film lands where the robot survives.
   const cell = await page.evaluate(() => {
     const li = document.querySelector('#sites li.a-row'), cv = li.querySelector('canvas'), b = cv.getBoundingClientRect(), n = __all.b - __all.a;
@@ -59,16 +61,20 @@ const SECONDS = 29;
   await page.mouse.move(cell.x, cell.y, { steps: 12 }); await page.waitForTimeout(500); await page.mouse.click(cell.x, cell.y);
   await page.waitForFunction(() => window.__verdict && document.body.classList.contains('mode-surface'), null, { timeout: 60000 });
   await page.click('#look-sun'); await until(16.5);
-  await say('One answer, eleven checks. Press play: the Sun slides along the horizon, Earth dips behind a ridge.');
+  await say('One answer, eleven checks. The Sun slides along the horizon.');
   await page.click('#play'); await until(20); await page.click('#play');
   // The proof shot: a real landing replayed. The box on the left shows what happened next to the model's sunrise and sunset.
-  const real = 'A real landing, replayed: Chandrayaan-3, 2023. Our sunset is 4 September, the day India put it to sleep.';
+  const real = 'Chandrayaan-3, replayed: our sunset matches the day India put it to sleep.';
   await say(real, true);
   await page.click('#back'); await page.waitForTimeout(700);
   await page.selectOption('#a-famous', { label: 'Chandrayaan-3 (2023)' });
   await page.waitForFunction(() => window.__history && document.body.classList.contains('mode-surface'), null, { timeout: 60000 });
   await say(real); await until(25);
-  await say('For schools in Kyrgyzstan and Central Asia: a ready lesson in Kyrgyz, Russian and English.'); await until(SECONDS);
+  await say('Built for schools in Kyrgyzstan and Central Asia: Kyrgyz, Russian, English.'); await until(SECONDS);
+  // Readable: at most 3.7 words a second for the time each caption really stayed on screen.
+  caps.forEach((c, i) => { const on = (caps[i + 1]?.t ?? SECONDS) - c.t, w = c.text.split(/\s+/).length;
+    console.log(`${c.t.toFixed(1).padStart(5)} s  ${(w / on).toFixed(1)} words/s  ${c.text}`);
+    if (w / on > 3.7) errors.push(`caption too fast to read (${(w / on).toFixed(1)} words/s): ${c.text}`); });
 
   recording = false; await capture;
   await browser.close(); srv.close();

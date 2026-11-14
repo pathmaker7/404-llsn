@@ -1,0 +1,44 @@
+# Online presentation script (Naryn local jury)
+
+The Naryn info session PDF says online teams prepare a presentation, but gives no length, format or time. This script
+runs **3 minutes** with the live app, and has a **1 minute** cut if they ask for less. Ask the Local Lead for the
+real limit and cut from the bottom of each slide's lines.
+
+Before you start: open https://lunar-navigator-explained.web.app/deck.html in one tab (press N for notes) and
+https://lunar-navigator-404.web.app in a second tab, already loaded (the Moon takes a few seconds). Share the whole
+screen, not one tab, so you can switch. Speak in English, Kyrgyz or Russian; the slides are in English, as the rules
+require. The app has a Kyrgyz and Russian button (top right) if the jury prefers.
+
+## 3 minutes
+
+| Time | Slide or screen | Say | Do |
+|---|---|---|---|
+| 0:00 | 1 | "We are team 404 agents from Naryn: Manuchehr, Aruzhan, Kairat, Arsen and Amirbek. Our challenge is Lunar Landing Site Navigator. We built a tool that answers one question: which landing days can a Moon mission survive, and we built it to teach students here how Moon landings are planned." | |
+| 0:20 | 2, then the app | "At the Moon's south pole the Sun and Earth stay near the horizon. Each row is a landing site, each block a landing day. Green: a solar mission survives 14 days. Look at one year: one short window a month, because Earth is up only about a week. And months with almost nothing: the Sun's dark season." | In the app press **Next year**. Point at a green window, then at the empty months |
+| 0:55 | 3, then the app | "Five years: it repeats every 354 days, twelve lunar months, so good days come about 11 days earlier each year, like Orozo. NASA chooses landing dates from cycles like these; a student sees them in one click." | Press **Next 5 years** |
+| 1:20 | 4, then the app | "Click a green day and you stand on the site, on real NASA terrain, with the Sun and Earth where they really are. The answer: mission survived, eleven checks, and why." | Press **Next month**, click a green block, press **Look at Sun**, then play ▶ for 3 seconds |
+| 1:50 | 5, then the app | "Is it right? We replay real landings. At Chandrayaan-3's site our sunset is the exact day India put the lander to sleep. And honestly: at IM-2 our model says the day was fine; the lander fell on its side. We judge the place and the day, not the touchdown." | Back to **All sites**, then **Replay a real landing → Chandrayaan-3**. Point at the box on the left |
+| 2:25 | 6 | "Everything is NASA data: LOLA terrain, the Data Book sites, JPL positions. Our Sun and Earth positions match JPL Horizons to 0.0047 degrees. On sharp ridges our sunlight is higher than NASA's map, so we call those numbers an upper estimate." | |
+| 2:45 | 7 | "It is free, in Kyrgyz, Russian and English, and comes with a 45 minute lesson plan for schools in Kyrgyzstan and Central Asia. Thank you." | Leave the app link on screen |
+
+## 1 minute cut
+
+Slide 1 line, then the app: **Next year** (one sentence on the two cycles), **Next 5 years** ("repeats every 354
+days"), click a green day ("mission survived, eleven checks"), Chandrayaan-3 replay ("our sunset is the day India put
+it to sleep"), slide 7 line.
+
+## Hard questions
+
+| Question | Answer |
+|---|---|
+| Are the limits NASA's? | Slope and distance from the pole are NASA Artemis III rules. The battery (2 days) and radio (3 days) are ours, and the user can change them; NASA says VIPER cannot endure more than 50 hours of darkness. |
+| Why do some sites show zero days? | Shackleton rim and Nobile rim 1 are Data Book region centres on steep walls. Raise the battery limit live and watch them change. |
+| How do you know it is right? | Open "How do we know?", then replay Chandrayaan-3. |
+| Why is your sunlight above NASA's map? | Three possible causes we have not separated: we stand 2 m above ground, our terrain is 80 m against their 60 m, and best spots were picked on our own terrain. Read ridge numbers as an upper estimate. |
+| Did you test it in a school? | Not yet. The lesson plan is ready in three languages; lessons in Naryn schools are the next step. |
+| Did you use AI? | Yes, Claude as a coding assistant; every number is checked against NASA JPL Horizons and NASA maps, and the film carries an AI watermark. Details in docs/SI-usage.md. |
+
+## If something breaks
+
+The app needs the internet and a few seconds to load the Moon. If it hangs, stay on the slides: every slide has a
+real screenshot of the same screen.

@@ -30,7 +30,7 @@ function cells(r) {
   return [value, r.pri === 'info' ? '' : L('l' + cap(r.id), { n: +(days ?? 0).toFixed(1) })];
 }
 const iso = (t) => new Date(t * 1000).toISOString().slice(0, 10);
-const longDate = (t) => new Date(t * 1000).toLocaleDateString(I.lang, { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+const longDate = (t) => I.date(new Date(t * 1000), { day: 'numeric', month: 'long', year: 'numeric' });
 
 /** What the model says at a real mission's touchdown: is the Sun up, when it rose and when it sets, is Earth in view.
  *  site: a loaded site; landedT: unix s. Hours come from the same series the verdict uses. */
@@ -42,7 +42,7 @@ export function modelAt(site, landedT) {
   return { lit: lit(i), sunEl: ch.sunEl[i], rise: lit(i) && i - a < MAX ? t0 + a * 3600 : null, set: lit(i) && b - i < MAX ? t0 + b * 3600 : null,
     earth: ch.earthVis[i] > 0.5, earthEver };
 }
-const hourUTC = (t) => new Date(t * 1000).toLocaleDateString(I.lang, { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }) + ', ' + new Date(t * 1000).toISOString().slice(11, 16) + ' UTC';
+const hourUTC = (t) => I.date(new Date(t * 1000), { day: 'numeric', month: 'short', year: 'numeric' }) + ', ' + new Date(t * 1000).toISOString().slice(11, 16) + ' UTC';
 /** The real mission next to the model: facts with sources (i18n), then the model's numbers for the real touchdown. */
 function historyBox(site, h, t) {
   const lt = Date.parse(h.landed) / 1000, m = modelAt(site, lt), day = Math.floor(lt / DAY) * DAY;
@@ -65,7 +65,7 @@ export function renderVerdict(el, ctx) {
     const ts = t + d * DAY, x = at(ts), date = new Date(ts * 1000), badRow = x.rows.find((r) => r.ok === false && r.pri === 'must');
     const label = longDate(ts) + ': ' + (x.ok ? L('mOkShort') : L('mLostShort') + ' (' + L('r' + cap(badRow.id)) + ')');
     good += x.ok; if (d > 0 && x.ok && next < 0) next = d; if (!x.ok && until < 0) until = d;
-    strip.push(`<button class="day ${x.ok ? 'ok' : 'bad'}${d === 0 ? ' now' : ''}" data-t="${ts}" title="${label}" aria-label="${label}">${(date.getUTCDate() === 1 && d > 15) || d === 0 ? `<i>${date.toLocaleDateString(I.lang, { month: 'short', day: 'numeric', timeZone: 'UTC' })}</i>` : ''}</button>`);
+    strip.push(`<button class="day ${x.ok ? 'ok' : 'bad'}${d === 0 ? ' now' : ''}" data-t="${ts}" title="${label}" aria-label="${label}">${(date.getUTCDate() === 1 && d > 15) || d === 0 ? `<i>${I.date(date, { month: 'short', day: 'numeric' })}</i>` : ''}</button>`);
   }
   const sum = e.ok ? (until < 0 ? L('calAllOk') : L('calUntil', { date: longDate(t + (until - 1) * DAY) })) : next < 0 ? L('calNone') : L('calNext', { date: longDate(t + next * DAY) });
   const shift = (dd, mm) => { const d = new Date(t * 1000); d.setUTCDate(d.getUTCDate() + dd); d.setUTCMonth(d.getUTCMonth() + mm); return d.getTime() / 1000; };

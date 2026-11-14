@@ -44,6 +44,14 @@ const Sky = require('../app/sky.js');
   for (const l of ['en', 'ru', 'ky']) for (const k of keys) if (/Tip$|Note$/.test(k)) assert.ok(!/["<]/.test(I18n.S[l][k]), `${l}.${k}: no quote or tag inside a tooltip`);
   const used = [...fs.readFileSync(path.join(APP, 'src', 'verdict.js'), 'utf8').matchAll(/L\('([A-Za-z0-9]{2,})'/g)].map((m) => m[1]);
   for (const k of used) assert.ok(k in I18n.S.en, `text missing: ${k}`);
+  // Kyrgyz dates are written by the app (Chrome has no Kyrgyz date format); every other language goes to the browser.
+  I18n.set('ky'); const kd = new Date(Date.UTC(2026, 10, 14, 16, 5));
+  assert.deepStrictEqual([I18n.date(kd, { day: 'numeric', month: 'long', year: 'numeric' }), I18n.date(kd, { month: 'short', day: 'numeric' }), I18n.date(kd, { month: 'short' }),
+    I18n.date(kd, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit' })], ['2026-ж., 14-ноябрь', '14-ноя', 'ноя', '2026-ж., 14-ноя, 16:05'], 'Kyrgyz dates');
+  I18n.set('en');
+  // The verdict names the mission, not the robot (owner, 14 Nov 2026); the film, slides and lesson quote these words.
+  assert.deepStrictEqual(['en', 'ru', 'ky'].map((l) => [I18n.S[l].mPass, I18n.S[l].mFail]),
+    [['MISSION SURVIVED', 'MISSION LOST'], ['МИССИЯ ВЫЖИЛА', 'МИССИЯ ПОТЕРЯНА'], ['МИССИЯ АМАН КАЛДЫ', 'МИССИЯ ЖОГОЛДУ']], 'verdict words');
   for (const r of Mi.judge(base)) { const c = r.id[0].toUpperCase() + r.id.slice(1); assert.ok(I18n.S.en['r' + c] && I18n.S.en['r' + c + 'Tip'], `no text for check ${r.id}`); if (r.pri !== 'info') assert.ok(I18n.S.en['l' + c], `no limit text for ${r.id}`); }
 
   // 4. Data: every listed point has its terrain files and its extra slope value.

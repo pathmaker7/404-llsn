@@ -51,7 +51,7 @@ export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}
     const li = document.createElement('li');
     li.className = 'a-row'; li.dataset.id = s.id;
     li.onmouseenter = () => onHover(s.id); li.onmouseleave = () => onHover(null);
-    li.innerHTML = `<button title="${s.ref}">${s.name}<small>${s.ref}</small></button><canvas></canvas><span class="cnt"></span>`;
+    li.innerHTML = `<button><span class="nm"></span><small></small></button><canvas></canvas><span class="cnt"></span>`;
     li.querySelector('button').onclick = () => onPick(s.id, null);
     const cv = li.querySelector('canvas');
     const dayAt = (e) => st.a + Math.min(Math.floor((e.offsetX / cv.clientWidth) * (st.b - st.a)), st.b - st.a - 1);
@@ -59,9 +59,9 @@ export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}
       if (!s.v) return;
       const d = dayAt(e), why = s.v[d];
       onTime(p0 + d * DAY + DAY / 2); // the Moon above shows the sunlight at noon of the day under the pointer
-      const date = new Date((p0 + d * DAY) * 1000).toLocaleDateString(I.lang, { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+      const date = I.date(new Date((p0 + d * DAY) * 1000), { day: 'numeric', month: 'long', year: 'numeric' });
       const num = why === 1 || why === 2 ? ' ' + L('vDays', { t: (s.v.val[d] / 24).toFixed(1) }) + ', ' + L(why === 1 ? 'lNight' : 'lRadio', { n: +((why === 1 ? Mi.limits.nightH : Mi.limits.silenceH) / 24).toFixed(1) }) : '';
-      tip.textContent = `${s.name} · ${date}: ${why ? L('mLostShort') + ' (' + L('r' + cap(MUST[why - 1])) + num + ')' : L('mOkShort')}`;
+      tip.textContent = `${I.place(s.name)} · ${date}: ${why ? L('mLostShort') + ' (' + L('r' + cap(MUST[why - 1])) + num + ')' : L('mOkShort')}`;
       tip.style.display = 'block';
       tip.style.left = Math.min(e.clientX + 12, window.innerWidth - tip.offsetWidth - 8) + 'px';
       tip.style.top = e.clientY - 34 + 'px';
@@ -123,7 +123,7 @@ export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}
         g.fillStyle = 'rgba(150,170,200,.35)'; g.fillRect(Math.round(x), h - 5 * dpr, 1, 5 * dpr);
         if (x - last < (first ? 0 : 26) * dpr) continue;
         g.fillStyle = first ? '#dfe6f2' : 'rgba(200,210,230,.6)';
-        g.fillText(first ? dt.toLocaleDateString(I.lang, { month: 'short', day: 'numeric', timeZone: 'UTC' }) : String(dt.getUTCDate()), x + 3 * dpr, 0);
+        g.fillText(first ? I.date(dt, { month: 'short', day: 'numeric' }) : String(dt.getUTCDate()), x + 3 * dpr, 0);
         last = first ? x + 30 * dpr : x;
       }
       return;
@@ -137,7 +137,7 @@ export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}
       g.fillRect(Math.round(x), h - (jan ? 9 : 5) * dpr, 1, (jan ? 9 : 5) * dpr);
       if (x - last < 58 * dpr || x > w - 30 * dpr) continue;
       g.fillStyle = jan ? '#dfe6f2' : 'rgba(200,210,230,.6)';
-      g.fillText(jan || !months ? String(d.getUTCFullYear()) : d.toLocaleDateString(I.lang, { month: 'short', timeZone: 'UTC' }), x + 3 * dpr, 0);
+      g.fillText(jan || !months ? String(d.getUTCFullYear()) : I.date(d, { month: 'short' }), x + 3 * dpr, 0);
       last = x;
     }
   }
@@ -160,7 +160,7 @@ export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}
     for (const [id, k] of [['#a-night', 'nightH'], ['#a-radio', 'silenceH']]) { const el = root.querySelector(id); if (document.activeElement !== el) el.value = +(Mi.limits[k] / 24).toFixed(1); }
     root.querySelector('#a-reset').hidden = Mi.limits.nightH === Mi.NIGHT_LIMIT_H && Mi.limits.silenceH === Mi.SILENCE_LIMIT_H;
     const fam = root.querySelector('#a-famous');
-    fam.innerHTML = `<option value="">${L('aAddSite')}</option>` + famous.map((f, i) => `<option value="${i}">${f.name}</option>`).join('');
+    fam.innerHTML = `<option value="">${L('aAddSite')}</option>` + famous.map((f, i) => `<option value="${i}">${I.place(f.name)}</option>`).join('');
     root.querySelector('#a-lat').placeholder = L('aLat'); root.querySelector('#a-lon').placeholder = L('aLon');
     const ab = root.querySelector('#a-addbtn'); ab.textContent = L('aAddBtn'); ab.title = L('aAddTip');
     root.querySelector('.a-more > summary').textContent = L('aMore');
@@ -168,6 +168,7 @@ export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}
     paintAxis();
     for (const s of sites) {
       s.good = paintRow(s);
+      s.li.querySelector('.nm').textContent = I.place(s.name); s.li.querySelector('small').textContent = s.li.querySelector('button').title = I.place(s.ref);
       s.li.querySelector('.cnt').innerHTML = s.v ? `<b>${s.good}</b> / ${st.b - st.a}` : '…';
     }
     // Best site for the chosen period first. Only once every row is known, so rows do not jump while loading.
@@ -232,7 +233,7 @@ export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}
     const d = (t - p0) / DAY, cv = sites[0].cv, on = d >= st.a && d <= st.b;
     head.style.display = on ? 'block' : 'none';
     if (on) head.style.left = cv.offsetLeft + ((d - st.a) / (st.b - st.a)) * cv.clientWidth + 'px';
-    const txt = new Date(t * 1000).toLocaleString(I.lang, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone: 'UTC' }) + ' UTC';
+    const txt = I.date(new Date(t * 1000), { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone: 'UTC' }) + ' UTC';
     if (clock.textContent !== txt) clock.textContent = txt;
     play.textContent = playing ? '❚❚' : '▶'; play.title = L('aPlay');
   }
