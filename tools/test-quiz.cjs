@@ -271,10 +271,10 @@ const check = (ok, name, extra = '') => { if (!ok) failures++; console.log(`${ok
   }
   check(fitBad.length === 0, `layout at ${tag}: 25 questions x 3 languages, answered wrongly: the card is inside the screen, no sideways scroll, Next in view, the last explanation reachable by scrolling inside the card, options inside it`, fitBad.slice(0, 3).join(' | '));
   // the longest static question in the longest language, for a picture
-  await page.evaluate(() => window.__quiz.start(['kQ05', 'kQ01', 'kQ01', 'kQ01', 'kQ01']));
+  await page.evaluate(() => window.__quiz.start(['kQ05', 'kQ01', 'kQ01', 'kQ01', 'kQ01'])); // the language is still Kyrgyz here, the last of the loop
   await page.waitForFunction(() => window.__quiz.state.q && window.__quiz.state.q.id === 'kQ05' && window.__quiz.state.picked == null);
   await page.locator(`.kq-opt[data-i="${await page.evaluate(() => window.__quiz.text(window.__quiz.state.q).options.findIndex((o) => !o.correct))}"]`).click();
-  await shot('7-long-explanation-en');
+  await shot('7-long-explanation-ky');
   await page.locator('.kq-x').click();
   await page.locator(`#lang button[data-l="en"]`).click();
 
