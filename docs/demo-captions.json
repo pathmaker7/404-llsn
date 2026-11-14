@@ -7,26 +7,26 @@
  {
   "text": "When can a Moon landing survive?",
   "t": 3.103,
-  "end": 5.302
+  "end": 5.301
  },
  {
   "text": "Lunar Landing Site Navigator: pick a day, and your lander drops in.",
-  "t": 5.302,
-  "end": 9.602
+  "t": 5.301,
+  "end": 9.601
  },
  {
   "text": "Green means it survives, on real NASA terrain.",
-  "t": 9.602,
+  "t": 9.601,
   "end": 13.602
  },
  {
   "text": "Play Keep me alive: the battery drains in real shadow.",
   "t": 13.602,
-  "end": 17.602
+  "end": 17.605
  },
  {
   "text": "Hunt dark craters where water ice could hide.",
-  "t": 17.602,
+  "t": 17.605,
   "end": 21.001
  },
  {

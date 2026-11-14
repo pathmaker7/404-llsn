@@ -138,10 +138,10 @@ const check = (ok, name, detail = '') => { console.log(`${ok ? 'ok  ' : 'FAIL'} 
   await p.waitForTimeout(1000); // the marker pops in for 0.6 s
   await shot('2-dark-result');
 
-  // d. the counter: counts a distinct dark spot once, survives a reload
-  const c1 = await p.evaluate(() => ({ n: window.__ice.count, ls: JSON.parse(localStorage.getItem('iceFound') || '[]').length, badge: document.querySelector('.ice-badge').textContent }));
+  // d. the counter: counts a distinct dark spot once; a new hunt starts from zero (checked further down)
+  const c1 = await p.evaluate(() => ({ n: window.__ice.count, badge: document.querySelector('.ice-badge').textContent }));
   const foot1 = (await card()).foot;
-  check(c1.n >= 1 && c1.ls === c1.n && c1.badge === String(c1.n) && foot1 === `Ice spots found: ${c1.n}` && /New spot!/.test(dark.tag), 'the counter went up on a dark spot and is stored', `${foot1}; ${dark.tag}`);
+  check(c1.n >= 1 && c1.badge === String(c1.n) && foot1 === `Ice spots found: ${c1.n}` && /New spot!/.test(dark.tag), 'the counter went up on a dark spot', `${foot1}; ${dark.tag}`);
   await tap(darkClick.pt);
   const again = await card(), c2 = await p.evaluate(() => window.__ice.count);
   check(c2 === c1.n && /already/.test(again.tag), 'tapping the same dark spot again does not count twice', `${c2}, "${again.tag}"`);
@@ -182,11 +182,27 @@ if (!litPt) throw new Error('cannot continue without a screen point on Connectin
   }
   await p.click('#lang button[data-l="en"]');
 
-  // reload: the counter survives
-  const saved = await p.evaluate(() => window.__ice.count);
+  // e. every hunt starts clean: pressing Ice hunter again takes every point off the Moon and the counter back to zero
+  const state = () => p.evaluate(() => ({ on: window.__ice.on, n: window.__ice.count, marks: window.__ice.marks.length, dots: document.querySelectorAll('.ice-mark').length, badge: document.querySelector('.ice-badge').hidden ? '' : document.querySelector('.ice-badge').textContent }));
+  const full = await state();
+  check(full.on && full.n >= 1 && full.marks >= 2 && full.dots === full.marks, 'before: the hunt left points on the Moon and a count', JSON.stringify(full));
+  await p.click('#ice-btn');
+  const off = await state();
+  check(!off.on && off.n === 0 && off.marks === 0 && off.dots === 0 && off.badge === '', 'pressing Ice hunter again stops the hunt and clears every point and the count', JSON.stringify(off));
+  await p.click('#ice-btn');
+  const fresh = await state(), foot0 = (await card()).foot;
+  check(fresh.on && fresh.n === 0 && fresh.dots === 0 && foot0 === 'Ice spots found: 0', 'the next hunt starts on a clean Moon, from zero', `${JSON.stringify(fresh)}; ${foot0}`);
+  await tap(await siteSpot(darkClick.s));
+  const refound = await card(), one = await state();
+  check(one.n === 1 && one.dots === 1 && /New spot!/.test(refound.tag), 'a spot found in the hunt before counts as new in this one', `${JSON.stringify(one)}; ${refound.tag}`);
+  // a slow answer that arrives after the hunt was stopped must not put a point back
+  await p.evaluate(() => { const s = window.__ice.found[0]; window.__ice.hunt(s[0] + 0.3, s[1]); window.__ice.setMode(false); });
+  await p.waitForFunction(() => !window.__ice.busy, null, { timeout: 30000 }); await p.waitForTimeout(200);
+  const late = await state();
+  check(late.n === 0 && late.marks === 0 && late.dots === 0, 'an answer that comes after the hunt was stopped leaves no point', JSON.stringify(late));
   await p.reload(); await ready();
-  const after = await p.evaluate(() => ({ n: window.__ice.count, badge: document.querySelector('.ice-badge').textContent, marks: window.__ice.marks.filter((m) => m.cls === 'dark').length }));
-  check(after.n === saved && after.badge === String(saved) && after.marks === saved, 'the counter and the sparkles survive a reload', JSON.stringify(after));
+  const after = await state();
+  check(after.n === 0 && after.marks === 0 && after.badge === '', 'a reload shows a clean Moon too', JSON.stringify(after));
 
   // c. mode off: a click on the same kind of spot still drops a lander
   await p.waitForTimeout(4200);

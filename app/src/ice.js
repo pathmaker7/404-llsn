@@ -12,7 +12,7 @@ import { makeSite, kindOf } from './custom.js';
 import { latlonToMap } from './science.js';
 import { EXAG } from './overview.js';
 
-const R = 1737400, D = Math.PI / 180, KEY = 'iceFound', APART_KM = 5, MAXMARKS = 40;
+const R = 1737400, D = Math.PI / 180, APART_KM = 5, MAXMARKS = 40;
 const LCROSS = 'https://science.nasa.gov/mission/lcross/';
 const DIR = 'ice'; // one registered point, replaced by every new tap, so the hourly series of old taps are freed
 const T = (k, v) => globalThis.I18n.t(k, v);
@@ -63,12 +63,12 @@ export function shareWords(res) {
 // The feature
 export function init(kid) {
   const { S, overview } = kid;
-  let on = false, busy = false, waiting = null, served = 0;
+  let on = false, busy = false, waiting = null, served = 0, hunt_no = 0; // hunt_no: goes up each time the hunt starts or stops
   const st = { phase: 'hint', res: null, tag: null };
   const marks = [];
+  // The dark spots of this hunt only. Every press on Ice hunter (start or stop) clears them and the points on the Moon,
+  // so the map is clean for whatever comes next; nothing is kept in the browser.
   let found = [];
-  try { const a = JSON.parse(localStorage.getItem(KEY)); if (Array.isArray(a)) found = a.filter((v) => Array.isArray(v) && Number.isFinite(v[0]) && Number.isFinite(v[1])).slice(0, 200); } catch (e) { /* storage blocked */ }
-  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(found)); } catch (e) { /* storage blocked */ } };
   const years = () => [new Date(kid.periodStart() * 1000).getUTCFullYear(), new Date(kid.periodEnd() * 1000).getUTCFullYear()];
 
   // The button and the card
@@ -98,7 +98,6 @@ export function init(kid) {
     return m;
   }
   const setMark = (m, cls) => { m.cls = cls; m.el.className = 'ice-mark ' + cls; m.el.lastChild.innerHTML = cls === 'lit' ? '' : SVG.spark; };
-  for (const [la, lo] of found) addMark(la, lo, 'dark');
   const centre = new THREE.Vector3(0, -R, 0), tmp = new THREE.Vector3();
   kid.frame.push(() => {
     const show = S.mode === 'overview', w = window.innerWidth, h = window.innerHeight;
@@ -148,6 +147,7 @@ export function init(kid) {
   }
 
   function setMode(v) {
+    if (!!v !== on) { hunt_no++; waiting = null; for (const m of marks) m.el.remove(); marks.length = 0; found = []; st.phase = 'hint'; st.res = null; st.tag = null; }
     on = !!v;
     btn.classList.toggle('on', on); btn.setAttribute('aria-pressed', String(on));
     document.documentElement.classList.toggle('ice-on', on);
@@ -161,6 +161,7 @@ export function init(kid) {
     if (busy) { waiting = { lat, lon }; return null; }
     busy = true;
     let res = null, mark = null;
+    const mine = hunt_no;
     try {
       const coarse = kindOf(lat, lon) === 'coarse';
       if (coarse) mark = addMark(lat, lon, 'looking');
@@ -169,10 +170,11 @@ export function init(kid) {
         await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
       }
       res = await judge(lat, lon);
+      if (mine !== hunt_no) return res; // the hunt was stopped or started again while this answer was worked out: it leaves no point
       let tag = null;
       if (res.kind === 'coarse' && res.dark) {
         if (found.some((f) => km(f, [res.lat, res.lon]) < APART_KM)) tag = 'seen';
-        else { found.push([+res.lat.toFixed(4), +res.lon.toFixed(4)]); save(); tag = 'new'; }
+        else { found.push([+res.lat.toFixed(4), +res.lon.toFixed(4)]); tag = 'new'; }
       }
       if (mark) setMark(mark, res.dark ? 'dark' : 'lit');
       st.phase = 'result'; st.res = res; st.tag = tag; served++;
