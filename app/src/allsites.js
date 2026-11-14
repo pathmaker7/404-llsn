@@ -39,6 +39,7 @@ export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}
       <label><span></span> <input type="date" id="a-to" min="${iso(p0 + DAY)}" max="${iso(p0 + nd * DAY)}"></label>
       <button data-y="2w"></button><button data-y="1m"></button><button data-y="0.25"></button><button data-y="1"></button><button data-y="5"></button><button data-y="0"></button></div></div>
     <details class="a-more"><summary></summary><div class="a-mission"><span class="tip" tabindex="0">ⓘ</span> <label><span></span> <input id="a-night" type="number" min="0" max="30" step="0.5"></label><label><span></span> <input id="a-radio" type="number" min="0" max="30" step="0.5"></label><button id="a-reset"></button><span class="a-add"><select id="a-famous"></select><input id="a-lat" type="number" min="-90" max="90" step="any"><input id="a-lon" type="number" min="-180" max="360" step="any"><button id="a-addbtn"></button></span><button id="a-csv"></button></div></details>
+    <p class="a-slip"><label><span></span> <input id="a-slip" type="number" min="0" max="3650" step="1" value="0"></label> <b id="a-slip-out"></b></p>
     <div class="a-row a-axis"><span></span><canvas></canvas><span></span></div>
     <ol id="sites"><div id="a-headline"></div></ol>
     <p class="v-key"><i class="ok"></i><span></span> <i class="bad"></i><span></span> <i class="cur"></i><span></span> <span class="tip" tabindex="0">ⓘ</span> <span class="a-hint"></span></p>
@@ -142,7 +143,21 @@ export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}
     }
   }
 
+  // Launch slip: the landing planned for today moves N days later. Which sites still survive that day, or the next good day.
+  function slip() {
+    const n = Math.max(0, Math.round(+root.querySelector('#a-slip').value || 0)), d = td + n, out = root.querySelector('#a-slip-out');
+    root.querySelector('.a-slip label span').textContent = L('aSlip');
+    const day = (k) => I.date(new Date((p0 + k * DAY) * 1000), { day: 'numeric', month: 'long', year: 'numeric' });
+    const ok = (k) => sites.filter((s) => s.v && k < s.v.length && s.v[k] === 0);
+    const now = ok(d);
+    if (now.length) { out.textContent = L('aSlipOk', { date: day(d), site: I.place(now[0].name), more: now.length > 1 ? L('aSlipMore', { m: now.length - 1 }) : '' }); out.className = 'ok'; return; }
+    for (let k = d + 1; k < nd; k++) { const g = ok(k); if (g.length) { out.textContent = L('aSlipNone', { date: day(d), site: I.place(g[0].name), date2: day(k), k: k - d }); out.className = 'bad'; return; } }
+    out.textContent = L('aSlipNever', { date: day(d) }); out.className = 'bad';
+  }
+  root.querySelector('#a-slip').oninput = slip;
+
   function redraw() {
+    slip();
     root.querySelector('h2').textContent = L('aTitle');
     const [lf, lt] = root.querySelectorAll('.a-range label span'); lf.textContent = L('aFrom'); lt.textContent = L('aTo');
     from.value = iso(p0 + st.a * DAY); to.value = iso(p0 + st.b * DAY);

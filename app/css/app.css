@@ -326,6 +326,9 @@ body.mode-surface .skymark { display: none !important; }
 #skybar strong { font: 600 22px var(--mono); min-width: 92px; } #skybar .sun strong { color: var(--sun); } #skybar .earth strong { color: var(--earth); }
 #skybar span { font-size: 11px; line-height: 1.35; color: var(--muted); } #skybar b { width: auto; min-width: 44px; }
 /* the mission's own limits, on the first screen */
+.a-slip { font-size: 13px; color: var(--muted); margin: 0 0 6px; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; }
+.a-slip input { width: 64px; background: rgba(255,255,255,.03); border: 1px solid var(--line-2); border-radius: 3px; padding: 3px 6px; color: var(--text); font: 13px var(--mono); color-scheme: dark; }
+.a-slip b { font-weight: 600; } .a-slip b.ok { color: #5fd38d; } .a-slip b.bad { color: #ff8a8a; }
 .a-mission { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; font-size: 12px; color: var(--muted); margin: 0 0 6px; }
 .a-mission input { width: 58px; background: rgba(255,255,255,.03); border: 1px solid var(--line-2); border-radius: 3px; padding: 3px 6px; color: var(--text); font: 12px var(--mono); color-scheme: dark; }
 .a-mission button { background: none; border: 1px solid var(--line); border-radius: 3px; color: var(--muted); padding: 3px 8px; font: inherit; cursor: pointer; }
