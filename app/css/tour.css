@@ -1,0 +1,29 @@
+/* Help for a first visit: the tour of the first screen and the "How to play" cards (tour.js). */
+#kt-game { order: 1; } #kt-help { order: 4; }
+.kt-helpbtn { border-style: dashed; }
+#kt { position: fixed; inset: 0; z-index: 70; pointer-events: none; }
+/* Takes every press beside the lit thing; tour.js cuts a hole in it over the lit thing (a clipped part takes no press). */
+.kt-block { position: absolute; inset: 0; pointer-events: auto; }
+.kt-card { pointer-events: auto; }
+#kt[hidden] { display: none; }
+#kt.dim { background: rgba(2, 4, 8, .72); }
+/* The ring: a window in the dark around the thing the step talks about. */
+.kt-ring { position: absolute; border: 2px solid var(--teal); border-radius: 10px; box-shadow: 0 0 0 9999px rgba(2, 4, 8, .72), 0 0 18px rgba(70, 224, 200, .55); pointer-events: none; transition: left .25s ease, top .25s ease, width .25s ease, height .25s ease; }
+.kt-card { position: absolute; width: min(380px, calc(100vw - 16px)); background: var(--panel-solid); border: 1.5px solid var(--teal); border-radius: 12px; padding: 16px 18px 14px; box-shadow: 0 18px 50px rgba(0, 0, 0, .6); }
+.kt-card h3 { margin: 0 34px 8px 0; font-size: 20px; line-height: 1.2; color: var(--text); }
+.kt-card p { margin: 0; font-size: 15.5px; line-height: 1.45; color: var(--text); }
+.kt-card .kt-goal { margin: 0 0 12px; padding: 8px 10px; border-left: 3px solid var(--teal); background: rgba(70, 224, 200, .08); border-radius: 0 6px 6px 0; }
+.kt-step { font: 600 11px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--teal); margin-bottom: 6px; }
+.kt-steps { list-style: none; counter-reset: kt; margin: 4px 0 0; padding: 0; display: grid; gap: 10px; }
+.kt-steps li { counter-increment: kt; display: grid; grid-template-columns: 34px 1fr; gap: 12px; align-items: start; font-size: 15.5px; line-height: 1.4; }
+.kt-steps li::before { content: counter(kt); width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: var(--teal); color: #001; font: 700 17px var(--mono); }
+.kt-foot { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+.kt-foot .kt-ghost:first-child { margin-right: auto; }
+.kt-go { min-width: 110px; padding: 10px 20px; border: 1.5px solid var(--teal); border-radius: 8px; background: var(--teal); color: #001; font-size: 16px; font-weight: 700; cursor: pointer; }
+.kt-go:hover { filter: brightness(1.08); }
+.kt-ghost { padding: 10px 14px; border: 1px solid var(--line-2); border-radius: 8px; background: none; color: var(--muted); font-size: 14px; cursor: pointer; }
+.kt-ghost:hover { color: var(--text); border-color: var(--teal); }
+.kt-ghost[hidden] { display: none; }
+.kt-x { position: absolute; right: 10px; top: 10px; width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--line-2); background: none; color: var(--muted); font-size: 20px; line-height: 1; cursor: pointer; }
+.kt-x:hover { color: var(--text); border-color: var(--teal); }
+@media (prefers-reduced-motion: reduce) { .kt-ring { transition: none; } }

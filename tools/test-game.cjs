@@ -25,6 +25,7 @@ const check = (ok, msg, detail) => { console.log(`${ok ? 'ok  ' : 'FAIL'} ${msg}
   const base = (process.env.BASE_URL || `http://127.0.0.1:${srv.address().port}/`).replace(/#.*$/, '');
   const browser = await chromium.launch({ executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' });
   const page = await browser.newPage({ viewport: { width: VW, height: VH } }), errs = [];
+  await page.addInitScript(() => { try { localStorage.setItem('kidHelp', 'off'); } catch (e) { /* no storage */ } }); // the first visit help has its own test (test-tour.cjs)
   page.on('pageerror', (e) => errs.push('page error: ' + e.message));
   page.on('console', (m) => { if (m.type() === 'error') errs.push('console error: ' + m.text()); });
   const shot = (name) => page.screenshot({ path: path.join(SHOTS, `game-${name}-${VIEWPORT}.png`) });

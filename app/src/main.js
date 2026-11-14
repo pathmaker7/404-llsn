@@ -13,6 +13,7 @@ import { init as initLander } from './lander.js';
 import { init as initGame } from './game.js';
 import { init as initIce } from './ice.js';
 import { init as initQuiz } from './quiz.js';
+import { init as initTour } from './tour.js';
 
 const $ = (id) => document.getElementById(id);
 const DEG = Math.PI / 180;
@@ -117,7 +118,10 @@ function makePin(s) {
     el.className = 'pin';
     el.dataset.name = s.name; el.textContent = globalThis.I18n.place(s.name);
     el.onmouseenter = () => hot(s.id); el.onmouseleave = () => hot(null);
-    el.onclick = () => enterSite(s.id, s.variants.best ? 'best' : 'databook') /* land on the best-lit point near the centre when there is one */;
+    // A kids feature that takes taps on the Moon (ice hunter) takes the tap on a label too, at the site's own point: the labels
+    // cover the very craters a child hunts in, and a tap that opened a site instead would end the game.
+    el.onclick = (e) => { if (kid.moonTap.some((f) => { try { return f({ lat: s.lat, lon: s.lon }, e); } catch (err) { later(err); return false; } })) return;
+      enterSite(s.id, s.variants.best ? 'best' : 'databook') /* land on the best-lit point near the centre when there is one */; };
     pins.appendChild(el);
     s.el = el;
   }
@@ -669,7 +673,7 @@ function frame(now) {
     buildSiteList();
     for (const c of (p.get('add') || '').split(';')) { const [la, lo, ...nm] = c.split(','); if (c && Number.isFinite(+la) && Number.isFinite(+lo) && Math.abs(+la) <= 90) await addCustom(+la, +lo, nm.join(',') || null); }
     // A feature that fails to start must not take the app down: the rest boots, and the error still reaches the console and the tests.
-    for (const f of [initLander, initGame, initIce, initQuiz]) try { f(kid); } catch (e) { setTimeout(() => { throw e; }); }
+    for (const f of [initLander, initGame, initIce, initQuiz, initTour]) try { f(kid); } catch (e) { setTimeout(() => { throw e; }); }
     const t = S.missionStart;
     S.t = Number.isFinite(t) ? t : S.missionStart;
     $('speed').value = String(S.speedH);

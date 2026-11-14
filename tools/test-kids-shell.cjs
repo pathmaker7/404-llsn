@@ -13,7 +13,7 @@ const { serve } = require('./smoke.cjs');
   const b = await chromium.launch({ executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' });
   let fails = 0;
   const check = (ok, what, detail = '') => { console.log(`${ok ? 'ok  ' : 'FAIL'} ${what}${detail ? ': ' + detail : ''}`); fails += !ok; };
-  const open = async (w, h) => { const p = await b.newPage({ viewport: { width: w, height: h } }); p.errs = []; p.on('pageerror', (e) => p.errs.push(e.message));
+  const open = async (w, h) => { const p = await b.newPage({ viewport: { width: w, height: h } }); await p.addInitScript(() => { try { localStorage.setItem('kidHelp', 'off'); } catch (e) { /* no storage */ } }); p.errs = []; p.on('pageerror', (e) => p.errs.push(e.message));
     await p.goto(url); await p.waitForFunction(() => window.__all && window.__all.ready && window.__app && window.__app.ready, null, { timeout: 120000 }); await p.waitForTimeout(3500); return p; };
 
   // 2. layout
@@ -21,7 +21,7 @@ const { serve } = require('./smoke.cjs');
     const p = await open(w, h);
     const r = await p.evaluate(() => { const bar = [...document.querySelectorAll('#kidbar > *')].map((e) => e.getBoundingClientRect()), list = document.getElementById('sitelist').getBoundingClientRect();
       return { n: bar.length, bottom: Math.round(Math.max(...bar.map((x) => x.bottom))), right: Math.round(Math.max(...bar.map((x) => x.right))), listTop: Math.round(list.top), w: window.innerWidth }; });
-    check(r.n === 3 && r.bottom <= r.listTop && r.right <= r.w, `${w}x${h}: the lander card and the two mode buttons stand clear of the day table`, JSON.stringify(r));
+    check(r.n === 5 && r.bottom <= r.listTop && r.right <= r.w, `${w}x${h}: the lander card and the four buttons beside it stand clear of the day table`, JSON.stringify(r));
     check(p.errs.length === 0, `${w}x${h}: no page error`, p.errs.join('; '));
     await p.close();
   }

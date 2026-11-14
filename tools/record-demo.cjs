@@ -16,6 +16,7 @@ const SECONDS = 29.5;
   const srv = await serve(path.join(ROOT, 'app'));
   const browser = await chromium.launch({ executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' });
   const page = await (await browser.newContext({ viewport: { width: 1920, height: 1080 } })).newPage();
+  await page.addInitScript(() => { try { localStorage.setItem('kidHelp', 'off'); } catch (e) { /* no storage */ } }); // the film shows the app as a returning visitor sees it; the first visit tour is not in it
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto(`http://127.0.0.1:${srv.address().port}/`);

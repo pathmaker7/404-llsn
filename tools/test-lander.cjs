@@ -25,6 +25,7 @@ const iso = (t) => new Date(t * 1000).toISOString().slice(0, 10);
   if (!url) { srv = await serve(path.join(__dirname, '..', 'app')); url = `http://127.0.0.1:${srv.address().port}/`; }
   const browser = await chromium.launch({ executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' });
   const ctx = await browser.newContext({ viewport: { width: VW, height: VH } });
+  await ctx.addInitScript(() => { try { localStorage.setItem('kidHelp', 'off'); } catch (e) { /* no storage */ } }); // the first visit help has its own test (test-tour.cjs)
   const page = await ctx.newPage(), errs = [];
   page.on('pageerror', (e) => errs.push('page error: ' + e.message));
   page.on('console', (m) => { if (m.type() === 'error' && !/favicon|Failed to load resource/.test(m.text())) errs.push('console: ' + m.text()); });

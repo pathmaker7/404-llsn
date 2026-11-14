@@ -24,6 +24,7 @@ if (require.main !== module) return;
   const errors = [], app = await serve(path.join(ROOT, 'app')), url = `http://127.0.0.1:${app.address().port}/`;
   const browser = await chromium.launch({ executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' });
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  await page.addInitScript(() => { try { localStorage.setItem('kidHelp', 'off'); } catch (e) { /* no storage */ } }); // the first visit help has its own test (test-tour.cjs)
   page.on('pageerror', (e) => errors.push('page error: ' + e.message));
   page.on('response', (r) => { if (r.status() >= 400) errors.push(`${r.status()} ${r.url()}`); });
 

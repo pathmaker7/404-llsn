@@ -9,6 +9,7 @@ const { serve } = require('./smoke.cjs');
   const srv = await serve(path.join(__dirname, '..', 'app'));
   const b = await chromium.launch({ executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' });
   const p = await b.newPage({ viewport: { width: 1600, height: 1000 } }), errs = [];
+  await p.addInitScript(() => { try { localStorage.setItem('kidHelp', 'off'); } catch (e) { /* no storage */ } }); // the first visit help has its own test (test-tour.cjs)
   p.on('pageerror', (e) => errs.push(e.message));
   await p.goto(`http://127.0.0.1:${srv.address().port}/`);
   await p.waitForFunction(() => window.__all && window.__all.ready, null, { timeout: 120000 });

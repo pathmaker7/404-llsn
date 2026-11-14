@@ -5,7 +5,7 @@ const path = require('path');
 const APP = path.join(__dirname, '..', 'app');
 const Mi = require('../app/mission.js');
 const I18n = require('../app/i18n.js');
-const KIDS = ['lander', 'game', 'ice', 'quiz']; // each kids feature keeps its texts in its own file, added to I18n.S
+const KIDS = ['lander', 'game', 'ice', 'quiz', 'tour']; // each kids feature keeps its texts in its own file, added to I18n.S
 for (const f of KIDS) require(`../app/i18n-${f}.js`);
 const Sky = require('../app/sky.js');
 

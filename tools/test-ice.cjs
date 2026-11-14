@@ -23,6 +23,7 @@ const check = (ok, name, detail = '') => { console.log(`${ok ? 'ok  ' : 'FAIL'} 
   const url = process.env.BASE_URL || `http://127.0.0.1:${srv.address().port}/`;
   const b = await chromium.launch({ executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' });
   const ctx = await b.newContext({ viewport: { width: VW, height: VH } });
+  await ctx.addInitScript(() => { try { localStorage.setItem('kidHelp', 'off'); } catch (e) { /* no storage */ } }); // the first visit help has its own test (test-tour.cjs)
   const p = await ctx.newPage(), errs = [];
   p.on('pageerror', (e) => errs.push('page error: ' + e.message));
   p.on('response', (r) => { if (r.status() >= 400 && r.url().startsWith(url.replace(/\/$/, ''))) errs.push(`${r.status()} ${r.url()}`); });

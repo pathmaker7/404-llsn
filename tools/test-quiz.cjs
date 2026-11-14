@@ -19,6 +19,7 @@ const check = (ok, name, extra = '') => { if (!ok) failures++; console.log(`${ok
   if (!url) { srv = await serve(path.join(__dirname, '..', 'app')); url = `http://127.0.0.1:${srv.address().port}/`; }
   const b = await chromium.launch({ executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' });
   const page = await b.newPage({ viewport: { width: VW, height: VH } }), errs = [];
+  await page.addInitScript(() => { try { localStorage.setItem('kidHelp', 'off'); } catch (e) { /* no storage */ } }); // the first visit help has its own test (test-tour.cjs)
   page.on('pageerror', (e) => errs.push('page error: ' + e.message));
   page.on('console', (m) => { if (m.type() === 'error' && !/favicon|fonts\.g/.test(m.text())) errs.push('console: ' + m.text()); });
   await page.goto(url);
