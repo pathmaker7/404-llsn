@@ -168,7 +168,7 @@ export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}
     }
     // Best site for the chosen period first. Only once every row is known, so rows do not jump while loading.
     if (st.ready) for (const s of [...sites].sort((p, q) => q.good - p.good)) ol.appendChild(s.li);
-    globalThis.__all = { ready: st.ready, a: st.a, b: st.b, from: from.value, to: to.value, rows: sites.map((s) => ({ id: s.id, good: s.good, total: st.b - st.a })),
+    globalThis.__all = { ready: st.ready, a: st.a, b: st.b, from: from.value, to: to.value, rows: sites.map((s) => ({ id: s.id, good: s.v ? s.good : -1 /* not judged yet: its dot stays grey, not red */, total: st.b - st.a })),
       at: (id, date) => sites.find((s) => s.id === id).v[dayOf(date)] === 0 /* does a landing that day survive: what the cell's colour says */ };
   }
   const setRange = () => {
@@ -232,5 +232,7 @@ export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}
     if (clock.textContent !== txt) clock.textContent = txt;
     play.textContent = playing ? '❚❚' : '▶'; play.title = L('aPlay');
   }
-  return { redraw, setHead, setLimits, add, add, range: () => [p0 + st.a * DAY, p0 + st.b * DAY] };
+  /** 'ok' or 'bad': does a landing on the day holding t (unix s) survive at this site. null outside the period or before the row is known. */
+  const stateAt = (id, t) => { const s = sites.find((x) => x.id === id), d = Math.floor((t - p0) / DAY); return s && s.v && d >= st.a && d < st.b ? (s.v[d] === 0 ? 'ok' : 'bad') : null; };
+  return { redraw, setHead, setLimits, add, stateAt, range: () => [p0 + st.a * DAY, p0 + st.b * DAY] };
 }

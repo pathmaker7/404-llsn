@@ -72,6 +72,18 @@ if (require.main !== module) return;
     el: __app.overview.mat.uniforms.sunEl.value, dir: __app.overview.mat.uniforms.sunDir.value.length(), marks: document.querySelectorAll('.skymark').length }));
   await page.click('#a-play');
   if (!(pl.t > t0 + 3600) || pl.head !== 'block' || !/UTC/.test(pl.clock) || !(Math.abs(pl.el) < 0.03) || Math.abs(pl.dir - 1) > 1e-6 || pl.marks !== 2) errors.push('playing the sunlight on the Moon does not work: ' + JSON.stringify({ t0, ...pl }));
+  // Each site's dot on the Moon is the verdict of the day under the time line, so the dots change while it plays.
+  const dots = await page.evaluate(async () => {
+    const S = __app.S, [a, b] = S.all.range(), keep = S.mapT, seen = {}, wrong = [];
+    for (let t = a + 43200; t < b; t += 86400) {
+      S.mapT = t; await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      const date = new Date(t * 1000).toISOString().slice(0, 10);
+      for (const s of __app.overview.sites) { (seen[s.id] ||= new Set()).add(s.el.dataset.s); if (s.el.dataset.s !== (__all.at(s.id, date) ? 'ok' : 'bad')) wrong.push(s.id + ' ' + date); }
+    }
+    S.mapT = keep;
+    return { wrong: wrong.length, first: wrong[0], changed: Object.values(seen).filter((x) => x.size > 1).length };
+  });
+  if (dots.wrong || !dots.changed) errors.push('the dots on the Moon do not follow the day under the time line: ' + JSON.stringify(dots));
   // The limits are the user's: a longer battery and radio limit can only add safe days, the address carries them, and reset restores the defaults.
   const sum = () => page.evaluate(() => __all.rows.reduce((a, r) => a + r.good, 0));
   const g0 = await sum();
@@ -186,6 +198,11 @@ if (require.main !== module) return;
   await page.fill('#sky-when', '2028-02-03T04:05:06'); await page.dispatchEvent('#sky-when', 'change'); await page.waitForTimeout(400);
   const when = await page.evaluate(() => ({ t: __app.S.t, land: __verdict.date, back: document.getElementById('back').textContent, bar: getComputedStyle(document.getElementById('hud')).overflowY }));
   if (when.t !== Date.parse('2028-02-03T04:05:06Z') / 1000 || when.land !== '2028-02-03' || !/All sites/.test(when.back) || when.bar !== 'scroll') errors.push('exact time, back button or scrollbar is wrong: ' + JSON.stringify(when));
+  // The numbers and view options are open on a desktop and the button closes them; the options are switches, not bare checkboxes.
+  const open = await page.evaluate(() => { const h = document.documentElement, o = document.getElementById('opt-horizon'), m = document.getElementById('more'), r = (e) => e.getBoundingClientRect();
+    const a = { min: h.classList.contains('min'), label: m.textContent, w: o.offsetWidth, look: getComputedStyle(o).appearance, over: r(m).bottom > r(document.getElementById('viewtools')).top };
+    m.click(); const b = { min: h.classList.contains('min'), label: m.textContent, w: o.offsetWidth }; m.click(); return { a, b }; });
+  if (open.a.min || open.a.label !== 'Hide details' || open.a.w !== 30 || open.a.look !== 'none' || open.a.over || !open.b.min || open.b.label !== 'Details' || open.b.w !== 0) errors.push('details are not open by default, or do not close: ' + JSON.stringify(open));
   // 3. Any day, past or future: the date field, the year buttons, and the 3D clock follow.
   await page.fill('#v-day', '2030-05-01'); await page.dispatchEvent('#v-day', 'change'); await page.waitForTimeout(500);
   const v1 = await page.evaluate(() => ({ date: __verdict.date, clock: document.getElementById('d-time').textContent }));

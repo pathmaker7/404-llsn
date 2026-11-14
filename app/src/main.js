@@ -134,7 +134,9 @@ function placePins() {
     const g = p ? overview.project(s.pos, w, h, 0) : null;
     s.el.style.display = p ? '' : 'none';
     const row = globalThis.__all?.rows.find((r) => r.id === s.id);
-    s.st = row && row.good >= 0 ? (row.good > 0 ? 'ok' : 'bad') : ''; // green: at least one safe landing day in the chosen period
+    // The dot is the day under the time line: green when a landing that day survives here, so the dots change as it plays.
+    // With the line outside the period: green for at least one safe landing day in the period.
+    s.st = S.all?.stateAt(s.id, S.mapT) ?? (row && row.good >= 0 ? (row.good > 0 ? 'ok' : 'bad') : '');
     if (s.el.dataset.s !== s.st) s.el.dataset.s = s.st;
     s.el.classList.toggle('hot', S.hot === s.id);
     if (p) items.push({ s, p, g, x: p.x, y: p.y, wd: s.el.offsetWidth || 120 });
@@ -618,8 +620,11 @@ function frame(now) {
     overview.intro();
     const p = new URLSearchParams(location.hash.slice(1));
     // Embedded in the guided mission (team 404 agents merge): start minimal, one button brings every number back.
-    document.documentElement.classList.add('min'); document.documentElement.classList.toggle('embed', p.get('min') === '1'); // embed: inside the guided mission, which shows its own verdict // on <html>: the app replaces body.className
-    $('more').onclick = () => { document.documentElement.classList.toggle('min'); resize(); };
+    // The numbers and view options are open by default and the Details button closes them. Closed on load on a phone
+    // (no room) and when embedded in the guided mission (min=1), which shows its own verdict. On <html>: the app replaces body.className.
+    document.documentElement.classList.toggle('min', p.get('min') === '1' || window.innerWidth <= 760); document.documentElement.classList.toggle('embed', p.get('min') === '1');
+    const moreText = () => { $('more').textContent = document.documentElement.classList.contains('min') ? 'Details' : 'Hide details'; };
+    $('more').onclick = () => { document.documentElement.classList.toggle('min'); moreText(); resize(); }; moreText();
     const landing = p.get('land') ? Date.parse(p.get('land').slice(0, 10) + 'T00:00:00Z') / 1000 : Math.floor(Date.now() / 86400000) * 86400; // default: land today
     S.missionStart = Number.isFinite(landing) ? landing : periodStart();
     S.missionDays = 14; // the survival limits are set for a 14 day stay; "Details" can change it

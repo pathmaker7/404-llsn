@@ -200,7 +200,7 @@ table.t tr.sub td { color: var(--muted); font-size: 12px; }
 /* ---------- team merge: the answer panel, and a calm default (his full HUD is one "Details" click away) ---------- */
 #hud { width: 372px; max-height: calc(100vh - 250px); overflow: auto; }
 #more { position: fixed; right: 16px; top: 64px; z-index: 30; }
-html.min #viewtools { top: 104px; }
+#viewtools { top: 104px; } /* always under the Details button, open or closed */
 html.min .hud-time, html.min .hb-grid, html.min .coords, html.min #h-variant-note, html.min .tog, html.min .vt-hint, html.min #disclaimer, html.min .legend { display: none !important; }
 html.min #hud .hud-block { padding: 8px 12px; }
 html.min #viewtools { background: none; border: 0; padding: 0; width: 240px; }
@@ -313,7 +313,9 @@ body.mode-surface .skymark { display: none !important; }
 .skymark.sun::before { background: radial-gradient(#fff 40%, #fff3c4 75%); box-shadow: 0 0 10px 2px #fff; }
 .skymark.earth::before { background: url(../data/earth.jpg) 38% 50% / 200% 100%; box-shadow: inset -4px -2px 5px rgba(0,0,0,.65); }
 /* a way back that says where it goes; panels that scroll show it */
-#back { border-color: var(--teal); color: var(--teal); font-weight: 600; padding: 7px 14px; }
+#back { display: inline-flex; align-items: center; gap: 9px; background: none; border: 0; border-left: 1px solid var(--line-2); border-radius: 0; padding: 5px 4px 5px 16px; color: var(--text); font-size: 14px; font-weight: 600; letter-spacing: .02em; white-space: nowrap; transition: color .15s; }
+#back::before { content: ""; width: 7px; height: 7px; border-left: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg); transition: transform .15s; }
+#back:hover { background: none; color: var(--teal); } #back:hover::before { transform: translateX(-3px) rotate(45deg); }
 #hud, #sitelist, #panel { scrollbar-width: thin; scrollbar-color: rgba(70,224,200,.7) rgba(255,255,255,.06); }
 #hud { overflow-y: scroll; }
 #hud::-webkit-scrollbar, #sitelist::-webkit-scrollbar { width: 10px; }
@@ -342,3 +344,21 @@ body.mode-surface .skymark { display: none !important; }
 .v-hist b { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--teal); }
 .verdict .v-hist p { margin: 6px 0 0; font-size: 13px; } .v-hist .v-model em { font-style: normal; color: var(--muted); }
 .v-hist button { margin-top: 8px; background: #0d1118; color: inherit; border: 1px solid var(--teal); border-radius: 3px; padding: 5px 8px; font: inherit; font-size: 12px; cursor: pointer; }
+
+/* ---------- controls: one shape (3 px corners), one accent (teal) ---------- */
+/* View options are switches, label first: on is a teal block moved to the right, so state reads without the colour. */
+.vt-row { gap: 0; margin-bottom: 6px; border: 1px solid var(--line-2); border-radius: 3px; overflow: hidden; background: var(--panel-solid); }
+.vt-row button { border: 0; border-radius: 0; padding: 7px 4px; font-size: 12.5px; font-weight: 500; }
+.vt-row button + button { border-left: 1px solid var(--line-2); }
+.tog { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px; padding: 4px 0; line-height: 1.25; }
+.tog em { margin-top: 2px; }
+.tog input { order: 2; appearance: none; -webkit-appearance: none; margin: 0; width: 30px; height: 16px; border: 1px solid var(--line-2); border-radius: 3px; background: rgba(150,170,200,.08); position: relative; cursor: pointer; transition: background .15s, border-color .15s; }
+.tog input::before { content: ""; position: absolute; left: 2px; top: 2px; width: 10px; height: 10px; border-radius: 2px; background: var(--muted); transition: transform .15s, background .15s; }
+.tog input:checked { background: rgba(70,224,200,.16); border-color: var(--teal); }
+.tog input:checked::before { transform: translateX(14px); background: var(--teal); }
+.tog:hover input { border-color: var(--teal); }
+button:active { transform: translateY(1px); }
+button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .tog input, .tog input::before, #back, #back::before { transition: none; } button:active { transform: none; } }
+/* phone: the way back stays on one line without squeezing the title, and the Details button sits clear above the dock */
+@media (max-width: 760px) { #topbar { gap: 8px; } #back { border-left: 0; padding: 5px 0; font-size: 13px; gap: 6px; } #more { bottom: 262px; } html.min #more { bottom: 192px; } }
