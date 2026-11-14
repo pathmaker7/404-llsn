@@ -27,6 +27,7 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.15;
 const surface = new SurfaceView(renderer);
 const overview = new Overview(renderer);
+window.__ov = overview; // read by tools/test-drop.cjs
 const timeline = new Timeline($('timeline'), (t) => setTime(t));
 const overlay = $('overlay');
 const og = overlay.getContext('2d');
@@ -377,7 +378,8 @@ $('look-earth').addEventListener('click', () => { const s = sample(S.site, S.t);
 {
   const cv = $('gl');
   let drag = null;
-  cv.addEventListener('pointerdown', (e) => { drag = { x: e.clientX, y: e.clientY }; cv.setPointerCapture(e.pointerId); });
+  let down = null;
+  cv.addEventListener('pointerdown', (e) => { drag = down = { x: e.clientX, y: e.clientY }; cv.setPointerCapture(e.pointerId); });
   cv.addEventListener('pointermove', (e) => {
     if (!drag) return;
     if (S.mode !== 'surface') { // the map: drag turns it and tilts it, and stops the slow turn
@@ -393,7 +395,13 @@ $('look-earth').addEventListener('click', () => { const s = sample(S.site, S.t);
     surface.pitch = Math.min(Math.max(surface.pitch + (e.clientY - drag.y) * k, -85), 85);
     drag = { x: e.clientX, y: e.clientY };
   });
-  cv.addEventListener('pointerup', () => { drag = null; });
+  // A click (not a drag) on the Moon in the map drops the user's own lander there: it gets a row of landing days at once.
+  cv.addEventListener('pointerup', (e) => {
+    drag = null;
+    if (S.mode === 'surface' || !down || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 5) return;
+    const r = cv.getBoundingClientRect(), at = overview.pick(e.clientX - r.left, e.clientY - r.top, r.width, r.height);
+    if (at) addCustom(at.lat, at.lon, null).then((s) => { S.dropped = s.id; resize(); });
+  });
   cv.addEventListener('wheel', (e) => {
     e.preventDefault();
     if (S.mode === 'surface') {

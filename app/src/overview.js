@@ -153,6 +153,20 @@ export class Overview {
     return o;
   }
 
+  /** The Moon point under a screen pixel as { lat, lon } in degrees, or null when the click misses the Moon.
+   *  The polar cap is inverted through its own map projection (stereographic about the south pole); the plain globe directly. */
+  pick(px, py, w, h) {
+    const rc = new THREE.Raycaster(); rc.setFromCamera(new THREE.Vector2((px / w) * 2 - 1, -(py / h) * 2 + 1), this.camera);
+    const hit = rc.intersectObjects(this.scene.children.filter((o) => o.isMesh && o !== this.earthBody), false)[0];
+    if (!hit) return null;
+    if (hit.object === this.mesh) {
+      const m = this.mesh.geometry.attributes.mxz.array, i = hit.face.a, X = m[i * 2], Y = -m[i * 2 + 1], q = X * X + Y * Y, R4 = 4 * R * R;
+      return { lat: Math.asin((q - R4) / (q + R4)) / DEG, lon: Math.atan2(X, Y) / DEG };
+    }
+    const p = hit.point.clone(); p.y += R; p.normalize();
+    return { lat: Math.asin(-p.y) / DEG, lon: Math.atan2(p.x, -p.z) / DEG };
+  }
+
   heightAt(X, Y) {
     const { n, pixel_m: pix, h } = this.ov, c0 = (n - 1) / 2;
     const c = Math.round(X / pix + c0), r = Math.round(c0 - Y / pix);
