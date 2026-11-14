@@ -28,11 +28,13 @@ function cutTake() {
   return caps.map((_, i) => { const a = i ? cuts[i - 1] : 0, b = cuts[i] ?? dur(TAKE), f = path.join(TMP, `t${i}.wav`);
     execFileSync(FFMPEG, ['-y', '-loglevel', 'error', '-ss', String(a), '-to', String(b), '-i', TAKE, '-af', TRIM.replaceAll('-45dB', '-35dB'), f]); return f; }); // an encoded take carries faint noise in its pauses
 }
+// A person reading slowly needs more; up to about 1.5 the voice stays natural (ffmpeg atempo keeps the pitch).
+const MAX_TEMPO = +(process.env.MAX_TEMPO || 1.12);
 const takeClips = TAKE ? cutTake() : null;
 const lines = caps.map((c, i) => {
-  if (TAKE) { // a recorded voice is never re-spoken: it may be sped up by at most 12 percent to fit its moment
+  if (TAKE) { // a recorded voice is never re-spoken: it is sped up only as much as its moment needs, at most MAX_TEMPO
     const slot = c.end - c.t - GAP, src = takeClips[i], d0 = dur(src), k = Math.max(1, d0 / slot), f = path.join(TMP, `l${i}.wav`);
-    if (k > 1.12) throw new Error(`line ${i + 1} is ${d0.toFixed(1)} s, its moment is ${slot.toFixed(1)} s: ${c.text}`);
+    if (k > MAX_TEMPO) throw new Error(`line ${i + 1} is ${d0.toFixed(1)} s, its moment is ${slot.toFixed(1)} s: ${c.text}`);
     execFileSync(FFMPEG, ['-y', '-loglevel', 'error', '-i', src, '-af', `atempo=${k.toFixed(3)}`, f]);
     console.log(`${c.t.toFixed(1).padStart(5)} s  ${(d0 / k).toFixed(1)} of ${slot.toFixed(1)} s  x${k.toFixed(2)}  ${c.text}`);
     return { f, t: c.t };
