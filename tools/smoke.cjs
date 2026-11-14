@@ -54,16 +54,18 @@ if (require.main !== module) return;
     let gaps = 0; for (let x = 1; x < cv.width; x++) if (px[x * 4 + 3] === 0 && px[(x - 1) * 4 + 3] !== 0) gaps++;
     return { gaps, days: __all.rows[0].total, langs: document.querySelectorAll('#lang button').length, lit: document.querySelectorAll('#lang button.on').length };
   });
-  // Not by colour alone (about one man in twelve cannot tell red from green): a lost day is a shorter block, so along the
-  // top edge of a row only the surviving days are filled.
+  // Not by colour alone (about one man in twelve cannot tell red from green): a lost day is a hollow block, a surviving
+  // day a solid one, and both are the same height (height means nothing here). Read at the centre and top of every block.
   const shape = await page.evaluate(() => {
     const li = [...document.querySelectorAll('#sites li.a-row')].find((l) => { const r = __all.rows.find((x) => x.id === l.dataset.id); return r.good > 0 && r.good < r.total; });
-    const cv = li.querySelector('canvas'), px = cv.getContext('2d').getImageData(0, 1, cv.width, 1).data, r = __all.rows.find((x) => x.id === li.dataset.id);
-    let tall = 0; for (let x = 1; x < cv.width; x++) if (px[x * 4 + 3] !== 0 && px[(x - 1) * 4 + 3] === 0) tall++;
-    if (px[3] !== 0) tall++;
-    return { tall, good: r.good, total: r.total };
+    const cv = li.querySelector('canvas'), g = cv.getContext('2d'), r = __all.rows.find((x) => x.id === li.dataset.id);
+    let solid = 0, hollow = 0, short = 0;
+    for (let d = 0; d < r.total; d++) { const x = Math.floor(((d + 0.5) / r.total) * cv.width);
+      const mid = g.getImageData(x, Math.floor(cv.height / 2), 1, 1).data[3], top = g.getImageData(x, 0, 1, 1).data[3];
+      if (mid === 255) solid++; else if (mid > 0) hollow++; if (top !== 255) short++; }
+    return { solid, hollow, short, good: r.good, total: r.total };
   });
-  if (shape.tall !== shape.good) errors.push('lost and surviving days differ by colour only: ' + JSON.stringify(shape));
+  if (shape.solid !== shape.good || shape.hollow !== shape.total - shape.good || shape.short) errors.push('lost days are not hollow blocks of the same height as surviving days: ' + JSON.stringify(shape));
   if (clear.gaps !== clear.days || clear.langs !== 3 || clear.lit !== 1) errors.push('days are not separate blocks, or the language buttons are not clear: ' + JSON.stringify(clear));
   // The Moon's own clock: play moves the time, the line on the rows and the Sun that casts the shadows.
   const t0 = await page.evaluate(() => __app.S.mapT);

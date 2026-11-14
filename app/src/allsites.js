@@ -6,8 +6,9 @@ import { judgeAt } from './verdict.js';
 const I = globalThis.I18n, L = (k, v) => I.t(k, v), DAY = 86400;
 const MUST = ['night', 'radio', 'light', 'slope'];
 const cap = (s) => s[0].toUpperCase() + s.slice(1);
-// Not by colour alone: lost is darker than survives, and where days are separate blocks a lost day is a shorter block.
-const OK = [95, 211, 141], BAD = [150, 50, 58], LOW = 0.4;
+// Not by colour alone: lost is darker than survives, and where days are separate blocks a lost day is a hollow block of
+// the same height (an outline, like the hollow dot of a lost site on the Moon). Height means nothing here, so it never differs.
+const OK = [95, 211, 141], BAD = [150, 50, 58], EDGE = [198, 74, 82];
 const iso = (t) => new Date(t * 1000).toISOString().slice(0, 10);
 
 /** One byte per landing day of the whole period: 0 survives, otherwise 1 + index in MUST of the first failed check.
@@ -89,8 +90,11 @@ export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}
       g.clearRect(0, 0, w, h);
       for (let d = st.a; d < st.b; d++) {
         const x0 = Math.round(xOf(d, w)), x1 = Math.round(xOf(d + 1, w)) - gap;
-        const y0 = s.v[d] === 0 ? 0 : Math.round(h * LOW);
-        g.fillStyle = `rgb(${(s.v[d] === 0 ? OK : BAD).join(',')})`; g.fillRect(x0, y0, x1 - x0, h - y0);
+        const y0 = 0, lost = s.v[d] !== 0, bw = x1 - x0, t = Math.max(1, Math.round(1.25 * dpr));
+        if (lost && bw >= 4 * t) { // hollow: a faint fill and an outline
+          g.fillStyle = `rgba(${BAD.join(',')},.3)`; g.fillRect(x0, 0, bw, h);
+          g.strokeStyle = `rgb(${EDGE.join(',')})`; g.lineWidth = t; g.strokeRect(x0 + t / 2, t / 2, bw - t, h - t);
+        } else { g.fillStyle = `rgb(${(lost ? BAD : OK).join(',')})`; g.fillRect(x0, 0, bw, h); }
         if (d === td) { g.strokeStyle = '#fff'; const t = 1.5 * dpr; g.lineWidth = t; g.strokeRect(x0 + t / 2, y0 + t / 2, x1 - x0 - t, h - y0 - t); }
       }
       return good;
