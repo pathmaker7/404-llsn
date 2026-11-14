@@ -1,1 +1,72 @@
-/* Ice hunter: tap a spot near the pole, is it dark enough for ice. */
+/* Ice hunter: tap a dark spot near the pole. The button sits in #kidbar (order 2), the card and the markers float over the map. */
+:root { --ice: #9fe4ff; --ice-glow: rgba(159, 228, 255, .55); }
+.ice-btn { order: 2; display: inline-flex; align-items: center; gap: 8px; }
+.ice-btn svg { flex: none; }
+.ice-badge { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--ice); color: #00131c; font: 600 12px/20px var(--mono); text-align: center; }
+.ice-badge[hidden] { display: none; }
+.kidbtn.ice-btn.on .ice-badge { background: #00131c; color: var(--ice); }
+html.ice-on canvas#gl, html.ice-on canvas#gl:active { cursor: crosshair; }
+
+#ice-card {
+  position: fixed; right: 16px; top: 64px; width: 340px; max-height: calc(100vh - 96px); overflow: auto; z-index: 14;
+  background: var(--panel); border: 1px solid var(--line-2); border-top: 2px solid var(--ice); border-radius: 4px; padding: 10px 14px 10px; backdrop-filter: blur(8px);
+  box-shadow: 0 10px 30px rgba(0,0,0,.45);
+}
+#ice-card[hidden] { display: none; }
+.ice-head { display: flex; align-items: center; gap: 8px; color: var(--ice); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 8px; }
+.ice-head b { font-weight: 700; }
+.ice-x { margin-left: auto; width: 26px; height: 26px; border: 1px solid var(--line-2); border-radius: 3px; background: transparent; color: var(--muted); font-size: 18px; line-height: 1; cursor: pointer; }
+.ice-x:hover { border-color: var(--ice); color: var(--ice); }
+.ice-big { margin: 0; font-size: 18px; line-height: 1.25; font-weight: 700; }
+.ice-sub { margin: 6px 0 2px; font-size: 14px; line-height: 1.4; color: var(--muted); }
+.ice-main { margin: 6px 0 0; font-size: 15px; line-height: 1.4; }
+.ice-ctx { margin: 10px 0 0; padding: 8px 10px; border-left: 3px solid var(--ice); background: rgba(159,228,255,.07); font-size: 13px; line-height: 1.4; color: #c9d6e6; border-radius: 0 3px 3px 0; }
+.ice-ctx a { color: var(--ice); white-space: nowrap; }
+.ice-stat { margin: 10px 0 0; font: 11px/1.4 var(--mono); color: var(--muted); }
+.ice-note { margin-top: 8px; font-size: 12px; color: var(--muted); }
+.ice-note summary { cursor: pointer; color: var(--teal); }
+.ice-note p { margin: 6px 0 0; line-height: 1.45; }
+.ice-foot { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--line); font: 600 13px var(--mono); color: var(--ice); cursor: help; }
+.ice-res h3 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 20px; line-height: 1.15; letter-spacing: -.01em; }
+.ice-res.dark h3 { color: #dff6ff; text-shadow: 0 0 14px var(--ice-glow); }
+.ice-res.lit h3 { color: var(--sun); }
+.ice-res.far h3 { color: var(--muted); }
+.ice-tag { display: inline-block; margin-top: 6px; padding: 2px 9px; border-radius: 10px; background: var(--ice); color: #00131c; font-size: 12px; font-weight: 700; }
+.ice-tag.seen { background: transparent; color: var(--muted); border: 1px solid var(--line-2); font-weight: 500; }
+.ice-sparks { position: relative; height: 0; }
+.ice-sparks svg { position: absolute; width: 18px; height: 18px; color: var(--ice); filter: drop-shadow(0 0 5px var(--ice-glow)); animation: ice-twinkle 1.8s ease-in-out infinite; }
+.ice-sparks svg:nth-child(1) { right: 6px; top: -2px; }
+.ice-sparks svg:nth-child(2) { right: 34px; top: 14px; width: 11px; height: 11px; animation-delay: .5s; }
+.ice-sparks svg:nth-child(3) { right: 2px; top: 30px; width: 9px; height: 9px; animation-delay: 1s; }
+.ice-look { display: flex; align-items: center; gap: 12px; }
+.ice-look .ice-big { font-size: 16px; }
+.ice-spin { flex: none; width: 22px; height: 22px; border-radius: 50%; border: 3px solid rgba(159,228,255,.25); border-top-color: var(--ice); animation: ice-spin .8s linear infinite; }
+
+/* markers left on the Moon */
+#ice-marks { position: fixed; inset: 0; pointer-events: none; z-index: 6; }
+.ice-mark { position: absolute; width: 0; height: 0; }
+.ice-mark i { position: absolute; left: -18px; top: -18px; width: 36px; height: 36px; display: block; color: #e8f9ff; filter: drop-shadow(0 0 6px var(--ice)) drop-shadow(0 0 2px #fff); animation: ice-twinkle-soft 1.8s ease-in-out infinite; }
+.ice-mark i svg { display: block; width: 100%; height: 100%; stroke: #06384d; stroke-width: 1.4; paint-order: stroke; stroke-linejoin: round; }
+.ice-ring { position: absolute; left: -20px; top: -20px; width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--ice); opacity: 0; }
+.ice-mark.looking .ice-ring { opacity: 1; animation: ice-ping 1s ease-out infinite; }
+.ice-mark.looking i { opacity: .55; animation: none; }
+.ice-mark.dark::before { content: ""; position: absolute; left: -30px; top: -30px; width: 60px; height: 60px; border-radius: 50%; background: radial-gradient(circle, rgba(159,228,255,.5), rgba(159,228,255,0) 68%); }
+.ice-mark.dark, .ice-mark.lit { animation: ice-pop .6s cubic-bezier(.2, 1.5, .4, 1) both; }
+.ice-mark.lit i { left: -9px; top: -9px; width: 18px; height: 18px; border-radius: 50%; background: var(--sun); border: 2px solid #fff3dd; filter: drop-shadow(0 0 5px rgba(255,181,71,.9)); animation: none; }
+@keyframes ice-twinkle { 0%, 100% { opacity: 1; transform: scale(1) rotate(0deg); } 50% { opacity: .55; transform: scale(.78) rotate(18deg); } }
+@keyframes ice-twinkle-soft { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .8; transform: scale(.9); } }
+@keyframes ice-pop { from { transform: scale(0); } to { transform: scale(1); } }
+@keyframes ice-spin { to { transform: rotate(360deg); } }
+@keyframes ice-ping { from { transform: scale(.5); opacity: 1; } to { transform: scale(1.8); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .ice-sparks svg, .ice-mark i, .ice-mark.looking .ice-ring, .ice-mark.dark, .ice-mark.lit { animation: none; } .ice-spin { animation-duration: 2.4s; } }
+
+/* phone: the card sits at the bottom over the list, so the Moon stays free to tap */
+@media (max-width: 760px) {
+  #ice-card { left: 8px; right: 8px; top: auto; bottom: 8px; width: auto; max-height: 42vh; padding: 8px 12px; }
+  .ice-head { margin-bottom: 4px; }
+  .ice-big { font-size: 16px; }
+  .ice-sub, .ice-main { font-size: 14px; }
+  .ice-res h3 { font-size: 18px; }
+  .ice-ctx { font-size: 12.5px; padding: 6px 8px; margin-top: 8px; }
+  .ice-foot { margin-top: 6px; padding-top: 6px; }
+}
