@@ -135,10 +135,27 @@ if (require.main !== module) return;
   const xss = await page.evaluate(() => ({ ran: window.__xss === 1, tags: document.querySelectorAll('#sites img, #h-name img, #h-name b').length, name: document.getElementById('h-name').textContent }));
   if (xss.ran || xss.tags || /[<>]/.test(xss.name)) errors.push('a crafted site name in the address is rendered as markup: ' + JSON.stringify(xss));
   await page.goto(url); await page.reload(); await page.waitForFunction(() => window.__all && window.__all.ready, null, { timeout: 120000 });
-  await page.click('#topbar nav button[data-panel="validation"]'); await page.waitForTimeout(300);
+  // 1d. Replay a real landing: the app stands on Chandrayaan-3's site at its touchdown and shows what really happened next
+  // to the model. The model's sunset must fall on 4 September 2023, the day ISRO put the lander to sleep.
+  await page.selectOption('#a-famous', { label: 'Chandrayaan-3 (2023)' });
+  await page.waitForFunction(() => window.__history && window.__verdict && document.body.classList.contains('mode-surface'), null, { timeout: 90000 }); await page.waitForTimeout(1500);
+  const day = (t) => new Date(t * 1000).toISOString().slice(0, 10);
+  const hist = await page.evaluate(() => ({ date: __verdict.date, key: __history.key, set: __history.set, rise: __history.rise, box: document.querySelector('.v-hist').innerText, t: __app.S.t, go: document.querySelectorAll('.v-hist button').length }));
+  await page.screenshot({ path: path.join(OUT, 'real-landing.png') });
+  if (hist.date !== '2023-08-23' || hist.key !== 'Ch3' || day(hist.set) !== '2023-09-04' || day(hist.rise) !== '2023-08-21' || !/4 September 2023/.test(hist.box) || /undefined|NaN|\{\w+\}/.test(hist.box) || hist.t !== Date.parse('2023-08-23T12:33:00Z') / 1000 || hist.go !== 0)
+    errors.push('replaying Chandrayaan-3 is wrong: ' + JSON.stringify({ ...hist, set: day(hist.set), rise: day(hist.rise) }));
+  await page.fill('#v-day', '2023-10-01'); await page.dispatchEvent('#v-day', 'change'); await page.waitForTimeout(300);
+  await page.click('.v-hist button').catch(() => errors.push('no button back to the real landing day')); await page.waitForTimeout(300);
+  if ((await page.evaluate(() => __verdict.date)) !== '2023-08-23') errors.push('the button back to the real landing day did not work');
+  await page.click('#back'); await page.waitForTimeout(600);
+  // The table on screen can be taken away as a file: one line per site and landing day, under one header line.
+  const csv = await page.evaluate(() => { document.getElementById('a-csv').click(); return { n: __csv.length, head: __csv[0], row: __csv[1], rows: __all.rows.length, total: __all.rows[0].total }; });
+  if (csv.n !== 1 + csv.rows * csv.total || !/^site,landing_day_utc,survives_14_days,failed_check/.test(csv.head) || !/^"[^"]+",\d{4}-\d\d-\d\d,(yes|no),/.test(csv.row)) errors.push('the CSV file is wrong: ' + JSON.stringify(csv));
+  await page.click('#topbar nav button[data-panel="validation"]'); await page.waitForTimeout(800);
   const how = await page.evaluate(() => document.getElementById('panel-body').innerText);
   if (!/over 20 evaluated points/.test(how) || /NaN|undefined/.test(how)) errors.push('the How do we know panel does not cover the twenty points cleanly');
-  await page.goto(url); await page.reload();
+  if (!/Against NASA's own illumination maps/i.test(how) || !/Against four real landings/i.test(how) || !/Chandrayaan-3/.test(how) || !/Earth in view: mean difference \d/.test(how)) // headings are shown in capitals errors.push('the How do we know panel lacks the NASA map comparison or the real landings');
+  await page.goto('about:blank'); await page.goto(url); // a clean start: the replay above left its landing day and site in the address
   await page.waitForFunction(() => window.__all && window.__all.ready, null, { timeout: 120000 });
 
   // 2. Click a site: the answer panel, complete and in view without opening anything.

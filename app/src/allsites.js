@@ -37,7 +37,7 @@ export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}
       <label><span></span> <input type="date" id="a-from" min="${iso(p0)}" max="${iso(p0 + (nd - 1) * DAY)}"></label>
       <label><span></span> <input type="date" id="a-to" min="${iso(p0 + DAY)}" max="${iso(p0 + nd * DAY)}"></label>
       <button data-y="2w"></button><button data-y="1m"></button><button data-y="0.25"></button><button data-y="1"></button><button data-y="5"></button><button data-y="0"></button></div></div>
-    <details class="a-more"><summary></summary><div class="a-mission"><span class="tip" tabindex="0">ⓘ</span> <label><span></span> <input id="a-night" type="number" min="0" max="30" step="0.5"></label><label><span></span> <input id="a-radio" type="number" min="0" max="30" step="0.5"></label><button id="a-reset"></button><span class="a-add"><select id="a-famous"></select><input id="a-lat" type="number" min="-90" max="90" step="any"><input id="a-lon" type="number" min="-180" max="360" step="any"><button id="a-addbtn"></button></span></div></details>
+    <details class="a-more"><summary></summary><div class="a-mission"><span class="tip" tabindex="0">ⓘ</span> <label><span></span> <input id="a-night" type="number" min="0" max="30" step="0.5"></label><label><span></span> <input id="a-radio" type="number" min="0" max="30" step="0.5"></label><button id="a-reset"></button><span class="a-add"><select id="a-famous"></select><input id="a-lat" type="number" min="-90" max="90" step="any"><input id="a-lon" type="number" min="-180" max="360" step="any"><button id="a-addbtn"></button></span><button id="a-csv"></button></div></details>
     <div class="a-row a-axis"><span></span><canvas></canvas><span></span></div>
     <ol id="sites"><div id="a-headline"></div></ol>
     <p class="v-key"><i class="ok"></i><span></span> <i class="bad"></i><span></span> <i class="cur"></i><span></span> <span class="tip" tabindex="0">ⓘ</span> <span class="a-hint"></span></p>
@@ -160,6 +160,7 @@ export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}
     root.querySelector('#a-lat').placeholder = L('aLat'); root.querySelector('#a-lon').placeholder = L('aLon');
     const ab = root.querySelector('#a-addbtn'); ab.textContent = L('aAddBtn'); ab.title = L('aAddTip');
     root.querySelector('.a-more > summary').textContent = L('aMore');
+    root.querySelector('#a-csv').textContent = L('aCsv');
     paintAxis();
     for (const s of sites) {
       s.good = paintRow(s);
@@ -194,6 +195,16 @@ export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}
     const bad = !(lat >= -90 && lat <= 90) || !(lon >= -180 && lon <= 360);
     la.classList.toggle('bad', !(lat >= -90 && lat <= 90)); lo.classList.toggle('bad', !(lon >= -180 && lon <= 360));
     if (!bad) { onAdd(lat, lon, null); la.value = lo.value = ''; }
+  };
+  // The table on screen as a file: one line per site and landing day of the chosen period, with the check that failed.
+  root.querySelector('#a-csv').onclick = () => {
+    const q = (x) => '"' + String(x).replace(/"/g, '""').replace(/^[=+@-]/, "'$&") + '"'; // a name must never open as a spreadsheet formula
+    const rows = [`site,landing_day_utc,survives_${days}_days,failed_check,hours,battery_limit_h,radio_limit_h`];
+    for (const s of sites) if (s.v) for (let d = st.a; d < st.b; d++) { const w = s.v[d];
+      rows.push([q(s.name), iso(p0 + d * DAY), w ? 'no' : 'yes', w ? MUST[w - 1] : '', w === 1 || w === 2 ? s.v.val[d] : '', Mi.limits.nightH, Mi.limits.silenceH].join(',')); }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([rows.join('\n') + '\n'], { type: 'text/csv' }));
+    a.download = `landing-days_${from.value}_${to.value}.csv`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    globalThis.__csv = rows;
   };
   /** A site added by the user gets its own row, judged like the others. */
   async function add(s) {

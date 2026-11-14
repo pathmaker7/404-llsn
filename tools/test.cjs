@@ -70,5 +70,29 @@ const Sky = require('../app/sky.js');
     }
     assert.ok(worst < 0.01, `${dir}: our positions differ from the DE440 series by ${worst} degrees`);
   }
+  // 6. Real landings (the app's "What really happened here" box and the table under "How do we know?"). On a smooth Moon,
+  //    as the app treats these sites: Chandrayaan-3 landed two days after sunrise and the Sun set on 4 September 2023, the
+  //    day ISRO put the lander to sleep; at IM-1 the Sun set on 3 March 2024; at Chang'e 6, on the far side, Earth never rises.
+  const { modelAt } = await import('data:text/javascript,' + encodeURIComponent(fs.readFileSync(path.join(APP, 'src', 'verdict.js'), 'utf8')));
+  const custom = fs.readFileSync(path.join(APP, 'src', 'custom.js'), 'utf8'), famous = (key) => { const m = custom.match(new RegExp(`lat: (-?[\\d.]+), lon: (-?[\\d.]+), landed: '([^']+)', key: '${key}'`)); assert.ok(m, 'no mission ' + key); return { lat: +m[1], lon: +m[2], t: Date.parse(m[3]) / 1000 }; };
+  const smooth = (f) => { // the hourly series the app builds for a point with no terrain: 30 days each side of the landing
+    const t0s = Math.floor(f.t / 3600) * 3600 - 30 * 86400, nn = 60 * 24, fr = Sky.siteFrame(f.lat, f.lon, 2), dip = -Math.acos(1737400 / 1737402) * 180 / Math.PI;
+    const c = { sunFrac: new Float32Array(nn), earthVis: new Float32Array(nn), sunEl: new Float32Array(nn) };
+    for (let i = 0; i < nn; i++) { const b = Sky.bodiesMoonFixed(new Date((t0s + i * 3600) * 1000)), su = Sky.azEl(b.sun, fr), ea = Sky.azEl(b.earth, fr);
+      c.sunEl[i] = su.el; c.sunFrac[i] = su.el + Math.asin(695700 / su.dist) * 180 / Math.PI > dip ? 1 : 0; c.earthVis[i] = ea.el > dip ? 1 : 0; }
+    return modelAt({ ch: c, n: nn, t0: t0s }, f.t);
+  };
+  const day = (t) => new Date(t * 1000).toISOString().slice(0, 10);
+  const ch3 = smooth(famous('Ch3')), im1 = smooth(famous('Im1')), ce6 = smooth(famous('Ce6'));
+  assert.ok(ch3.lit && ch3.earth, 'Chandrayaan-3 landed in sunlight with Earth in view');
+  assert.strictEqual(day(ch3.rise), '2023-08-21', 'sunrise two days before Chandrayaan-3 landed'); assert.strictEqual(day(ch3.set), '2023-09-04', 'sunset on the day the lander was put to sleep');
+  assert.strictEqual(day(im1.set), '2024-03-03', 'IM-1: sunset on a smooth Moon');
+  assert.ok(ce6.lit && !ce6.earth && !ce6.earthEver, "Chang'e 6: Earth never rises on the far side");
+
+  // 7. NASA's own illumination maps (tools/validate-pgda.cjs wrote app/data/pgda.json): the numbers the app states.
+  const pg = JSON.parse(fs.readFileSync(path.join(APP, 'data', 'pgda.json'), 'utf8'));
+  assert.strictEqual(pg.rows.length, points, 'every point compared with NASA');
+  assert.ok(pg.earth.meanAbs < 5 && pg.earth.r > 0.95, 'Earth share agrees with NASA within 5 points on average');
+  assert.ok(pg.sun.r > 0.9, 'Sun share ranks the points as NASA does');
   console.log('all checks pass');
 })().catch((e) => { console.error(e); process.exit(1); });

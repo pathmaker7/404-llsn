@@ -10,15 +10,20 @@ import { latlonToMap } from './science.js';
 const R = 1737400, D = Math.PI / 180, OBS = 2;
 
 // Coordinates as published: Apollo by NASA NSSDC (DE421 frame); Chandrayaan-3 as listed for Statio Shiv Shakti;
-// IM-1 and Chang'e 6 as located by the LROC team; IM-2 is the intended site published by LROC.
+// IM-1, Chang'e 6 and IM-2 as located by the LROC team (IM-2: where Athena lies, LROC image 1408).
+// landed: the real touchdown (UTC) when it falls in the app's period; the verdict panel then shows what really happened
+// next to what the model says for that moment (verdict.js#historyBox, texts i18n h<Key>). Landing times: ISRO, Intuitive
+// Machines, CNSA as reported; IM-2 to the nearest half hour.
 export const FAMOUS = [
   { name: 'Apollo 11 (1969)', lat: 0.67416, lon: 23.47314 },
   { name: 'Apollo 17 (1972)', lat: 20.191, lon: 30.772 },
-  { name: 'Chandrayaan-3 (2023)', lat: -69.373, lon: 32.319 },
-  { name: 'IM-1 Odysseus (2024)', lat: -80.13, lon: 1.44 },
-  { name: "Chang'e 6 (2024)", lat: -41.64, lon: -153.99 },
-  { name: 'IM-2 Athena (2025)', lat: -84.78, lon: 29.13 },
+  { name: 'Chandrayaan-3 (2023)', lat: -69.373, lon: 32.319, landed: '2023-08-23T12:33:00Z', key: 'Ch3' },
+  { name: 'IM-1 Odysseus (2024)', lat: -80.13, lon: 1.44, landed: '2024-02-22T23:24:00Z', key: 'Im1' },
+  { name: "Chang'e 6 (2024)", lat: -41.6385, lon: -153.9852, landed: '2024-06-01T22:23:00Z', key: 'Ce6' },
+  { name: 'IM-2 Athena (2025)', lat: -84.7906, lon: 29.1957, landed: '2025-03-06T17:30:00Z', key: 'Im2' },
 ];
+/** The real mission that landed at these coordinates, if the app knows one with a landing time. */
+export const historyOf = (lat, lon) => FAMOUS.find((f) => f.landed && Math.abs(f.lat - lat) < 1e-4 && Math.abs(f.lon - lon) < 1e-4) || null;
 
 const REACH = 235000; // metres from the pole on the map: inside the polar terrain, clear of its edge
 /** Which terrain an added point gets. */

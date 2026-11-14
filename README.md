@@ -19,8 +19,9 @@ NASA Space Apps Challenge 2026, challenge "Lunar Landing Site Navigator". Team *
    - a strip of the next 120 landing days, green survives, red is lost (click a day to land on it);
    - eleven checks with a tick or a cross (hover a line to read what it means).
 4. **Your own mission**: set how long the battery lasts and how long radio silence is allowed, and every site and day is judged again. **Add any point on the Moon** by latitude and longitude, or pick a known landing (Apollo 11, Apollo 17, Chandrayaan-3, IM-1, Chang'e 6, IM-2): it gets its own row, verdict and surface view, and the page address keeps it, so a comparison can be shared as a link. Sun and Earth positions are exact everywhere. Within about 235 km of the south pole an added point uses LOLA terrain averaged to 320 m (horizon within about 1 degree of the 80 m sites, up to 2 on a narrow peak, measured in `tools/smoke.cjs`); elsewhere the app has no terrain, so the horizon is the Moon's curve and the slope checks do not apply. The app says which case applies.
-5. **Any day from 2021 to 2031**: past days are history, future days are a prediction from the orbit model. The terrain does not change.
-6. "Details" brings back every expert number. English, Russian and Kyrgyz for the answer panel.
+5. **Replay a real landing**: pick Chandrayaan-3, IM-1, Chang'e 6 or IM-2 and the app stands you on its site at its touchdown. A box shows what really happened next to what the model says for that moment (sunrise, sunset, Earth in view). The table on the first screen downloads as CSV.
+6. **Any day from 2021 to 2031**: past days are history, future days are a prediction from the orbit model. The terrain does not change.
+7. "Details" brings back every expert number. English, Russian and Kyrgyz for the answer panel.
 
 ## The eleven checks
 
@@ -42,6 +43,8 @@ The robot survives when the four "must pass" checks pass. The battery and radio 
 |---|---|---|
 | Sun and Earth positions (`app/sky.js`, astronomy-engine with the IAU lunar rotation model) match NASA JPL Horizons | `npm run validate` (needs internet) | last run before the cleanup: worst 0.0047° |
 | The same positions match an independent JPL DE440 series computed by the Python pipeline, at four sites over 2027 to 2028 | `npm test` | under 0.01° |
+| Real landings: at Chandrayaan-3's site the model's sunrise is 21 Aug 2023 and its sunset 4 Sep 2023, the day ISRO put the lander to sleep; at Chang'e 6's site Earth never rises (the mission used a relay satellite); at IM-1's site the Sun sets on 3 Mar 2024 | `npm test`, `npm run smoke` | passes |
+| Share of time with Sun and with Earth in view, against NASA Goddard's polar illumination maps (PGDA, Mazarico et al. 2011, 60 m) at all twenty points | `node tools/validate-pgda.cjs sun.img earth.img` writes `app/data/pgda.json`; `npm test` checks it | Earth: mean difference 3.3 points, r 0.97. Sun: r 0.92, ours higher by 11.4 points on average |
 | Each rule passes at its limit and fails just past it; three languages have the same texts | `npm test` | passes |
 | The app works end to end: fifteen sites, the timeline cells equal the site verdicts, the period can be set, the map turns, eleven checks, any date, three languages, phone width | `npm run smoke` | passes |
 
@@ -69,14 +72,17 @@ The app is static files, but it needs a web server (it loads ES modules and data
 | `app/data/polar320.bin` | LOLA `LDEM_80S_80M` averaged to 320 m, for added polar points (`pipeline-3d/pipeline/mid.py`) |
 | `pipeline-3d/` | the offline Python pipeline that built `app/data/`. `sh pipeline-3d/add-sites.sh` builds the team's nine sites, then `node tools/eva-slope.cjs` writes the 2 km slope values |
 | `tools/` | `test.cjs`, `smoke.cjs`, `validate-horizons.cjs`, `record-demo.cjs` |
-| `explainer/` | the "How it works" page |
+| `explainer/` | the "How it works" page and `lesson.html`, a 45 minute school lesson in English, Russian and Kyrgyz |
+| `tools/validate-pgda.cjs`, `app/data/pgda.json` | the comparison with NASA's polar illumination maps |
 
 ## Limits, stated plainly
 
 - Fifteen sites, twenty points. Adding a site means running the pipeline for it.
 - The nine team sites are not NASA candidate sites. Each is the best-lit point on a named crater's rim, or the lowest point of its floor, that we found on LOLA terrain. Each was checked against JPL Horizons like the six Data Book sites (worst 0.47 arcseconds).
+- On sharp ridges our share of time in sunlight is higher than NASA's own maps (by 11 points on average over the twenty points, more at the "best spot" points). Three differences could cause it and we have not separated them: we stand 2 m above the ground where NASA's map is at the surface, our terrain is 80 m where theirs is 60 m, and each best spot was chosen as the brightest point on our own terrain. Read ridge-top Sun numbers as an upper estimate.
+- The model judges a place and a day, not a touchdown: it passes IM-2's site and day, and the real lander fell on its side.
 - Terrain is 80 m per pixel; a rock or a small crater below that size is not in the data.
-- The 2 day, 3 day and 24 hour limits are our teaching values, not NASA requirements.
+- The 2 day, 3 day and 24 hour limits are our teaching values, not NASA requirements. For scale, NASA states that its VIPER rover cannot endure more than 50 hours of continuous darkness (science.nasa.gov/mission/viper/lunar-operations).
 - Future dates come from the orbit model; we compared it with NASA data for 2026 to 2028, not for every year.
 
 ## Credits and data

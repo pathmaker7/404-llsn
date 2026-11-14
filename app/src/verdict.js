@@ -32,7 +32,27 @@ function cells(r) {
 const iso = (t) => new Date(t * 1000).toISOString().slice(0, 10);
 const longDate = (t) => new Date(t * 1000).toLocaleDateString(I.lang, { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
 
-/** ctx: { site, slope, evaSlope, t (landing, unix s), days, p0, p1 (period, unix s), setDate(t) } */
+/** What the model says at a real mission's touchdown: is the Sun up, when it rose and when it sets, is Earth in view.
+ *  site: a loaded site; landedT: unix s. Hours come from the same series the verdict uses. */
+export function modelAt(site, landedT) {
+  const { ch, n, t0 } = site, i = Math.min(Math.max(Math.round((landedT - t0) / 3600), 0), n - 1), lit = (k) => ch.sunFrac[k] > 0, MAX = 24 * 30;
+  let a = i, b = i, earthEver = false;
+  if (lit(i)) { while (a > 0 && i - a < MAX && lit(a - 1)) a--; while (b < n - 1 && b - i < MAX && lit(b)) b++; }
+  for (let k = Math.max(i - MAX, 0); k < Math.min(i + MAX, n); k++) if (ch.earthVis[k] > 0.5) { earthEver = true; break; }
+  return { lit: lit(i), sunEl: ch.sunEl[i], rise: lit(i) && i - a < MAX ? t0 + a * 3600 : null, set: lit(i) && b - i < MAX ? t0 + b * 3600 : null,
+    earth: ch.earthVis[i] > 0.5, earthEver };
+}
+const hourUTC = (t) => new Date(t * 1000).toLocaleDateString(I.lang, { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }) + ', ' + new Date(t * 1000).toISOString().slice(11, 16) + ' UTC';
+/** The real mission next to the model: facts with sources (i18n), then the model's numbers for the real touchdown. */
+function historyBox(site, h, t) {
+  const lt = Date.parse(h.landed) / 1000, m = modelAt(site, lt), day = Math.floor(lt / DAY) * DAY;
+  const sun = m.lit ? L('hSunUp', { el: m.sunEl.toFixed(1) }) + (m.rise ? ' ' + L('hRise', { d: hourUTC(m.rise) }) : '') + (m.set ? ' ' + L('hSet', { d: hourUTC(m.set) }) : '') : L('hSunDown');
+  globalThis.__history = { key: h.key, ...m, onDay: day === t };
+  return `<div class="v-hist"><b>${L('hTitle')}</b><p>${L('h' + h.key)}</p><p class="v-model"><em>${L('hModelAt')}</em> ${sun} ${L(m.earth ? 'hEarthIn' : m.earthEver ? 'hEarthOut' : 'hEarthNever')}</p>` +
+    (day === t ? '' : `<button data-t="${day}">${L('hGo', { date: longDate(day) })}</button>`) + '</div>';
+}
+
+/** ctx: { site, slope, evaSlope, t (landing, unix s), days, p0, p1 (period, unix s), setDate(t), history (custom.js#historyOf) } */
 export function renderVerdict(el, ctx) {
   const { site, slope, evaSlope, days } = ctx, W = Math.round(days * 24), t = Math.floor(ctx.t / DAY) * DAY;
   const at = (ts) => judgeAt(site, Math.round((ts - site.t0) / 3600), W, slope, evaSlope);
@@ -54,6 +74,7 @@ export function renderVerdict(el, ctx) {
   el.innerHTML =
     `<div class="v-head"><b>${L(e.ok ? 'mPass' : 'mFail')}</b><span>${L('vLanding', { date: longDate(t), n: days })}</span></div>` +
     `<p class="v-why">${L(why)}</p>` +
+    (ctx.history ? historyBox(site, ctx.history, t) : '') +
     `<div class="v-date"><button data-t="${shift(-1, 0)}" title="${L('m5Prev')}">◀</button><input id="v-day" type="date" min="${iso(ctx.p0)}" max="${iso(ctx.p1 - days * DAY)}" value="${iso(t)}" aria-label="${L('m5Title')}"><button data-t="${shift(1, 0)}" title="${L('m5Next')}">▶</button>` +
     `<button data-t="${shift(0, -12)}">−1 ${L('vYear')}</button><button data-t="${shift(0, -1)}">−1 ${L('vMonth')}</button><button data-t="${shift(0, 1)}">+1 ${L('vMonth')}</button><button data-t="${shift(0, 12)}">+1 ${L('vYear')}</button><button data-t="${today}">${L('m5Today')}</button></div>` +
     `<div class="v-count"><b>${good}</b><span>/ ${last + 1}</span><em>${L('calSum', { n: good, m: last + 1 })} ${sum}</em></div><div class="days">${strip.join('')}</div>` +

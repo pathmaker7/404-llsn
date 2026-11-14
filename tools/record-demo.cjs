@@ -58,10 +58,14 @@ const SECONDS = 29;
   await say('Green days are safe to land, red days are not. Click any day.');
   if (await page.locator('#verdict .day.ok:not(.now)').count()) await page.locator('#verdict .day.ok:not(.now)').first().click();
   await until(23);
-  await say('Any day from 2021 to 2031: history and prediction.');
-  await page.click('.v-date button:has-text("+1 ")'); await until(24.5);
-  await page.locator('.v-date button', { hasText: /^\+1 year|^\+1 год|^\+1 жыл/ }).click(); await until(26);
-  await say('Built on NASA LRO LOLA terrain. Checked against NASA JPL ephemerides.'); await until(SECONDS);
+  // The proof shot: a real landing replayed. The box on the left shows what happened next to the model's sunrise and sunset.
+  const real = 'A real landing, replayed: Chandrayaan-3, 2023. Our sunset is 4 September, the day India put it to sleep.';
+  await say(real, true);
+  await page.click('#back'); await page.waitForTimeout(700);
+  await page.selectOption('#a-famous', { label: 'Chandrayaan-3 (2023)' });
+  await page.waitForFunction(() => window.__history && document.body.classList.contains('mode-surface'), null, { timeout: 60000 });
+  await say(real); await until(26.5);
+  await say('NASA LOLA terrain. Checked against JPL, NASA light maps and four real landings.'); await until(SECONDS);
 
   recording = false; await capture;
   await browser.close(); srv.close();

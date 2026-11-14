@@ -336,3 +336,9 @@ body.mode-surface .skymark { display: none !important; }
 /* phone: mission limits and add-site fold into one line; desktop: always open, no extra line */
 .a-more > summary { cursor: pointer; font-size: 12px; color: var(--teal); margin: 0 0 6px; }
 @media (min-width: 701px) { .a-more > summary { display: none; } }
+
+/* A real mission's site: what happened, then what the model says for that moment. */
+.v-hist { border-left: 3px solid var(--teal); background: rgba(255,255,255,.04); padding: 8px 10px; margin: 10px 0; border-radius: 0 4px 4px 0; }
+.v-hist b { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--teal); }
+.verdict .v-hist p { margin: 6px 0 0; font-size: 13px; } .v-hist .v-model em { font-style: normal; color: var(--muted); }
+.v-hist button { margin-top: 8px; background: #0d1118; color: inherit; border: 1px solid var(--teal); border-radius: 3px; padding: 5px 8px; font: inherit; font-size: 12px; cursor: pointer; }

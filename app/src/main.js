@@ -1,6 +1,6 @@
 import * as THREE from '../vendor/three.module.js';
 import { loadIndex, loadOverview, loadSite, registerSite, loadPolar, PERIOD } from './data.js';
-import { makeSite, kindOf, FAMOUS } from './custom.js';
+import { makeSite, kindOf, FAMOUS, historyOf } from './custom.js';
 import { renderVerdict } from './verdict.js';
 import {
   sample, nextSunChange, nextEarthChange, fmtDuration, fmtUTC, sunFraction, SUN_STATE_LABEL,
@@ -12,6 +12,7 @@ import { allSites } from './allsites.js';
 
 const $ = (id) => document.getElementById(id);
 const DEG = Math.PI / 180;
+THREE.Cache.enabled = true; // the Earth picture is used by the map and by the site view: fetch it once
 
 // ------------------------------------------------------------------ state
 const S = {
@@ -76,7 +77,9 @@ function buildSiteList() {
     sites: S.index.sites.map((s) => { const v = s.variants[spot(s)]; return { id: s.id, name: s.name, ref: s.ref, dir: v.dir, slope: v.slope_deg, evaSlope: S.extra[v.dir] ?? v.slope_deg }; }),
     days: S.missionDays, p0: periodStart(), p1: periodEnd(),
     onHover: hot,
-    famous: FAMOUS, onAdd: (lat, lon, name) => addCustom(lat, lon, name).then(setHash),
+    famous: FAMOUS,
+    // A real mission with a known touchdown: stand there on its landing day, where the panel shows what really happened.
+    onAdd: (lat, lon, name) => addCustom(lat, lon, name).then((e) => { const h = historyOf(e.lat, e.lon); if (!h) return setHash(); S.t = Date.parse(h.landed) / 1000; S.missionStart = Math.floor(S.t / 86400) * 86400; return enterSite(e.id, 'databook'); }), // the sky opens on the touchdown itself
     onLimits: () => { setHash(); drawVerdict(); },
     onTime: (t) => { S.mapT = t; S.mapPlay = false; },
     onPlay: () => { S.mapPlay = !S.mapPlay; },
@@ -314,8 +317,8 @@ function refreshMission() {
 // The answer panel (verdict.js): verdict, every check, landing days and the date controls for the chosen spot.
 function drawVerdict() {
   if (!S.site) return;
-  const v = siteEntry(S.siteId).variants[S.variant];
-  renderVerdict($('verdict'), { site: S.site, slope: v.slope_deg, evaSlope: S.extra[v.dir] ?? v.slope_deg, t: S.missionStart, days: S.missionDays, p0: periodStart(), p1: periodEnd(),
+  const e = siteEntry(S.siteId), v = e.variants[S.variant];
+  renderVerdict($('verdict'), { history: e.custom ? historyOf(e.lat, e.lon) : null, site: S.site, slope: v.slope_deg, evaSlope: S.extra[v.dir] ?? v.slope_deg, t: S.missionStart, days: S.missionDays, p0: periodStart(), p1: periodEnd(),
     setDate: (t) => { S.missionStart = t; S.t = t; S.playing = false; $('play').textContent = '▶'; refreshMission(); setHash(); } });
 }
 
@@ -498,6 +501,21 @@ async function renderValidation() {
       <li>Rendered terrain skyline vs computed horizon mask: mean ${r.mean.toFixed(3)}°, range ${r.min.toFixed(3)}° to +${r.max.toFixed(3)}°. Where the decimated far mesh is lower, a skyline drawn from the mask fills the gap, so the visible horizon matches the mask.</li>
       <li>Browser vs pipeline solar-disc fraction (${sc.n} hourly samples): max |Δ| = ${sc.maxAbsFracDiff.toExponential(1)}.</li></ul>`;
   }
+  // Two checks against the outside world, beyond positions: NASA's own illumination study and four real landings.
+  const pg = await fetch('data/pgda.json').then((r) => r.json()).catch(() => null);
+  const pgda = !pg ? '' : `<h3>Against NASA's own illumination maps</h3>
+  <p>NASA's Goddard team (Mazarico et al. 2011) computed, on 60 m LOLA terrain, the share of time each pixel near the pole sees the Sun and sees Earth (<a href="https://pgda.gsfc.nasa.gov/products/69" target="_blank" rel="noopener">PGDA Lunar Polar Illumination</a>). We looked up our ${pg.rows.length} points in their maps (tools/validate-pgda.cjs) and compared them with our own share over ${pg.period}.</p>
+  <div class="callout"><b>Earth in view:</b> mean difference <b>${pg.earth.meanAbs} points</b>, correlation ${pg.earth.r}. <b>Sun:</b> mean difference <b>${pg.sun.meanAbs} points</b>, correlation ${pg.sun.r}; ours is higher by ${pg.sun.bias} on average.</div>
+  <p>What this means: Earth agrees closely. For the Sun the two agree on which points are bright and which are dark, but on sharp ridges our share is higher than NASA's. On a ridge NASA's own value changes a lot from one 60 m pixel to the next (the last column), we stand 2 m above the ground where NASA's map is at the surface, and our terrain is 80 m. Read our Sun percentages on ridge tops as an upper estimate.</p>
+  <div class="tw"><table class="t"><tr><th>Point</th><th>Sun, ours %</th><th>Sun, NASA %</th><th>Earth, ours %</th><th>Earth, NASA %</th><th>NASA Sun in the 9 pixels around</th></tr>
+  ${pg.rows.map((r) => `<tr><td>${r.name}</td><td>${r.sun}</td><td>${r.nasaSun}</td><td>${r.earth}</td><td>${r.nasaEarth}</td><td>${r.nasaSunLo} to ${r.nasaSunHi}</td></tr>`).join('')}</table></div>`;
+  const history = `<h3>Against four real landings</h3>
+  <p>Pick a mission under "Replay a real landing" on the first screen: the app stands you on its site at its touchdown and shows the real outcome next to the model's numbers. The same numbers are asserted in tools/test.cjs and tools/smoke.cjs.</p>
+  <table class="t"><tr><th>Mission</th><th>What really happened</th><th>What the model says</th></tr>
+  <tr><td>Chandrayaan-3, 23 Aug 2023</td><td>The lander was set into sleep mode on 4 Sep 2023 at about 02:30 UTC, ahead of the lunar night it was not built for (<a href="https://spacepolicyonline.com/news/india-says-good-night-to-chandrayaan-3/" target="_blank" rel="noopener">ISRO, as reported</a>)</td><td>Sunrise 21 Aug 2023, two days before the landing; sunset 4 Sep 2023 at 19:00 UTC, about 16 hours after the real shutdown</td></tr>
+  <tr><td>IM-1 Odysseus, 22 Feb 2024</td><td>Tipped on its side at landing; not built for the night; last contact 29 Feb 2024</td><td>A 14 day stay is lost: the night that starts on 3 Mar 2024 outlasts the battery. No terrain in the app at this site, and the real lander lay tilted, so its day ended earlier</td></tr>
+  <tr><td>Chang'e 6, 1 Jun 2024</td><td>Far side; all contact through the Queqiao-2 relay satellite (<a href="https://spacepolicyonline.com/news/china-lands-sample-return-probe-on-the-far-side-of-the-moon/" target="_blank" rel="noopener">report</a>)</td><td>Earth never rises at the site: lost to radio silence without a relay</td></tr>
+  <tr><td>IM-2 Athena, 6 Mar 2025</td><td>Fell on its side in a 20 m crater (<a href="https://lroc.im-ldi.com/images/1408" target="_blank" rel="noopener">LROC</a>), could not charge, ended the next day (<a href="https://spacepolicyonline.com/news/im-2-mission-ends-one-day-after-lunar-landing/" target="_blank" rel="noopener">report</a>)</td><td>Sun 2.5° up, Earth in view: the site and day pass. The model judges the place and the day, not the touchdown</td></tr></table>`;
   body.innerHTML = `<h2>How do we know this is right?</h2>
   <p><b>Dates outside 2027 to 2028:</b> the positions shown are computed in your browser with astronomy-engine and the IAU lunar rotation model, for 2021 to 2031, and agree with the offline DE440 series below to better than 0.01° over 2027 to 2028 (tools/test.cjs).</p><p>Every Sun and Earth position in the validation below was computed offline with Skyfield and JPL's DE440 ephemeris, using DE440 lunar orientation in the Moon's Mean-Earth frame. That's the same frame the LOLA terrain uses. We then checked the positions against an independent source: the <a href="https://ssd.jpl.nasa.gov/horizons/" target="_blank" rel="noopener">JPL Horizons</a> API, with the observer placed on the lunar surface at each site.</p>
   <div class="callout">Largest disagreement with Horizons over ${checked.length} evaluated points × 36 times each in 2027 and 2028, <b>as displayed</b> (including hourly interpolation):
@@ -505,6 +523,8 @@ async function renderValidation() {
   <table class="t"><tr><th>Site · point</th><th>Sun max ″</th><th>Earth max ″</th><th>Slope</th><th>Offset</th></tr>
     ${rows.map((r) => `<tr><td>${r.s.name} · ${r.k === 'best' ? 'best ≤500 m' : 'Data Book'}</td><td>${r.v.validation_max_arcsec?.sun.toFixed(2) ?? '—'}</td><td>${r.v.validation_max_arcsec?.earth.toFixed(2) ?? '—'}</td><td>${r.v.slope_deg}°</td><td>${r.v.offset_m.toFixed(0)} m</td></tr>`).join('')}
   </table>
+  ${history}
+  ${pgda}
   ${detail}
   <h3>Horizon method</h3>
   <p>For every 0.25° of azimuth we trace the ground along the great circle from the observer, 2 m above the LOLA surface. We sample the 80 m DEM every 40 m out to 300 km, or to the map edge (at least 185 km at every site), and keep the highest elevation angle. Curvature is exact for a 1737.4 km sphere. The horizon tests check this against synthetic terrain with known answers: a bare sphere, a ring wall, and a lone peak 120 km away.</p>

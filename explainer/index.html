@@ -30,6 +30,7 @@
 <h1>Will a solar robot survive a landing here, on this day?</h1>
 <p class="lead">Lunar Landing Site Navigator. Team 404 agents, Naryn. NASA Space Apps Challenge 2026.</p>
 <a class="cta" href="https://lunar-navigator-404.web.app">Open the app</a>
+<p><a href="lesson.html">A ready 45 minute school lesson</a> with the app, in English, Russian and Kyrgyz.</p>
 
 <figure><video src="demo-30s.mp4" controls muted playsinline preload="metadata" poster="map.png"></video><figcaption>The app in 29 seconds. Recorded from the real app; captions made with AI (SI) tools.</figcaption></figure>
 
@@ -69,13 +70,15 @@
 <ul>
   <li>Our Sun and Earth positions agree with NASA JPL Horizons to 0.005°.</li>
   <li>They also agree, to better than 0.01°, with a separate calculation made with NASA's DE440 ephemeris by a different program, at four sites over two years. A test fails if they stop agreeing.</li>
+  <li><b>Four real landings.</b> Pick "Replay a real landing" in the app. At Chandrayaan-3's site our sunset falls on 4 September 2023, the day India put the lander to sleep ahead of the night. At Chang'e 6's site, on the far side, Earth never rises: the real mission needed a relay satellite. IM-1 is lost to the night it was not built for. For IM-2 the model passes the site and the day; the real lander fell on its side, which no site tool can foresee.</li>
+  <li><b>NASA's own light maps.</b> We looked up our twenty points in NASA Goddard's polar illumination maps (Mazarico et al. 2011). Time with Earth in view agrees within 3 points on average. For the Sun both agree on which points are bright and dark, but on sharp ridges ours is higher by 11 points on average, so read our ridge-top Sun numbers as an upper estimate. The full table is in the app under "How do we know?".</li>
   <li>Each rule is tested exactly at its limit and just past it.</li>
   <li>A browser test plays the whole app and checks that a green or red day, on the map timeline and on the site, equals the verdict you get when you click it.</li>
 </ul>
 
 <h2>What it does not do</h2>
 <ul>
-  <li>Fifteen sites only. A new site needs its terrain to be prepared first.</li>
+  <li>Fifteen prepared sites on 80 m terrain. A point you add near the pole uses coarser 320 m terrain; anywhere else the Moon is treated as smooth.</li>
   <li>Nothing smaller than 80 m is in the data: no rocks, no small craters.</li>
   <li>It does not plan a descent, a trajectory or fuel. It answers power and radio.</li>
 </ul>
