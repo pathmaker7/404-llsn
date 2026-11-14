@@ -1,1 +1,94 @@
 /* Quiz mode for students. */
+/* the button on the map: third in the column of kids features (the lander card is 1, the ice hunter 2) */
+.kq-btn { order: 3; }
+
+.kq { position: fixed; inset: 0; z-index: 36; display: flex; align-items: center; justify-content: center; padding: 12px; background: rgba(2, 4, 8, .86); } /* no blur: the 3D Moon keeps drawing behind it, and a blur over it is slow on a school computer */
+.kq[hidden] { display: none; }
+.kq-card { width: min(720px, 100%); max-height: min(100%, 880px); display: flex; flex-direction: column; background: var(--panel-solid); border: 1px solid var(--line-2); border-radius: 12px; box-shadow: 0 24px 80px rgba(0, 0, 0, .65); overflow: hidden; }
+
+.kq-top { display: flex; align-items: center; gap: 12px; padding: 12px 14px 10px 18px; }
+.kq-top b { font-size: 14px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--teal); }
+.kq-prog { margin-left: auto; font: 13px var(--mono); color: var(--muted); }
+.kq-x { width: 40px; height: 40px; flex: none; border-radius: 50%; border: 1px solid var(--line-2); background: rgba(255, 255, 255, .04); color: var(--text); font-size: 26px; line-height: 1; cursor: pointer; }
+.kq-x:hover { border-color: var(--teal); color: var(--teal); }
+/* a small Moon with three craters, drawn in CSS */
+.kq-moon { width: 26px; height: 26px; flex: none; border-radius: 50%; background:
+  radial-gradient(circle at 34% 36%, #8f98a6 0 2.4px, transparent 3px), radial-gradient(circle at 66% 30%, #8f98a6 0 1.8px, transparent 2.4px), radial-gradient(circle at 58% 68%, #8f98a6 0 3px, transparent 3.6px),
+  radial-gradient(circle at 36% 30%, #e9edf3, #aab3c0 70%); box-shadow: inset -5px -4px 7px rgba(0, 0, 0, .35); }
+
+/* five steps: done right, done wrong, the one now */
+.kq-bar { display: flex; gap: 6px; padding: 0 18px 12px; }
+.kq-bar i { flex: 1; height: 6px; border-radius: 3px; background: rgba(150, 170, 200, .2); }
+.kq-bar i.now { background: var(--teal); }
+.kq-bar i.ok { background: rgb(95, 211, 141); }
+.kq-bar i.bad { background: rgb(226, 84, 90); }
+
+.kq-main { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 6px 18px 18px; scrollbar-width: thin; scrollbar-color: rgba(70, 224, 200, .7) rgba(255, 255, 255, .06); }
+.kq-live { display: inline-block; margin: 0 0 8px; padding: 3px 10px 3px 24px; border: 1px solid var(--sun); border-radius: 12px; color: var(--sun); font: 600 12px var(--mono); letter-spacing: .04em; position: relative; }
+.kq-live::before { content: ""; position: absolute; left: 9px; top: 50%; width: 8px; height: 8px; margin-top: -4px; border-radius: 50%; background: var(--sun); box-shadow: 0 0 8px var(--sun); }
+.kq-q { margin: 2px 0 16px; font-size: clamp(19px, 2.6vw, 25px); line-height: 1.32; font-weight: 600; letter-spacing: .005em; }
+.kq-loading { color: var(--muted); font-size: 16px; padding: 30px 0; }
+
+.kq-opts { display: grid; gap: 10px; }
+.kq-opt { display: grid; grid-template-columns: 36px 1fr; gap: 12px; align-items: start; width: 100%; text-align: left; padding: 12px 14px; border: 1.5px solid var(--line-2); border-radius: 10px; background: rgba(255, 255, 255, .035); color: var(--text); font-size: 17px; line-height: 1.35; cursor: pointer; transition: border-color .12s, background .12s, transform .12s; }
+.kq-opt:hover { border-color: var(--teal); background: rgba(70, 224, 200, .08); }
+.kq-key { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font: 600 15px var(--mono); border: 1.5px solid var(--line-2); color: var(--muted); }
+.kq-opt:hover .kq-key { border-color: var(--teal); color: var(--teal); }
+.kq-txt { padding-top: 3px; min-width: 0; overflow-wrap: anywhere; }
+.kq-why { display: block; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255, 255, 255, .14); font-size: 15px; line-height: 1.45; color: #d6dde9; }
+.kq-why b { display: block; margin-bottom: 2px; font-size: 12px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
+/* after an answer the options stop reacting; the right one is green with a tick, a wrong pick is red with a cross */
+.kq-opt[aria-disabled="true"] { cursor: default; }
+.kq-opt.dim { opacity: .5; }
+.kq-opt.dim:hover { border-color: var(--line-2); background: rgba(255, 255, 255, .035); }
+.kq-opt.dim:hover .kq-key { border-color: var(--line-2); color: var(--muted); }
+.kq-opt.right { border-color: rgb(95, 211, 141); background: rgba(95, 211, 141, .12); }
+.kq-opt.right .kq-key { background: rgb(95, 211, 141); border-color: rgb(95, 211, 141); color: #04170d; }
+.kq-opt.right .kq-why b { color: rgb(120, 226, 162); }
+.kq-opt.wrong { border-color: rgb(226, 84, 90); background: rgba(226, 84, 90, .12); }
+.kq-opt.wrong .kq-key { background: rgb(226, 84, 90); border-color: rgb(226, 84, 90); color: #1c0406; }
+.kq-opt.wrong .kq-why b { color: rgb(255, 140, 145); }
+.kq-opt.right:hover, .kq-opt.wrong:hover { transform: none; }
+
+/* the footer stays in view while a long explanation scrolls */
+.kq-foot { display: flex; align-items: center; gap: 12px; padding: 12px 18px 14px; border-top: 1px solid var(--line); }
+.kq-foot:empty { display: none; }
+.kq-verdict { font-size: 20px; font-weight: 700; margin-right: auto; }
+.kq-verdict.ok { color: rgb(120, 226, 162); } .kq-verdict.bad { color: rgb(255, 140, 145); }
+.kq-next { min-width: 120px; padding: 11px 22px; border: 1.5px solid var(--teal); border-radius: 8px; background: var(--teal); color: #001; font-size: 16px; font-weight: 700; cursor: pointer; }
+.kq-next:hover { filter: brightness(1.1); }
+.kq-ghost { padding: 11px 18px; border: 1px solid var(--line-2); border-radius: 8px; background: none; color: var(--text); font-size: 15px; cursor: pointer; }
+.kq-ghost:hover { border-color: var(--teal); color: var(--teal); }
+
+/* the end: stars for the right answers, the score, a friendly line */
+.kq-end { text-align: center; padding: 22px 6px 10px; }
+.kq-stars { display: flex; justify-content: center; gap: 10px; font-size: 44px; line-height: 1; }
+.kq-stars i { font-style: normal; }
+.kq-stars i.ok { color: var(--sun); text-shadow: 0 0 16px rgba(255, 181, 71, .55); }
+.kq-stars i.bad { color: rgba(150, 170, 200, .45); }
+.kq-score { margin: 18px 0 8px; font-size: clamp(24px, 4vw, 32px); }
+.kq-msg { max-width: 460px; margin: 0 auto; font-size: 18px; line-height: 1.45; color: #d6dde9; }
+.kq-foot .kq-again { margin-right: auto; }
+
+button.kq-opt:focus-visible, .kq-next:focus-visible, .kq-x:focus-visible, .kq-ghost:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .kq-opt { transition: none; } }
+
+/* phone: the card fills the screen, big tap targets, the question and the answers scroll inside it */
+@media (max-width: 760px) {
+  .kq { padding: 8px; align-items: flex-start; }
+  .kq-card { max-height: 100%; border-radius: 10px; }
+  .kq-top { padding: 8px 8px 6px 14px; gap: 8px; }
+  .kq-moon { display: none; }
+  .kq-top b { font-size: 13px; letter-spacing: .05em; white-space: nowrap; }
+  .kq-prog { white-space: nowrap; font-size: 12px; }
+  .kq-bar { padding: 0 14px 8px; }
+  .kq-main { padding: 4px 14px 14px; }
+  .kq-q { font-size: 19px; margin-bottom: 12px; }
+  .kq-opt { grid-template-columns: 30px 1fr; gap: 10px; padding: 11px 12px; font-size: 16px; }
+  .kq-key { width: 28px; height: 28px; font-size: 14px; }
+  .kq-why { font-size: 14px; }
+  .kq-foot { padding: 10px 14px 12px; }
+  .kq-next { min-width: 0; padding: 12px 20px; }
+  .kq-verdict { font-size: 18px; }
+  .kq-stars { font-size: 36px; gap: 6px; }
+}
