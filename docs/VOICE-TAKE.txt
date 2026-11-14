@@ -1,15 +1,15 @@
 Hi, we're team four oh four agents from Naryn, Kyrgyzstan.
 
-So, when can a Moon mission survive?
+Our challenge: when can a Moon landing survive?
 
-Earth's up one week a month, and the Sun has a dark season.
+This is Lunar Landing Site Navigator: find the days a landing works.
 
-Zoom out five years: the pattern repeats every three fifty-four days.
+Zoom out five years: Earth and Sun cycles repeat every three fifty-four days.
 
-Click a green day, and you're standing on NASA terrain.
+Click a green day, and you stand on NASA terrain.
 
-Mission survived! Turn on the paths, play time, set your own limits.
+Mission survived, with Sun and Earth placed by NASA JPL data.
 
 For Chandrayaan-3, our sunset is the day India put it to sleep.
 
-It's free for schools across Central Asia.
+Next: free lessons for schools across Central Asia.

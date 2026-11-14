@@ -32,13 +32,13 @@ stops and names the line that is too long. The metadata then names that voice in
 | Time | On screen (what the script clicks) | Voice and caption | Which judging criterion it serves |
 |---|---|---|---|
 | 0:00 to 0:03.6 | The whole Moon; the team's names under the caption | Hi, we're team 404 agents from Naryn, Kyrgyzstan. | Presentation: who we are |
-| 0:03.6 to 0:06.3 | The Moon is dragged and turns; the title is in the top bar | So, when can a Moon mission survive? | Relevance: the challenge in one question |
-| 0:06.3 to 0:10.2 | "Next year": short green windows each month, then empty months | Earth's up one week a month, and the Sun has a dark season. | Impact: what a student learns |
-| 0:10.2 to 0:14 | "Next 5 years": the green clusters return | Zoom out five years: the pattern repeats every 354 days. | Creativity: the pattern nobody else shows |
-| 0:14 to 0:17.4 | "Next month", click the best site's first green day, fly down, look at the Sun | Click a green day, and you're standing on NASA terrain. | Relevance: NASA LOLA data is the ground you stand on |
-| 0:17.4 to 0:22.2 | MISSION SURVIVED; Details panel: Sun and Earth paths on; time plays | Mission survived! Turn on the paths, play time, set your own limits. | Validity: a usable tool with real controls |
+| 0:03.6 to 0:06.3 | The Moon is dragged and turns; the title is in the top bar | Our challenge: when can a Moon landing survive? | Relevance: the challenge in one question |
+| 0:06.3 to 0:10.2 | "Next year": short green windows each month, then empty months | This is Lunar Landing Site Navigator: find the days a landing works. | Impact: what a student learns |
+| 0:10.2 to 0:14 | "Next 5 years": the green clusters return | Zoom out five years: Earth and Sun cycles repeat every 354 days. | Creativity: the pattern nobody else shows |
+| 0:14 to 0:17.4 | "Next month", click the best site's first green day, fly down, look at the Sun | Click a green day, and you stand on NASA terrain. | Relevance: NASA LOLA data is the ground you stand on |
+| 0:17.4 to 0:22.2 | MISSION SURVIVED; Details panel: Sun and Earth paths on; time plays | Mission survived, with Sun and Earth placed by NASA JPL data. | Validity: a usable tool with real controls |
 | 0:22.2 to 0:26.4 | Back to all sites; Replay a real landing: Chandrayaan-3, with the "what really happened" box | For Chandrayaan-3, our sunset is the day India put it to sleep. | Validity: checked against a real mission |
-| 0:26.4 to 0:29 | The replay box and the 3D view | It's free for schools across Central Asia. | Impact: who it is for |
+| 0:26.4 to 0:29 | The replay box and the 3D view | Next: free lessons for schools across Central Asia. | Impact: who it is for |
 
 The voice says "four oh four" and "three fifty-four" where the captions show the digits. Every line was measured: at
 185 to 215 words a minute each fits its moment for all six voices tested; the narrator stops with an error if a line
