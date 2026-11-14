@@ -2,7 +2,7 @@
 
 The film is made by a script that uses the real app as a person would (`npm run video`): Playwright opens the live
 app, turns the Moon, presses Next year and Next 5 years, clicks a green day, opens the Sun and Earth paths in the
-Details panel, plays time, and replays Chandrayaan-3. A synthetic voice (Apple text to speech) then reads each caption
+Details panel, plays time, and replays Chandrayaan-3. A synthetic voice (ElevenLabs, "The Professional Presenter") then reads each caption
 word for word at the moment it appears (`tools/narrate.cjs`); the captions are the English subtitles of the voice.
 Order follows the Space Apps submission guide: who we are, the challenge and title, how it works with NASA data, what
 it does for people. No real person appears or speaks (no one under 18 may appear). The watermark "Made with AI (SI)
@@ -16,7 +16,9 @@ short samples of fourteen). Then rebuild with the chosen name, about one minute,
 A recorded voice works too, for example the ElevenLabs voice "The Professional Presenter": paste
 docs/VOICE-TAKE.txt (the eight lines, numbers written as spoken, a blank line between lines) as ONE take, download
 the mp3, then `npm run narrate -- ~/Downloads/take.mp3 "ElevenLabs, The Professional Presenter"`. The take is cut at
-its seven longest pauses, one clip per caption; a clip may be sped up by at most 12 percent, otherwise the narrator
+its seven longest pauses, one clip per caption, unless CUTS gives the times. The submitted film uses the take kept in
+docs/voice-take-presenter.mp3, whose pauses inside lines are as long as between lines, so it was cut by hand:
+`CUTS=3.5,5.93,10.15,13.96,17.21,22.14,26.66 npm run narrate -- docs/voice-take-presenter.mp3 "ElevenLabs, The Professional Presenter"`; a clip may be sped up by at most 12 percent, otherwise the narrator
 stops and names the line that is too long. The metadata then names that voice instead of Apple text to speech.
 
 | Time | On screen (what the script clicks) | Voice and caption | Which judging criterion it serves |

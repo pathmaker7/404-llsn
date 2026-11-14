@@ -21,8 +21,10 @@ function cutTake() {
   const log = require('child_process').spawnSync(FFMPEG, ['-i', TAKE, '-af', 'silencedetect=n=-35dB:d=0.25', '-f', 'null', '-'], { encoding: 'utf8' }).stderr;
   const st = [...log.matchAll(/silence_start: ([\d.]+)/g)].map((m) => +m[1]), en = [...log.matchAll(/silence_end: ([\d.]+)/g)].map((m) => +m[1]);
   const gaps = st.map((s, i) => ({ s, e: en[i] ?? s, len: (en[i] ?? s) - s })).filter((g) => g.s > 0.1 && g.e < dur(TAKE) - 0.1);
-  if (gaps.length < caps.length - 1) throw new Error(`the take has ${gaps.length + 1} spoken parts, the film needs ${caps.length}: leave a clear pause between lines`);
-  const cuts = gaps.sort((a, b) => b.len - a.len).slice(0, caps.length - 1).sort((a, b) => a.s - b.s).map((g) => (g.s + g.e) / 2);
+  if (!process.env.CUTS && gaps.length < caps.length - 1) throw new Error(`the take has ${gaps.length + 1} spoken parts, the film needs ${caps.length}: leave a clear pause between lines`);
+  // A real take pauses as long inside a line as between lines; then pass the cut times by ear: CUTS=3.5,5.93,... npm run narrate -- take.mp3
+  const cuts = process.env.CUTS ? process.env.CUTS.split(',').map(Number) : gaps.sort((a, b) => b.len - a.len).slice(0, caps.length - 1).sort((a, b) => a.s - b.s).map((g) => (g.s + g.e) / 2);
+  if (cuts.length !== caps.length - 1) throw new Error(`need ${caps.length - 1} cut times, got ${cuts.length}`);
   return caps.map((_, i) => { const a = i ? cuts[i - 1] : 0, b = cuts[i] ?? dur(TAKE), f = path.join(TMP, `t${i}.wav`);
     execFileSync(FFMPEG, ['-y', '-loglevel', 'error', '-ss', String(a), '-to', String(b), '-i', TAKE, '-af', TRIM.replaceAll('-45dB', '-35dB'), f]); return f; }); // an encoded take carries faint noise in its pauses
 }
