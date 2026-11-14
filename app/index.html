@@ -9,6 +9,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="css/app.css">
+<link rel="stylesheet" href="css/lander.css">
+<link rel="stylesheet" href="css/game.css">
+<link rel="stylesheet" href="css/ice.css">
+<link rel="stylesheet" href="css/quiz.css">
 </head>
 <body class="mode-overview">
 <canvas id="gl"></canvas>
@@ -26,6 +30,7 @@
     </div>
   </div>
   <button id="back" class="ghost surface-only" title="Back to the Moon with all sites" data-i18n-title="uBackTip" data-i18n="uAllSites">All sites</button>
+  <div id="sitekid" class="surface-only"></div>
   <nav>
     <div id="lang" role="group" aria-label="Language"></div>
     <button data-panel="validation" data-i18n="uHow">How do we know?</button>
@@ -33,6 +38,7 @@
   </nav>
 </header>
 
+<div id="kidbar" class="overview-only"></div>
 <aside id="sitelist" class="overview-only"></aside>
 
 <section id="hud" class="surface-only">
@@ -128,6 +134,10 @@
 <div id="loading" data-i18n="uLoading">Loading terrain…</div>
 
 <script src="i18n.js"></script>
+<script src="i18n-lander.js"></script>
+<script src="i18n-game.js"></script>
+<script src="i18n-ice.js"></script>
+<script src="i18n-quiz.js"></script>
 <script src="vendor/astronomy.browser.min.js"></script>
 <script src="sky.js"></script>
 <script src="mission.js"></script>

@@ -9,6 +9,10 @@ import { SurfaceView } from './surface.js';
 import { Overview } from './overview.js';
 import { Timeline } from './timeline.js';
 import { allSites } from './allsites.js';
+import { init as initLander } from './lander.js';
+import { init as initGame } from './game.js';
+import { init as initIce } from './ice.js';
+import { init as initQuiz } from './quiz.js';
 
 const $ = (id) => document.getElementById(id);
 const DEG = Math.PI / 180;
@@ -63,6 +67,18 @@ function setHash() {
   history.replaceState(null, '', location.pathname + '#' + p.toString());
 }
 
+// ------------------------------------------------------------ kids features
+// The slots handed to lander.js, game.js, ice.js and quiz.js (init(kid) at boot). Each feature pushes its own functions
+// into the lists it needs, so no feature edits another's code:
+//   moonTap  (at {lat, lon}, event) => true when the feature took a tap on the Moon (then no lander is dropped)
+//   dayPick  (siteId, t, event) => may return a promise; runs after a day cell is clicked, before the site opens
+//   dropped  (entry, event) after a tap on the Moon added the user's own site
+//   mode     ('overview' or 'surface') after the screen changed
+//   lang     () after the language changed
+//   frame    (now, dt) every animation frame
+const kid = { S, renderer, surface, overview, addCustom, enterSite, backToMap, siteEntry, setHash, periodStart, periodEnd,
+  moonTap: [], dayPick: [], dropped: [], mode: [], lang: [], frame: [] };
+
 // ------------------------------------------------------------- overview UI
 // One site is "hot" while the pointer is on its label or its row: both light up, so a row is easy to find on the Moon.
 function hot(id) {
@@ -84,7 +100,7 @@ function buildSiteList() {
     onLimits: () => { setHash(); drawVerdict(); },
     onTime: (t) => { S.mapT = t; S.mapPlay = false; },
     onPlay: () => { S.mapPlay = !S.mapPlay; },
-    onPick: (id, t) => { if (t != null) { S.missionStart = t; S.t = t; } enterSite(id, spot(siteEntry(id))); },
+    onPick: async (id, t, ev) => { if (t != null) { S.missionStart = t; S.t = t; for (const f of kid.dayPick) await f(id, t, ev); } enterSite(id, spot(siteEntry(id))); },
   });
   $('pins').innerHTML = '';
   for (const s of overview.sites) makePin(s);
@@ -205,6 +221,7 @@ async function enterSite(id, variant, { fly = true, keepTime = false } = {}) {
   $('fade').classList.remove('on');
   if (S.panel) openPanel(S.panel);
   setHash();
+  for (const f of kid.mode) f('surface');
 }
 
 async function switchVariant(v) {
@@ -221,6 +238,7 @@ function backToMap() {
   overview.reset(); S.held = false;
   resize();
   setHash();
+  for (const f of kid.mode) f('overview');
 }
 
 /** Browser-vs-pipeline consistency: recompute the disc fraction in JS at
@@ -400,7 +418,8 @@ $('look-earth').addEventListener('click', () => { const s = sample(S.site, S.t);
     drag = null;
     if (S.mode === 'surface' || !down || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 5) return;
     const r = cv.getBoundingClientRect(), at = overview.pick(e.clientX - r.left, e.clientY - r.top, r.width, r.height);
-    if (at) addCustom(at.lat, at.lon, null).then((s) => { S.dropped = s.id; resize(); });
+    if (!at || kid.moonTap.some((f) => f(at, e))) return; // a kids feature (ice hunter) may take the tap
+    addCustom(at.lat, at.lon, null).then((s) => { S.dropped = s.id; resize(); for (const f of kid.dropped) f(s, e); });
   });
   cv.addEventListener('wheel', (e) => {
     e.preventDefault();
@@ -608,6 +627,7 @@ function frame(now) {
     overview.render(now);
     drawOverlay(null);
   }
+  for (const f of kid.frame) f(now, dt);
   placePins();
   requestAnimationFrame(frame);
 }
@@ -623,7 +643,7 @@ function frame(now) {
     // Three visible buttons, the current language lit: a closed dropdown did not say what it was for.
     sel.innerHTML = Object.entries(I18n.NAMES).map(([k, v]) => `<button data-l="${k}" title="${v}">${k.toUpperCase()}</button>`).join('');
     const mark = () => { for (const b of sel.children) b.classList.toggle('on', b.dataset.l === I18n.lang); };
-    for (const b of sel.children) b.onclick = () => { I18n.set(b.dataset.l); try { localStorage.setItem('lang', b.dataset.l); } catch (e) { /* storage blocked */ } mark(); relabel(); drawVerdict(); S.all?.redraw(); if (S.site) renderHudStatic(); S.dirty = true; };
+    for (const b of sel.children) b.onclick = () => { I18n.set(b.dataset.l); try { localStorage.setItem('lang', b.dataset.l); } catch (e) { /* storage blocked */ } mark(); relabel(); drawVerdict(); S.all?.redraw(); if (S.site) renderHudStatic(); S.dirty = true; for (const f of kid.lang) f(); };
     mark(); I18n.apply(document);
     const ov = await loadOverview(S.index);
     overview.build(ov, S.index.sites);
@@ -643,6 +663,8 @@ function frame(now) {
     for (const [k, f] of [['battery', 'nightH'], ['radio', 'silenceH']]) { const v = parseFloat(p.get(k)); if (v >= 0 && v <= 30) globalThis.Mission.limits[f] = v * 24; }
     buildSiteList();
     for (const c of (p.get('add') || '').split(';')) { const [la, lo, ...nm] = c.split(','); if (c && Number.isFinite(+la) && Number.isFinite(+lo) && Math.abs(+la) <= 90) await addCustom(+la, +lo, nm.join(',') || null); }
+    // A feature that fails to start must not take the app down: the rest boots, and the error still reaches the console and the tests.
+    for (const f of [initLander, initGame, initIce, initQuiz]) try { f(kid); } catch (e) { setTimeout(() => { throw e; }); }
     const t = S.missionStart;
     S.t = Number.isFinite(t) ? t : S.missionStart;
     $('speed').value = String(S.speedH);
@@ -653,7 +675,7 @@ function frame(now) {
       const s0 = sample(S.site, S.t); surface.yaw = s0.sunAz; surface.pitch = 1;
     }
     if (p.get('panel')) openPanel(p.get('panel'));
-    window.__app = { S, surface, overview, ready: true };
+    window.__app = { S, surface, overview, kid, ready: true };
   } catch (err) {
     console.error(err);
     $('loading').textContent = 'Failed to load data: ' + err.message;

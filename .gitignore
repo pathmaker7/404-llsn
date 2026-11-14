@@ -6,3 +6,4 @@ pipeline-3d/.venv/
 pipeline-3d/data/
 __pycache__/
 explainer/voices/film-*.mp4
+.claude/worktrees/

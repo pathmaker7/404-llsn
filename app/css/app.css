@@ -365,3 +365,10 @@ button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-v
 @media (prefers-reduced-motion: reduce) { .tog input, .tog input::before, #back, #back::before { transition: none; } button:active { transform: none; } }
 /* phone: the way back stays on one line without squeezing the title, and the Details button sits clear above the dock */
 @media (max-width: 760px) { #topbar { gap: 8px; } #back { border-left: 0; padding: 5px 0; font-size: 13px; gap: 6px; } #more { bottom: 262px; } html.min #more { bottom: 192px; } }
+
+/* ---------- kids features: one column of buttons on the map (#kidbar), one slot in the top bar on the site (#sitekid) ---------- */
+#kidbar { position: fixed; left: 16px; top: 64px; z-index: 12; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; max-width: 300px; }
+#sitekid { display: flex; gap: 8px; }
+.kidbtn { background: rgba(10,14,20,.78); border: 1px solid var(--teal); color: var(--teal); padding: 8px 14px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 14px; letter-spacing: .02em; backdrop-filter: blur(6px); }
+.kidbtn:hover, .kidbtn.on { background: var(--teal); color: #001; }
+@media (max-width: 760px) { #kidbar { left: 8px; top: 56px; flex-direction: row; flex-wrap: wrap; max-width: calc(100vw - 16px); gap: 6px; } .kidbtn { padding: 6px 10px; font-size: 13px; } }

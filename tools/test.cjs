@@ -5,6 +5,8 @@ const path = require('path');
 const APP = path.join(__dirname, '..', 'app');
 const Mi = require('../app/mission.js');
 const I18n = require('../app/i18n.js');
+const KIDS = ['lander', 'game', 'ice', 'quiz']; // each kids feature keeps its texts in its own file, added to I18n.S
+for (const f of KIDS) require(`../app/i18n-${f}.js`);
 const Sky = require('../app/sky.js');
 
 (async () => {
@@ -105,7 +107,7 @@ const Sky = require('../app/sky.js');
 
   // 8. Visible text uses no dash as punctuation (a spaced em or en dash): the jury reads these pages. A lone "—" as an
   // empty value placeholder is allowed.
-  for (const f of ['app/index.html', 'app/i18n.js', 'explainer/index.html', 'explainer/lesson.html', 'explainer/deck.html']) {
+  for (const f of ['app/index.html', 'app/i18n.js', ...KIDS.map((k) => `app/i18n-${k}.js`), 'explainer/index.html', 'explainer/lesson.html', 'explainer/deck.html']) {
     const hit = fs.readFileSync(path.join(__dirname, '..', f), 'utf8').match(/\S\s[–—]\s\S/);
     assert.ok(!hit, `${f}: dash used as punctuation near "${hit && hit[0]}"`);
   }

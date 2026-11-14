@@ -68,7 +68,7 @@ export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}
       tip.style.top = e.clientY - 34 + 'px';
     };
     cv.onpointerleave = () => { tip.style.display = 'none'; };
-    cv.onclick = (e) => onPick(s.id, p0 + dayAt(e) * DAY);
+    cv.onclick = (e) => onPick(s.id, p0 + dayAt(e) * DAY, e);
     s.li = li; s.cv = cv;
     ol.appendChild(li);
   }
