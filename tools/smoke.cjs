@@ -105,7 +105,7 @@ if (require.main !== module) return;
   await page.click('.a-range button[data-y="1"]');
   await page.waitForFunction(() => !__app.overview.anim, null, { timeout: 20000 }); // the opening glide from the whole Moon has ended
   const th0 = await page.evaluate(() => __app.overview.theta);
-  await page.mouse.move(150, 300); await page.mouse.down(); await page.mouse.move(350, 350, { steps: 6 }); await page.mouse.up(); // starts on bare map, left of every label
+  await page.mouse.move(1300, 250); await page.mouse.down(); await page.mouse.move(1100, 300, { steps: 6 }); await page.mouse.up(); // starts on bare map, right of every label and clear of the kids cards on the left
   const th1 = await page.evaluate(() => __app.overview.theta); await page.waitForTimeout(400);
   if (Math.abs(th1 - th0) < 20 || (await page.evaluate(() => __app.overview.theta)) !== th1) errors.push('dragging the map did not turn it and hold it: ' + [th0, th1]);
   for (const [name, frac] of [['Peak near Shackleton', 0.1], ['Connecting ridge', 0.5], ['Leibnitz beta plateau', 0.8], ['Slater rim', 0.3], ['Shackleton floor', 0.6]]) {
