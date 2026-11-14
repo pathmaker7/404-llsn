@@ -55,5 +55,12 @@
   .kl-card.closed { width: auto; flex: none; }
   .kl-prev { height: 120px; }
 }
-@media (max-height: 820px) and (min-width: 761px) { .kl-hint { display: none; } }
+/* A desktop screen of ordinary height: the card lies flat (picture left, choices right), clear of the day table below. */
+@media (max-height: 900px) and (min-width: 761px) {
+  .kl-card:not(.closed) { width: 500px; }
+  .kl-body { grid-template-columns: 150px 1fr; column-gap: 12px; }
+  .kl-prev { grid-column: 1; grid-row: 1 / span 4; height: auto; min-height: 150px; }
+  .kl-body > .kl-row { grid-column: 2; }
+  .kl-hint { display: none; }
+}
 @media (prefers-reduced-motion: reduce) { .kl-swatch { transition: none; } }

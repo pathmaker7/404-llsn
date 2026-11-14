@@ -57,7 +57,8 @@ const check = (ok, name, detail = '') => { console.log(`${ok ? 'ok  ' : 'FAIL'} 
   // Why no clear point: what covers the site's spot on the screen (for the failure message).
   const whyNot = (s) => p.evaluate(([la, lo]) => { const ov = window.__ov, r = document.getElementById('gl').getBoundingClientRect(), q = ov.sites.find((x) => Math.abs(x.lat - la) < 1e-6 && Math.abs(x.lon - lo) < 1e-6), v = q.pos.clone().project(ov.camera), x = (v.x * 0.5 + 0.5) * r.width, y = (-v.y * 0.5 + 0.5) * r.height, e = document.elementFromPoint(x, y);
     return JSON.stringify({ x: Math.round(x), y: Math.round(y), top: e ? e.tagName + '#' + e.id + '.' + e.className : null, held: window.__app.S.held, dist: ov.dist }); }, [s.lat, s.lon]);
-  const tap = async (pt) => { const n = await p.evaluate(() => window.__ice.results); await p.mouse.click(pt.x, pt.y); await p.waitForFunction((n) => window.__ice.results > n && window.__ice.phase === 'result', n, { timeout: 60000 }); };
+  const tap = async (pt) => { const n = await p.evaluate(() => window.__ice.results); await p.mouse.click(pt.x, pt.y); await p.waitForFunction((n) => window.__ice.results > n && window.__ice.phase === 'result', n, { timeout: 20000 })
+    .catch(async () => { throw new Error('a tap at ' + JSON.stringify(pt) + ' gave no result; under it: ' + await p.evaluate(([x, y]) => { const e = document.elementFromPoint(x, y); return e ? e.tagName + '#' + e.id + '.' + e.className + ' phase ' + window.__ice.phase + ' on ' + window.__ice.on : null; }, [pt.x, pt.y])); }); };
 
   await p.goto(url);
   await ready();

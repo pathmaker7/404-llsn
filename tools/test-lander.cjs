@@ -69,8 +69,10 @@ const iso = (t) => new Date(t * 1000).toISOString().slice(0, 10);
   // ---- 3. a name is text, never markup
   const evil = '<img src=x onerror="window.__xss=1"><b>hi</b>';
   if (PHONE) await page.click('.kl-toggle');
+  // Other features keep their own <b> in the button column (the ice hunter badge): count only tags the name adds.
+  const bold0 = await page.evaluate(() => document.querySelectorAll('.kl-card b, #kidbar b').length);
   await page.fill('.kl-input', evil); await page.waitForTimeout(300);
-  let x1 = await page.evaluate(() => ({ cfg: __lander.cfg.name, ran: window.__xss === 1, imgs: document.querySelectorAll('img[src="x"]').length, bold: document.querySelectorAll('.kl-card b, #kidbar b').length }));
+  let x1 = await page.evaluate((b0) => ({ cfg: __lander.cfg.name, ran: window.__xss === 1, imgs: document.querySelectorAll('img[src="x"]').length, bold: document.querySelectorAll('.kl-card b, #kidbar b').length - b0 }), bold0);
   check('a crafted name typed into the card runs no script and makes no tags', !x1.ran && !x1.imgs && !x1.bold && !/[<>"=]/.test(x1.cfg) && x1.cfg.length <= 20, x1);
   await page.evaluate((e) => localStorage.setItem('myLander', JSON.stringify({ type: 'hopper', color: '#a855f7', name: e, hat: 'tajik' })), evil); await boot();
   const x2 = await page.evaluate(() => ({ cfg: __lander.cfg, ran: window.__xss === 1, imgs: document.querySelectorAll('img[src="x"]').length, val: document.querySelector('.kl-input').value }));
