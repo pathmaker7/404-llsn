@@ -5,7 +5,7 @@
 const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright-core');
-const { serve } = require('./smoke.cjs');
+const { serve, launch } = require('./smoke.cjs');
 
 const [VW, VH] = (process.env.VIEWPORT || '1440x900').split('x').map(Number);
 const SHOTS = process.env.SHOTS || '/private/tmp/claude-501/-Users-agentsinc-Desktop-NASA-Naryn/4ec727e1-b59d-4e91-8d93-17544d5a3cfb/scratchpad/quiz';
@@ -17,7 +17,7 @@ const check = (ok, name, extra = '') => { if (!ok) failures++; console.log(`${ok
   fs.mkdirSync(SHOTS, { recursive: true });
   let srv = null, url = process.env.BASE_URL;
   if (!url) { srv = await serve(path.join(__dirname, '..', 'app')); url = `http://127.0.0.1:${srv.address().port}/`; }
-  const b = await chromium.launch({ executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' });
+  const b = await launch();
   const page = await b.newPage({ viewport: { width: VW, height: VH } }), errs = [];
   await page.addInitScript(() => { try { localStorage.setItem('kidHelp', 'off'); } catch (e) { /* no storage */ } }); // the first visit help has its own test (test-tour.cjs)
   page.on('pageerror', (e) => errs.push('page error: ' + e.message));

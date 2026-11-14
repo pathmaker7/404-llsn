@@ -111,6 +111,13 @@ const Sky = require('../app/sky.js');
     const hit = fs.readFileSync(path.join(__dirname, '..', f), 'utf8').match(/\S\s[–—]\s\S/);
     assert.ok(!hit, `${f}: dash used as punctuation near "${hit && hit[0]}"`);
   }
+  // 9. The page a native speaker checks the Russian and Kyrgyz texts on (explainer/texts.html, written by
+  // tools/texts-sheet.cjs) shows the texts the app shows now, not an older draft.
+  { const sheet = fs.readFileSync(path.join(__dirname, '..', 'explainer', 'texts.html'), 'utf8'), esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const base = new Set(Object.keys(require('../app/i18n.js').S.en)), fresh = require('child_process').execFileSync(process.execPath, ['-e', "const I=require('./app/i18n.js');console.log(Object.keys(I.S.en).join(','))"], { cwd: path.join(__dirname, '..'), encoding: 'utf8' }).trim().split(',');
+    const kidKeys = [...base].filter((k) => !fresh.includes(k));
+    assert.ok(kidKeys.length > 300, 'the kids features have their texts');
+    for (const k of kidKeys) for (const l of ['ru', 'ky']) assert.ok(sheet.includes(esc(I18n.S[l][k])), `explainer/texts.html is out of date for ${l}.${k}: run node tools/texts-sheet.cjs`); }
   // The film tools only run before a submission; a syntax slip (an apostrophe in a quoted caption) would surface too late.
   for (const f of fs.readdirSync(__dirname).filter((f) => f.endsWith('.cjs'))) require('child_process').execFileSync(process.execPath, ['--check', path.join(__dirname, f)]);
   console.log('all checks pass');

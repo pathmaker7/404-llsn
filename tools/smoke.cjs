@@ -16,7 +16,10 @@ function serve(dir) {
   });
   return new Promise((ok) => srv.listen(0, '127.0.0.1', () => ok(srv)));
 }
-module.exports = { serve };
+// The browser a test plays the page in: Chrome by default; ENGINE=webkit is Safari's engine, which iPhones use too
+// (get it once with: node node_modules/playwright-core/cli.js install webkit).
+const launch = () => (process.env.ENGINE === 'webkit' ? require('playwright-core').webkit.launch() : chromium.launch({ executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' }));
+module.exports = { serve, launch };
 if (require.main !== module) return;
 
 (async () => {

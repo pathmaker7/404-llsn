@@ -11,7 +11,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { chromium } = require('playwright-core');
-const { serve } = require('./smoke.cjs');
+const { serve, launch } = require('./smoke.cjs');
 
 const VIEWPORT = process.env.VIEWPORT || '1440x900', [VW, VH] = VIEWPORT.split('x').map(Number), PHONE = VW <= 760;
 const SHOTS = process.env.SHOTS || path.join(os.tmpdir(), 'keep-me-alive-shots');
@@ -23,9 +23,10 @@ const check = (ok, msg, detail) => { console.log(`${ok ? 'ok  ' : 'FAIL'} ${msg}
   fs.mkdirSync(SHOTS, { recursive: true });
   const srv = process.env.BASE_URL ? null : await serve(path.join(__dirname, '..', 'app'));
   const base = (process.env.BASE_URL || `http://127.0.0.1:${srv.address().port}/`).replace(/#.*$/, '');
-  const browser = await chromium.launch({ executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' });
+  const browser = await launch();
   const page = await browser.newPage({ viewport: { width: VW, height: VH } }), errs = [];
   await page.addInitScript(() => { try { localStorage.setItem('kidHelp', 'off'); } catch (e) { /* no storage */ } }); // the first visit help has its own test (test-tour.cjs)
+  page.setDefaultTimeout(120000); // a busy machine or a slow network makes a click or a screenshot slow, not wrong
   page.on('pageerror', (e) => errs.push('page error: ' + e.message));
   page.on('console', (m) => { if (m.type() === 'error') errs.push('console error: ' + m.text()); });
   const shot = (name) => page.screenshot({ path: path.join(SHOTS, `game-${name}-${VIEWPORT}.png`) });
@@ -119,7 +120,7 @@ const check = (ok, msg, detail) => { console.log(`${ok ? 'ok  ' : 'FAIL'} ${msg}
   // ============================================================ b) the real screen
   const ui = {
     state: () => page.evaluate(() => { const g = __game.state; return { phase: g.phase, h: g.h, day: g.day, speed: g.speed, paused: g.paused, ok: g.res && g.res.ok, reason: g.res && g.res.reason, agree: g.res && g.res.agree, simReason: g.sim && g.sim.reason, hour: g.sim && g.sim.hour, N: g.sim && g.sim.N, t: __app.S.t, t0: g.t0 }; }),
-    wait: (cond, arg, ms = 90000) => page.waitForFunction(cond, arg, { timeout: ms }),
+    wait: (cond, arg, ms = 300000) => page.waitForFunction(cond, arg, { timeout: ms }), // the game runs on a real clock: at 1x on a busy machine it can take minutes
     text: (sel) => page.evaluate((s) => document.querySelector(s)?.textContent ?? null, sel),
     visible: (sel) => page.evaluate((s) => { const e = document.querySelector(s); if (!e) return false; const r = e.getBoundingClientRect(); return !e.closest('[hidden]') && r.width > 0 && r.height > 0 && getComputedStyle(e).visibility !== 'hidden'; }, sel),
   };
@@ -160,13 +161,18 @@ const check = (ok, msg, detail) => { console.log(`${ok ? 'ok  ' : 'FAIL'} ${msg}
     check((await page.inputValue('#g-day')) === new Date(st0.day * 1000).toISOString().slice(0, 10), 'the date field shows the picked day');
     const tBefore = await page.evaluate(() => __app.S.t);
     await page.click('#g-start');
-    await ui.wait(() => __game.state.phase === 'play' || __game.state.phase === 'ending' || __game.state.phase === 'end');
+    // Held from its first frame: the checks and the screenshot below take real time, and a short red game would be over
+    // (its lander hidden behind the end card) before they are done. It goes on again after the speed is set.
+    await ui.wait(() => { const g = __game.state; if (g.phase === 'play' && !g.paused) document.getElementById('g-pause').click(); return g.phase === 'play' || g.phase === 'ending' || g.phase === 'end'; });
     check(await ui.visible('.g-batt') && await ui.visible('.g-sunc') && await ui.visible('.g-radioc') && await ui.visible('.g-live') && await ui.visible('.g-rib') && await ui.visible('.g-dayno'), 'battery, Sun panel, radio, lander, 14 day ribbon and day counter are on screen');
     await shot(`${tag}-2-start`);
     await page.click('.g-segbtn button[data-sp="4"]');
     check((await ui.state()).speed === 4, 'the speed button sets 4x');
-    // the middle: pause there, read every indicator against the data in one go
-    await ui.wait(() => { const g = __game.state; if (g.phase !== 'play' || g.h >= Math.min(g.endH * 0.55, g.endH - 3)) { if (g.phase === 'play') document.getElementById('g-pause').click(); return true; } return false; }); // pause inside the frame: no race with a fast game
+    // the middle: let it go on and pause there, read every indicator against the data in one go. Both presses happen
+    // inside the page's own frames, so a slow test step can never let a short game run to its end in between.
+    await ui.wait(() => { const g = __game.state, b = document.getElementById('g-pause'); if (g.phase !== 'play') return true;
+      if (g.h >= Math.min(g.endH * 0.55, g.endH - 3)) { if (!g.paused) b.click(); return true; }
+      if (g.paused) b.click(); return false; }); // pause inside the frame: no race with a fast game
     const mid = await page.evaluate(() => {
       const g = __game.state, tr = g.sim.trace, k = Math.min(Math.floor(g.h), g.sim.len - 1), q = (s) => document.querySelector(s);
       return { phase: g.phase, paused: g.paused, k, bh: q('.g-bh').textContent, batt: Math.round(tr.batt[k]), sunOn: q('.g-sunc').dataset.on, sun: tr.sun[k], earthOn: q('.g-radioc').dataset.on, earth: tr.earth[k],

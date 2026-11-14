@@ -6,11 +6,11 @@
 // Env: BASE_URL (test a deployed site instead of the local app).
 const path = require('path');
 const { chromium } = require('playwright-core');
-const { serve } = require('./smoke.cjs');
+const { serve, launch } = require('./smoke.cjs');
 
 (async () => {
   const srv = process.env.BASE_URL ? null : await serve(path.join(__dirname, '..', 'app')), url = process.env.BASE_URL || `http://127.0.0.1:${srv.address().port}/`;
-  const b = await chromium.launch({ executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' });
+  const b = await launch();
   let fails = 0;
   const check = (ok, what, detail = '') => { console.log(`${ok ? 'ok  ' : 'FAIL'} ${what}${detail ? ': ' + detail : ''}`); fails += !ok; };
   const open = async (w, h) => { const p = await b.newPage({ viewport: { width: w, height: h } }); await p.addInitScript(() => { try { localStorage.setItem('kidHelp', 'off'); } catch (e) { /* no storage */ } }); p.errs = []; p.on('pageerror', (e) => p.errs.push(e.message));

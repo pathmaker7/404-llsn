@@ -8,7 +8,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { chromium } = require('playwright-core');
-const { serve } = require('./smoke.cjs');
+const { serve, launch } = require('./smoke.cjs');
 
 const [VW, VH] = (process.env.VIEWPORT || '1440x900').split('x').map(Number);
 const PHONE = VW <= 760;
@@ -23,7 +23,7 @@ const iso = (t) => new Date(t * 1000).toISOString().slice(0, 10);
 (async () => {
   let srv = null, url = process.env.BASE_URL;
   if (!url) { srv = await serve(path.join(__dirname, '..', 'app')); url = `http://127.0.0.1:${srv.address().port}/`; }
-  const browser = await chromium.launch({ executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' });
+  const browser = await launch();
   const ctx = await browser.newContext({ viewport: { width: VW, height: VH } });
   await ctx.addInitScript(() => { try { localStorage.setItem('kidHelp', 'off'); } catch (e) { /* no storage */ } }); // the first visit help has its own test (test-tour.cjs)
   const page = await ctx.newPage(), errs = [];
@@ -32,6 +32,9 @@ const iso = (t) => new Date(t * 1000).toISOString().slice(0, 10);
   page.on('dialog', (d) => { errs.push('dialog opened: ' + d.message()); d.dismiss(); });
   const shot = async (name, o = {}) => { const f = path.join(SHOTS, `lander-${tag}-${name}.png`); await page.screenshot({ path: f, ...o }); shots.push(f); };
   const boot = async (hash = '') => {
+    // Leave only when the page has stopped fetching: Safari's engine reports a download cut short by leaving the page as a
+    // page error ("TypeError: Load failed"), which is this test's own doing and not a fault of the app.
+    await page.waitForLoadState('networkidle', { timeout: 60000 }).catch(() => {});
     await page.goto(url + hash); await page.waitForFunction(() => window.__all && window.__all.ready && window.__lander && window.__app && window.__app.ready, null, { timeout: 150000 });
     await page.waitForFunction(() => !window.__app.overview.anim, null, { timeout: 30000 }); await page.waitForTimeout(500);
   };

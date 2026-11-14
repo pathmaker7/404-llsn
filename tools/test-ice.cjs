@@ -7,7 +7,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { chromium } = require('playwright-core');
-const { serve } = require('./smoke.cjs');
+const { serve, launch } = require('./smoke.cjs');
 
 const [VW, VH] = (process.env.VIEWPORT || '1440x900').split('x').map(Number);
 const SHOTS = process.env.SHOTS || path.join(os.tmpdir(), 'ice-shots');
@@ -21,7 +21,7 @@ const check = (ok, name, detail = '') => { console.log(`${ok ? 'ok  ' : 'FAIL'} 
   fs.mkdirSync(SHOTS, { recursive: true });
   const srv = process.env.BASE_URL ? null : await serve(path.join(__dirname, '..', 'app'));
   const url = process.env.BASE_URL || `http://127.0.0.1:${srv.address().port}/`;
-  const b = await chromium.launch({ executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' });
+  const b = await launch();
   const ctx = await b.newContext({ viewport: { width: VW, height: VH } });
   await ctx.addInitScript(() => { try { localStorage.setItem('kidHelp', 'off'); } catch (e) { /* no storage */ } }); // the first visit help has its own test (test-tour.cjs)
   const p = await ctx.newPage(), errs = [];

@@ -118,15 +118,18 @@ const SECONDS = 29.5;
   await page.evaluate(() => window.__quiz.start(['kQ16', 'kQ01', 'kQ04', 'kQ09', 'kQ11'])); await page.waitForSelector('.kq-opt'); await page.waitForTimeout(1100);
   const right = await page.evaluate(() => window.__quiz.text(window.__quiz.state.q).options.findIndex((o) => o.correct));
   await page.click(`.kq-opt[data-i="${right}"]`); mark('quiz answered');
-  await until(23.6);
 
   // The proof shot: a real landing replayed. The box on the left shows what happened next to the model's sunrise and sunset.
+  // The site loads behind the open quiz (the quiz lies above the app's fade to black), so the film cuts from the answered
+  // question straight to the site and never shows a black screen.
+  await until(22.5);
+  await page.selectOption('#a-famous', { label: 'Chandrayaan-3 (2023)' }, { force: true });
+  await page.waitForFunction(() => window.__history && document.body.classList.contains('mode-surface') && !document.getElementById('fade').classList.contains('on'), null, { timeout: 60000 }); mark('Chandrayaan-3 site ready behind the quiz');
+  if ((Date.now() - t0) / 1000 > 23.6) errors.push('the Chandrayaan-3 site was not ready behind the quiz by 23.6 s: the cut would come late');
+  await until(23.6);
   const real = 'For Chandrayaan-3, our sunset is the day India put it to sleep.';
-  await say(real);
-  await page.evaluate(() => window.__quiz.close());
-  await page.selectOption('#a-famous', { label: 'Chandrayaan-3 (2023)' });
-  await page.waitForFunction(() => window.__history && document.body.classList.contains('mode-surface') && !document.getElementById('fade').classList.contains('on'), null, { timeout: 60000 }); mark('Chandrayaan-3 site');
-  await say(real, 'low'); await until(27.5);
+  await page.evaluate(() => window.__quiz.close()); await say(real, 'low'); mark('Chandrayaan-3 site');
+  await until(27.5);
   await say('Free for schools across Central Asia.', 'low'); await until(SECONDS);
   // Readable: at most 3.7 words a second for the time each caption really stayed on screen.
   caps.forEach((c, i) => { const on = (caps[i + 1]?.t ?? SECONDS) - c.t, w = c.text.split(/\s+/).length;

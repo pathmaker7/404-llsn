@@ -13,6 +13,7 @@
     "deploy": "npx --yes firebase-tools@14.4.0 deploy --only hosting",
     "deck": "node tools/deck-pdf.cjs",
     "narrate": "node tools/narrate.cjs",
+    "texts": "node tools/texts-sheet.cjs",
     "test:kids": "node tools/test-kids-shell.cjs && node tools/test-lander.cjs && node tools/test-game.cjs && node tools/test-ice.cjs && node tools/test-quiz.cjs && node tools/test-tour.cjs"
   },
   "dependencies": {

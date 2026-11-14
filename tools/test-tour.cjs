@@ -7,14 +7,14 @@
 const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright-core');
-const { serve } = require('./smoke.cjs');
+const { serve, launch } = require('./smoke.cjs');
 const [VW, VH] = (process.env.VIEWPORT || '1440x900').split('x').map(Number);
 const SHOTS = process.env.SHOTS || path.join(require('os').tmpdir(), 'tour-shots');
 
 (async () => {
   fs.mkdirSync(SHOTS, { recursive: true });
   const srv = process.env.BASE_URL ? null : await serve(path.join(__dirname, '..', 'app')), url = process.env.BASE_URL || `http://127.0.0.1:${srv.address().port}/`;
-  const b = await chromium.launch({ executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' });
+  const b = await launch();
   const p = await b.newPage({ viewport: { width: VW, height: VH } }), errs = [];
   p.on('pageerror', (e) => errs.push(e.message));
   let fails = 0;
