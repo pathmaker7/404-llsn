@@ -20,6 +20,8 @@ const SECONDS = 29;
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto(`http://127.0.0.1:${srv.address().port}/`);
   await page.waitForFunction(() => window.__all && window.__all.ready, null, { timeout: 120000 });
+  // The dropped lander needs the 7 MB polar terrain; load it before filming (users fetch it on their first drop).
+  await page.evaluate(() => import('./src/data.js').then((m) => m.loadPolar()));
   // A person's own voice (VOICE_NOTE="Voice: Manuchehr, team member") replaces the synthetic voice notice; the AI notice stays.
   await page.evaluate((voiceNote) => {
     const box = (css, text) => { const d = document.createElement('div'); d.style.cssText = 'position:fixed;z-index:99;font-family:system-ui;pointer-events:none;' + css; d.textContent = text; document.body.appendChild(d); return d; };
@@ -47,12 +49,38 @@ const SECONDS = 29;
   const period = (k) => page.click(`.a-range button[data-y="${k}"]`);
   // The voice reads each caption word for word (subtitles = speech), so each line is short enough to be spoken at a
   // calm pace in the time it stays on screen.
-  await say('Hi, we're team 404 agents from Naryn, Kyrgyzstan.', true); await until(3.4);
+  await say("Hi, we're team 404 agents from Naryn, Kyrgyzstan.", true); await until(3.4);
   await page.evaluate(() => window.__names.remove());
-  await say('Our challenge: when can a Moon landing survive?', true);
-  await page.mouse.move(800, 260); await page.mouse.down(); await page.mouse.move(1150, 300, { steps: 40 }); await page.mouse.up(); await until(5.8);
-  await period('1');
-  await say('This is Lunar Landing Site Navigator: find the days a landing works.', true); await until(9.6);
+  await say('When can a Moon landing survive?', true);
+  await page.mouse.move(800, 260); await page.mouse.down(); await page.mouse.move(1150, 300, { steps: 40 }); await page.mouse.up();
+  // The wow shot: a click on bare Moon near the pole drops the viewer's own lander; its row of landing days appears.
+  // Next to a good site, on bare Moon that no pin or panel covers, at a spot judged in advance (same code as a real drop:
+  // custom.js#makeSite on the 320 m terrain, allsites.js#dayVerdicts) to have safe landing days in the coming year.
+  const spot = await page.evaluate(async () => {
+    const ov = window.__ov, cv = document.getElementById('gl'), r = cv.getBoundingClientRect(), A = window.__all;
+    const [d, c, v] = await Promise.all([import('./src/data.js'), import('./src/custom.js'), import('./src/allsites.js')]), g = await d.loadPolar();
+    let k = 0;
+    // Measured 2026-11-15: on the 320 m terrain the safe days sit on a few pixels at these sites.
+    for (const id of ['dg', 'mp', 'nb', 'sh', 'mm']) { const s = ov.sites.find((x) => x.id === id); if (!s) continue;
+      const q = s.pos.clone().project(ov.camera), sx = (q.x * 0.5 + 0.5) * r.width, sy = (-q.y * 0.5 + 0.5) * r.height;
+      for (const [dx, dy] of [[0, 0], [-2, 0], [2, 0], [0, 2], [4, 0], [-4, 0]]) { const px = sx + dx, py = sy + dy;
+        if (document.elementFromPoint(r.left + px, r.top + py) !== cv) continue;
+        const at = ov.pick(px, py, r.width, r.height); if (!at) continue;
+        const m = c.makeSite(at.lat, at.lon, g), pid = 'probe' + k++; d.registerSite(pid, m);
+        const vv = v.dayVerdicts(await d.loadSky(pid), m.slope, m.slope, 14); let good = 0;
+        for (let j = A.a; j < Math.min(A.a + 365, vv.length); j++) good += vv[j] === 0;
+        if (good >= 10) return { x: r.left + px, y: r.top + py, good }; } }
+    return null; });
+  if (!spot) throw new Error('no bare Moon near the pole to drop a lander on');
+  await until(5.8);
+  await period('1'); // a year: a dropped lander's safe days show even where a month has none
+  await say('Lunar Landing Site Navigator: drop a lander, see its safe days.', true);
+  const rows0 = await page.evaluate(() => document.querySelectorAll('#sites li.a-row').length);
+  await page.mouse.move(spot.x, spot.y, { steps: 15 }); await page.waitForTimeout(300); await page.mouse.click(spot.x, spot.y);
+  await page.waitForFunction((n) => document.querySelectorAll('#sites li.a-row').length > n, rows0, { timeout: 20000 });
+  await page.waitForFunction(() => /^\s*[1-9]/.test([...document.querySelectorAll('#sites li.a-row')].find((li) => /added/.test(li.querySelector('small').textContent))?.querySelector('.cnt')?.textContent || ''), null, { timeout: 8000 })
+    .catch(() => errors.push('the dropped lander has no safe day in the year shown'));
+  await until(9.6);
   await period('5');
   await say('Zoom out five years: Earth and Sun cycles repeat every 354 days.', true); await until(14.2);
   await period('1m');
@@ -77,7 +105,7 @@ const SECONDS = 29;
   await page.selectOption('#a-famous', { label: 'Chandrayaan-3 (2023)' });
   await page.waitForFunction(() => window.__history && document.body.classList.contains('mode-surface'), null, { timeout: 60000 });
   await say(real); await until(26.4);
-  await say('Next: free lessons for schools across Central Asia.'); await until(SECONDS);
+  await say('Next: free lessons for Central Asian schools.'); await until(SECONDS);
   // Readable: at most 3.7 words a second for the time each caption really stayed on screen.
   caps.forEach((c, i) => { const on = (caps[i + 1]?.t ?? SECONDS) - c.t, w = c.text.split(/\s+/).length;
     console.log(`${c.t.toFixed(1).padStart(5)} s  ${(w / on).toFixed(1)} words/s  ${c.text}`);

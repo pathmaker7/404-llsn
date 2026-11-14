@@ -109,5 +109,7 @@ const Sky = require('../app/sky.js');
     const hit = fs.readFileSync(path.join(__dirname, '..', f), 'utf8').match(/\S\s[–—]\s\S/);
     assert.ok(!hit, `${f}: dash used as punctuation near "${hit && hit[0]}"`);
   }
+  // The film tools only run before a submission; a syntax slip (an apostrophe in a quoted caption) would surface too late.
+  for (const f of fs.readdirSync(__dirname).filter((f) => f.endsWith('.cjs'))) require('child_process').execFileSync(process.execPath, ['--check', path.join(__dirname, f)]);
   console.log('all checks pass');
 })().catch((e) => { console.error(e); process.exit(1); });

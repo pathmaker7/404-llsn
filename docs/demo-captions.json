@@ -1,42 +1,42 @@
 [
  {
-  "text": "Team 404 agents, Naryn, Kyrgyzstan.",
+  "text": "Hi, we're team 404 agents from Naryn, Kyrgyzstan.",
   "t": 0,
-  "end": 3.407
+  "end": 3.402
  },
  {
-  "text": "Which days can a Moon mission survive?",
-  "t": 3.407,
-  "end": 5.89
+  "text": "When can a Moon landing survive?",
+  "t": 3.402,
+  "end": 5.873
  },
  {
-  "text": "Earth is up one week a month. The Sun has a dark season.",
-  "t": 5.89,
-  "end": 9.657
+  "text": "Lunar Landing Site Navigator: drop a lander, see its safe days.",
+  "t": 5.873,
+  "end": 9.66
  },
  {
-  "text": "Over five years, it repeats every 354 days.",
-  "t": 9.657,
-  "end": 14.291
+  "text": "Zoom out five years: Earth and Sun cycles repeat every 354 days.",
+  "t": 9.66,
+  "end": 14.235
  },
  {
-  "text": "Click a green day. Stand on NASA terrain.",
-  "t": 14.291,
-  "end": 17.537
+  "text": "Click a green day, and you stand on NASA terrain.",
+  "t": 14.235,
+  "end": 17.402
  },
  {
-  "text": "Mission survived. Show paths, move time, set your limits.",
-  "t": 17.537,
-  "end": 22.247
+  "text": "Mission survived, with Sun and Earth placed by NASA JPL data.",
+  "t": 17.402,
+  "end": 22.251
  },
  {
-  "text": "Chandrayaan-3: our sunset is the day India put it to sleep.",
-  "t": 22.247,
-  "end": 26.401
+  "text": "For Chandrayaan-3, our sunset is the day India put it to sleep.",
+  "t": 22.251,
+  "end": 26.402
  },
  {
-  "text": "Free for schools across Central Asia.",
-  "t": 26.401,
+  "text": "Next: free lessons for Central Asian schools.",
+  "t": 26.402,
   "end": 29
  }
 ]

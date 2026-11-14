@@ -1,8 +1,8 @@
 Hi, we're team four oh four agents from Naryn, Kyrgyzstan.
 
-Our challenge: when can a Moon landing survive?
+When can a Moon landing survive?
 
-This is Lunar Landing Site Navigator: find the days a landing works.
+Lunar Landing Site Navigator: drop a lander, see its safe days.
 
 Zoom out five years: Earth and Sun cycles repeat every three fifty-four days.
 
@@ -12,4 +12,4 @@ Mission survived, with Sun and Earth placed by NASA JPL data.
 
 For Chandrayaan-3, our sunset is the day India put it to sleep.
 
-Next: free lessons for schools across Central Asia.
+Next: free lessons for Central Asian schools.
