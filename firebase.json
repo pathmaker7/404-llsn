@@ -17,7 +17,7 @@
           ]
         },
         {
-          "source": "**/*.@(html|js|css|json)",
+          "source": "**/*.@(html|js|css|json|mp4|pdf)",
           "headers": [
             {
               "key": "Cache-Control",
@@ -56,7 +56,7 @@
       ],
       "headers": [
         {
-          "source": "**/*.@(html|js|css|json)",
+          "source": "**/*.@(html|js|css|json|mp4|pdf)",
           "headers": [
             {
               "key": "Cache-Control",
