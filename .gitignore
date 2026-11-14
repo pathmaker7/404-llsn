@@ -7,3 +7,6 @@ pipeline-3d/data/
 __pycache__/
 explainer/voices/film-*.mp4
 .claude/worktrees/
+# made again by tools/align-take.cjs from the take kept beside them
+docs/*.aligned.wav
+docs/*.words.json

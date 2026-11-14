@@ -352,7 +352,8 @@ export function init(kid) {
     surf.ok = x.ok; surf.state = x.ok ? 'ok' : 'lost'; surf.craft.setState(surf.state); drawTag();
   }
   function surfFrame(now, dt) {
-    const on = S.mode === 'surface' && S.site && surf.site === S.site;
+    // While the battery game is open it shows the kid's lander as its own drawing: two landers at once read as two robots.
+    const on = S.mode === 'surface' && S.site && surf.site === S.site && !window.__game?.state.open;
     surf.group.visible = on; surf.sun.visible = surf.fill.visible = surf.hemi.visible = on;
     if (!on) return;
     surfVerdict();

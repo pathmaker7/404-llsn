@@ -78,6 +78,10 @@ function setHash() {
 //   frame    (now, dt) every animation frame
 const kid = { S, renderer, surface, overview, addCustom, enterSite, backToMap, siteEntry, setHash, periodStart, periodEnd,
   moonTap: [], dayPick: [], dropped: [], mode: [], lang: [], frame: [] };
+// One feature's hook may fail without stopping the app (tools/test-kids-shell.cjs): the error is thrown again outside the
+// caller, so it still reaches the console and the tests, and the other hooks and the app carry on.
+const later = (e) => setTimeout(() => { throw e; });
+const fire = (list, ...args) => { for (const f of [...list]) try { f(...args); } catch (e) { later(e); } };
 
 // ------------------------------------------------------------- overview UI
 // One site is "hot" while the pointer is on its label or its row: both light up, so a row is easy to find on the Moon.
@@ -100,7 +104,7 @@ function buildSiteList() {
     onLimits: () => { setHash(); drawVerdict(); },
     onTime: (t) => { S.mapT = t; S.mapPlay = false; },
     onPlay: () => { S.mapPlay = !S.mapPlay; },
-    onPick: async (id, t, ev) => { if (t != null) { S.missionStart = t; S.t = t; for (const f of kid.dayPick) await f(id, t, ev); } enterSite(id, spot(siteEntry(id))); },
+    onPick: async (id, t, ev) => { if (t != null) { S.missionStart = t; S.t = t; for (const f of kid.dayPick) try { await f(id, t, ev); } catch (e) { later(e); } } enterSite(id, spot(siteEntry(id))); },
   });
   $('pins').innerHTML = '';
   for (const s of overview.sites) makePin(s);
@@ -221,7 +225,7 @@ async function enterSite(id, variant, { fly = true, keepTime = false } = {}) {
   $('fade').classList.remove('on');
   if (S.panel) openPanel(S.panel);
   setHash();
-  for (const f of kid.mode) f('surface');
+  fire(kid.mode, 'surface');
 }
 
 async function switchVariant(v) {
@@ -238,7 +242,7 @@ function backToMap() {
   overview.reset(); S.held = false;
   resize();
   setHash();
-  for (const f of kid.mode) f('overview');
+  fire(kid.mode, 'overview');
 }
 
 /** Browser-vs-pipeline consistency: recompute the disc fraction in JS at
@@ -418,8 +422,8 @@ $('look-earth').addEventListener('click', () => { const s = sample(S.site, S.t);
     drag = null;
     if (S.mode === 'surface' || !down || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 5) return;
     const r = cv.getBoundingClientRect(), at = overview.pick(e.clientX - r.left, e.clientY - r.top, r.width, r.height);
-    if (!at || kid.moonTap.some((f) => f(at, e))) return; // a kids feature (ice hunter) may take the tap
-    addCustom(at.lat, at.lon, null).then((s) => { S.dropped = s.id; resize(); for (const f of kid.dropped) f(s, e); });
+    if (!at || kid.moonTap.some((f) => { try { return f(at, e); } catch (err) { later(err); return false; } })) return; // a kids feature (ice hunter) may take the tap
+    addCustom(at.lat, at.lon, null).then((s) => { S.dropped = s.id; resize(); fire(kid.dropped, s, e); });
   });
   cv.addEventListener('wheel', (e) => {
     e.preventDefault();
@@ -627,7 +631,8 @@ function frame(now) {
     overview.render(now);
     drawOverlay(null);
   }
-  for (const f of kid.frame) f(now, dt);
+  // A frame hook that fails would fail sixty times a second: it is dropped after its first error.
+  for (const f of [...kid.frame]) try { f(now, dt); } catch (e) { kid.frame.splice(kid.frame.indexOf(f), 1); later(e); }
   placePins();
   requestAnimationFrame(frame);
 }
@@ -643,7 +648,7 @@ function frame(now) {
     // Three visible buttons, the current language lit: a closed dropdown did not say what it was for.
     sel.innerHTML = Object.entries(I18n.NAMES).map(([k, v]) => `<button data-l="${k}" title="${v}">${k.toUpperCase()}</button>`).join('');
     const mark = () => { for (const b of sel.children) b.classList.toggle('on', b.dataset.l === I18n.lang); };
-    for (const b of sel.children) b.onclick = () => { I18n.set(b.dataset.l); try { localStorage.setItem('lang', b.dataset.l); } catch (e) { /* storage blocked */ } mark(); relabel(); drawVerdict(); S.all?.redraw(); if (S.site) renderHudStatic(); S.dirty = true; for (const f of kid.lang) f(); };
+    for (const b of sel.children) b.onclick = () => { I18n.set(b.dataset.l); try { localStorage.setItem('lang', b.dataset.l); } catch (e) { /* storage blocked */ } mark(); relabel(); drawVerdict(); S.all?.redraw(); if (S.site) renderHudStatic(); S.dirty = true; fire(kid.lang); };
     mark(); I18n.apply(document);
     const ov = await loadOverview(S.index);
     overview.build(ov, S.index.sites);

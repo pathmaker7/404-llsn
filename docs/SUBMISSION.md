@@ -21,7 +21,7 @@ Naryn event, or the project is not eligible for awards; the participation type c
 | The same seven slides as a PDF file, if they ask for a file | https://lunar-navigator-explained.web.app/deck.pdf |
 | Live demo during the talk | https://lunar-navigator-404.web.app |
 | What to say, minute by minute, and the hard questions | `docs/PRESENTATION-SCRIPT.md` |
-| The 29 second film, if they ask for a video | https://lunar-navigator-explained.web.app/demo-30s.mp4 |
+| The 29.5 second film, if they ask for a video | https://lunar-navigator-explained.web.app/demo-30s.mp4 |
 
 The slides are in English, as the guide requires for linked materials; you may speak Kyrgyz or Russian. After any change
 to the deck, run `npm run deck` to rebuild the PDF.
@@ -38,7 +38,7 @@ We built a free web app that answers one question for the Moon's south pole: if 
 
 https://lunar-navigator-explained.web.app/demo-30s.mp4
 
-(29 seconds, a synthetic English voice (ElevenLabs, voice Sarah) with matching English captions; it plays in the browser. Do not use the GitHub file link: GitHub sends it as a download. Put the film in this field. The seven slides are for the Naryn online presentation, see below.)
+(29.5 seconds, a synthetic English voice (ElevenLabs, voice Sarah) with matching English captions; it plays in the browser. Do not use the GitHub file link: GitHub sends it as a download. Put the film in this field. The seven slides are for the Naryn online presentation, see below.)
 
 ## Link to Final Project
 

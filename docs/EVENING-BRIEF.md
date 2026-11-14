@@ -70,7 +70,7 @@ Two weak points to admit if asked:
 
 1. (Dropped 14 Nov evening: two hours left, no school visit. The lesson stays a plan; say so if asked.)
 2. A native speaker reads the Kyrgyz and Russian in the app and the lesson.
-3. Fill the project page in English and attach the 29 second film (`docs/demo-30s.mp4`).
+3. Fill the project page in English and attach the 29.5 second film (`docs/demo-30s.mp4`).
 4. Decide what to say about two risks: code dated before 14 Nov (the FAQ line above; the owner chose on 12 Nov to build early, do not re-argue, point to the dates in the repo and `docs/SI-usage.md`), and the teammate's 3D repo having no licence.
 
 ## Not verified on 14 Nov

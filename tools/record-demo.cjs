@@ -1,4 +1,4 @@
-// Records the 29 second demo film of the app as a real user would use it, with English captions and a visible SI (AI)
+// Records the 29.5 second demo film of the app as a real user would use it, with English captions and a visible SI (AI)
 // watermark drawn on top of the page. Space Apps rules: video of 30 seconds or less, SI-made video and audio say so.
 // Output: docs/demo-silent.mp4 (1920x1080, 25 fps) and docs/demo-captions.json (each caption and when it appeared);
 // tools/narrate.cjs then lays a synthetic voice reading the same captions under them. Run: npm run video
@@ -9,7 +9,7 @@ const { execFileSync } = require('child_process');
 const { serve } = require('./smoke.cjs');
 const FFMPEG = '/opt/homebrew/bin/ffmpeg';
 const ROOT = path.join(__dirname, '..'), FRAMES = path.join(ROOT, 'docs', 'frames'), DEST = path.join(ROOT, 'docs', 'demo-silent.mp4');
-const SECONDS = 29;
+const SECONDS = 29.5;
 
 (async () => {
   fs.rmSync(FRAMES, { recursive: true, force: true }); fs.mkdirSync(FRAMES, { recursive: true });
@@ -20,12 +20,12 @@ const SECONDS = 29;
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto(`http://127.0.0.1:${srv.address().port}/`);
   await page.waitForFunction(() => window.__all && window.__all.ready, null, { timeout: 120000 });
-  // The dropped lander needs the 7 MB polar terrain; load it before filming (users fetch it on their first drop).
+  // Ice hunter needs the 7 MB polar terrain; load it before filming (users fetch it on their first tap).
   await page.evaluate(() => import('./src/data.js').then((m) => m.loadPolar()));
   // A person's own voice (VOICE_NOTE="Voice: Manuchehr, team member") replaces the synthetic voice notice; the AI notice stays.
   await page.evaluate((voiceNote) => {
     const box = (css, text) => { const d = document.createElement('div'); d.style.cssText = 'position:fixed;z-index:99;font-family:system-ui;pointer-events:none;' + css; d.textContent = text; document.body.appendChild(d); return d; };
-    box('right:16px;top:60px;font-size:16px;color:#fff;background:#000c;padding:5px 10px;border-radius:6px', `Made with AI (SI) tools: Claude. ${voiceNote}. Checked by team 404 agents`);
+    box('left:50%;transform:translateX(-50%);top:12px;white-space:nowrap;font-size:16px;color:#fff;background:#000c;padding:5px 10px;border-radius:6px', `Made with AI (SI) tools: Claude. ${voiceNote}. Checked by team 404 agents`);
     window.__names = box('left:50%;transform:translateX(-50%);top:205px;font-size:26px;color:#fff;background:#000d;padding:8px 18px;border-radius:10px', 'Manuchehr, Aruzhan, Kairat, Arsen, Amirbek');
     window.__cap = box('left:50%;transform:translateX(-50%);bottom:230px;width:max-content;max-width:1500px;text-align:center;font-size:38px;font-weight:700;color:#fff;background:#000d;padding:14px 26px;border-radius:12px', '');
   }, process.env.VOICE_NOTE || 'Synthetic voice');
@@ -37,75 +37,96 @@ const SECONDS = 29;
     }
   })();
   const until = async (sec) => { const wait = sec * 1000 - (Date.now() - t0); if (wait > 0) await page.waitForTimeout(wait); };
-  // On the map screen the caption sits at the top, clear of the timeline it talks about; on the site screen it sits above the time bar.
-  // Every caption with the moment it appeared: after recording, each must be readable in the time it stays on screen.
+  // Where a caption sits: 'map' in the free band between the site labels and the day table (a caption at the top hid
+  // the lander at touchdown), 'high' over the battery game, 'low' on the site screen (above the time bar), 'bottom'
+  // under the quiz card. Every caption is kept with the moment it appeared: after recording, each
+  // must be readable in the time it stays on screen.
   const caps = [];
-  const say = (text, top = false) => (caps.at(-1)?.text !== text && caps.push({ text, t: (Date.now() - t0) / 1000 }), page.evaluate(([t, up]) => { const c = window.__cap; c.textContent = t; c.style.top = up ? '120px' : 'auto'; c.style.bottom = up ? 'auto' : '230px'; c.style.left = up ? '50%' : '60%'; c.style.maxWidth = up ? '1500px' : '1300px'; }, [text, top]));
+  const POS = { map: ['500px', 'auto', '50%', '1500px'], high: ['120px', 'auto', '50%', '1500px'], low: ['auto', '230px', '60%', '1300px'], bottom: ['auto', '24px', '50%', '1500px'] };
+  const say = (text, pos = 'map') => (caps.at(-1)?.text !== text && caps.push({ text, t: (Date.now() - t0) / 1000 }), page.evaluate(([t, p]) => { const c = window.__cap; c.textContent = t; [c.style.top, c.style.bottom, c.style.left, c.style.maxWidth] = p; }, [text, POS[pos]]));
+  const mark = (what) => console.log(`${((Date.now() - t0) / 1000).toFixed(1).padStart(5)} s  ${what}`);
 
-  // Order follows the Space Apps project submission guide: who we are, the challenge, the title, how it works with
-  // NASA data, then what it can do for people. The story is a lesson: the two cycles that decide landing days, seen by
-  // zooming out from one year to five (measured: the best sites repeat every 354 days, 12 lunar months; in the dark
-  // season "night" fails, in the other months "radio" fails, so the monthly window is Earth's).
-  const period = (k) => page.click(`.a-range button[data-y="${k}"]`);
-  // The voice reads each caption word for word (subtitles = speech), so each line is short enough to be spoken at a
-  // calm pace in the time it stays on screen.
-  await say("Hi, we're team 404 agents from Naryn, Kyrgyzstan.", true); await until(3.4);
+  // Order follows the Space Apps project submission guide: [0:00] who we are, [0:02] the challenge, [0:05] the title and
+  // tagline, [0:10] how it works with NASA data, [0:20-0:30] what it can do for people. The voice reads each caption word
+  // for word (subtitles = speech), so each line is short enough to be spoken in the time it stays on screen.
+  await say("Hi, we're team 404 agents from Naryn, Kyrgyzstan."); await until(3.1);
   await page.evaluate(() => window.__names.remove());
-  await say('When can a Moon landing survive?', true);
-  await page.mouse.move(800, 260); await page.mouse.down(); await page.mouse.move(1150, 300, { steps: 40 }); await page.mouse.up();
-  // The wow shot: a click on bare Moon near the pole drops the viewer's own lander; its row of landing days appears.
-  // Next to a good site, on bare Moon that no pin or panel covers, at a spot judged in advance (same code as a real drop:
-  // custom.js#makeSite on the 320 m terrain, allsites.js#dayVerdicts) to have safe landing days in the coming year.
-  const spot = await page.evaluate(async () => {
-    const ov = window.__ov, cv = document.getElementById('gl'), r = cv.getBoundingClientRect(), A = window.__all;
-    const [d, c, v] = await Promise.all([import('./src/data.js'), import('./src/custom.js'), import('./src/allsites.js')]), g = await d.loadPolar();
-    let k = 0;
-    // Measured 2026-11-15: on the 320 m terrain the safe days sit on a few pixels at these sites.
-    for (const id of ['dg', 'mp', 'nb', 'sh', 'mm']) { const s = ov.sites.find((x) => x.id === id); if (!s) continue;
-      const q = s.pos.clone().project(ov.camera), sx = (q.x * 0.5 + 0.5) * r.width, sy = (-q.y * 0.5 + 0.5) * r.height;
-      for (const [dx, dy] of [[0, 0], [-2, 0], [2, 0], [0, 2], [4, 0], [-4, 0]]) { const px = sx + dx, py = sy + dy;
-        if (document.elementFromPoint(r.left + px, r.top + py) !== cv) continue;
-        const at = ov.pick(px, py, r.width, r.height); if (!at) continue;
-        const m = c.makeSite(at.lat, at.lon, g), pid = 'probe' + k++; d.registerSite(pid, m);
-        const vv = v.dayVerdicts(await d.loadSky(pid), m.slope, m.slope, 14); let good = 0;
-        for (let j = A.a; j < Math.min(A.a + 365, vv.length); j++) good += vv[j] === 0;
-        if (good >= 10) return { x: r.left + px, y: r.top + py, good }; } }
-    return null; });
-  if (!spot) throw new Error('no bare Moon near the pole to drop a lander on');
-  await until(5.8);
-  await period('1'); // a year: a dropped lander's safe days show even where a month has none
-  await say('Lunar Landing Site Navigator: drop a lander, see its safe days.', true);
-  const rows0 = await page.evaluate(() => document.querySelectorAll('#sites li.a-row').length);
-  await page.mouse.move(spot.x, spot.y, { steps: 15 }); await page.waitForTimeout(300); await page.mouse.click(spot.x, spot.y);
-  await page.waitForFunction((n) => document.querySelectorAll('#sites li.a-row').length > n, rows0, { timeout: 20000 });
-  await page.waitForFunction(() => /^\s*[1-9]/.test([...document.querySelectorAll('#sites li.a-row')].find((li) => /added/.test(li.querySelector('small').textContent))?.querySelector('.cnt')?.textContent || ''), null, { timeout: 8000 })
-    .catch(() => errors.push('the dropped lander has no safe day in the year shown'));
-  await until(9.6);
-  await period('5');
-  await say('Zoom out five years: Earth and Sun cycles repeat every 354 days.', true); await until(14.2);
-  await period('1m');
-  await say('Click a green day, and you stand on NASA terrain.', true);
-  // The best site's first green day after today: the film lands where the mission survives.
-  const cell = await page.evaluate(() => {
-    const li = document.querySelector('#sites li.a-row'), cv = li.querySelector('canvas'), b = cv.getBoundingClientRect(), n = __all.b - __all.a;
-    const day = (d) => new Date(Date.parse(__all.from + 'T00:00:00Z') + d * 864e5).toISOString().slice(0, 10);
-    let d = 1; while (d < n - 1 && !__all.at(li.dataset.id, day(d))) d++;
-    return { x: b.left + ((d + 0.5) / n) * b.width, y: b.top + b.height / 2 };
+  await say('When can a Moon landing survive?');
+  // My lander: the hats of Central Asia, tried on one after another, ending on the Kyrgyz ak kalpak.
+  for (const h of ['kazakh', 'uzbek', 'tajik', 'kyrgyz']) { await page.click(`.kl-hat[data-hat="${h}"]`); await page.waitForTimeout(330); }
+  // The day to click: a green day (the mission survives) whose first days hold a dark stretch the battery can carry, so
+  // the battery game that follows shows a real drain and a real refill. Judged with the app's own series; the first row
+  // that has such a day wins, else the best site's first green day.
+  const cell = await page.evaluate(async () => {
+    const d = await import('./src/data.js'), A = window.__all, n = A.b - A.a, day = (k) => new Date(Date.parse(A.from + 'T00:00:00Z') + k * 864e5).toISOString().slice(0, 10);
+    const at = (li, k, dark) => { const b = li.querySelector('canvas').getBoundingClientRect(); return { x: b.left + ((k + 0.5) / n) * b.width, y: b.top + b.height / 2, id: li.dataset.id, date: day(k), dark }; };
+    const rows = [...document.querySelectorAll('#sites li.a-row')];
+    for (const li of rows) { const s = window.__app.S.index.sites.find((x) => x.id === li.dataset.id), sky = await d.loadSky((s.variants.best || s.variants.databook).dir);
+      for (let k = 1; k < n - 1; k++) { if (!A.at(li.dataset.id, day(k))) continue;
+        const i0 = Math.round((Date.parse(day(k) + 'T00:00:00Z') / 1000 - sky.t0) / 3600); let run = 0, best = 0;
+        for (let i = i0 + 6; i < i0 + 130; i++) { run = sky.ch.sunFrac[i] < 0.5 ? run + 1 : 0; if (run > best) best = run; }
+        if (best >= 14 && best <= 40) return at(li, k, best); } }
+    const li = rows[0]; let k = 1; while (k < n - 1 && !A.at(li.dataset.id, day(k))) k++; return at(li, k, 0);
   });
-  await page.mouse.move(cell.x, cell.y, { steps: 12 }); await page.waitForTimeout(500); await page.mouse.click(cell.x, cell.y);
-  await page.waitForFunction(() => window.__verdict && document.body.classList.contains('mode-surface'), null, { timeout: 60000 });
-  await page.click('#look-sun'); await until(17.4);
-  // The Details panel (top right): Sun and Earth paths on, then time moves. Battery and radio limits are named, not shown.
-  await say('Mission survived, with Sun and Earth placed by NASA JPL data.');
-  await page.click('#opt-paths'); await page.click('#play'); await until(22.2); await page.click('#play');
+  console.log('day to click:', JSON.stringify(cell));
+  await until(5.3);
+  await say('Lunar Landing Site Navigator: pick a day, and your lander drops in.');
+  await page.mouse.move(cell.x, cell.y, { steps: 10 }); await page.waitForTimeout(250); await page.mouse.click(cell.x, cell.y); mark('day clicked: the lander drops');
+  await until(9.6);
+  await say('Green means it survives, on real NASA terrain.');
+  const dropped = await page.evaluate(() => window.__lander.last);
+  if (!dropped || !dropped.ok) errors.push('the dropped lander did not survive on the green day: ' + JSON.stringify(dropped));
+  await page.waitForFunction(() => window.__verdict && document.body.classList.contains('mode-surface') && !document.getElementById('fade').classList.contains('on'), null, { timeout: 60000 }); mark('on the site');
+  if (!(await page.evaluate(() => window.__verdict.ok))) errors.push('the site panel does not say the mission survived');
+  await say('Green means it survives, on real NASA terrain.', 'low'); await until(13.6);
+
+  // Keep me alive: the battery game on this site and this landing day, at four times speed.
+  await say('Play Keep me alive: the battery drains in real shadow.', 'high');
+  await page.click('#g-open');
+  // The kid picks a landing day in the game: here a day that survives although the Sun hides for a day or more early
+  // in the stay, so the battery is seen draining and filling again. Found with the game's own judge on this site.
+  const gday = await page.evaluate(() => { const S = window.__app.S, s = S.site, G = window.__game, DAY = 86400;
+    for (let t = Math.floor(Date.now() / 1000 / DAY) * DAY, k = 0; k < 1800; k++, t += DAY) { const i0 = Math.round((t - s.t0) / 3600); let run = 0;
+      for (let i = i0 + 8; i < i0 + 70; i++) { if (s.ch.sunFrac[i] < 0.5) run++; else if (run >= 24 && run <= 44) break; else run = 0; }
+      if (run >= 24 && run <= 44 && G.judgeDay(t).ok) return { date: new Date(t * 1000).toISOString().slice(0, 10), dark: run }; }
+    return null; });
+  if (!gday) errors.push('no surviving day with a long shadow for the battery game');
+  else { await page.fill('#g-day', gday.date); await page.dispatchEvent('#g-day', 'change'); console.log('game day:', JSON.stringify(gday)); }
+  await page.waitForTimeout(350); await page.click('#g-start'); await page.click('.g-segbtn button[data-sp="4"]'); mark('game started');
+  await until(17.6);
+  mark('game at ' + await page.evaluate(() => document.querySelector('.g-dayno')?.textContent));
+
+  // Ice hunter: back on the map, a tap on the floor of Shackleton crater, which the model never sees sunlit.
+  await say('Hunt dark craters where water ice could hide.');
+  await page.evaluate(() => window.__game.close()); await page.click('#back'); await page.waitForTimeout(500);
+  await page.click('#ice-btn'); await page.waitForTimeout(250);
+  const ice = await page.evaluate(() => { const ov = window.__ov, cv = document.getElementById('gl'), r = cv.getBoundingClientRect(), s = ov.sites.find((x) => x.name === 'Shackleton floor');
+    const v = s.pos.clone().project(ov.camera), sx = (v.x * 0.5 + 0.5) * r.width, sy = (-v.y * 0.5 + 0.5) * r.height;
+    for (const [dx, dy] of [[0, 0], [0, 6], [6, 0], [-6, 0], [0, -6], [8, 8], [-8, 8], [0, 12], [12, 0], [-12, 0]]) { const px = sx + dx, py = sy + dy, at = ov.pick(px, py, r.width, r.height);
+      if (at && document.elementFromPoint(r.left + px, r.top + py) === cv) return { x: r.left + px, y: r.top + py, lat: s.lat, lon: s.lon }; }
+    return { lat: s.lat, lon: s.lon, x: r.left + sx, y: r.top + sy, covered: true }; });
+  await page.mouse.move(ice.x, ice.y, { steps: 8 });
+  if (ice.covered) await page.evaluate(([la, lo]) => { window.__ice.hunt(la, lo); }, [ice.lat, ice.lon]); else await page.mouse.click(ice.x, ice.y);
+  await page.waitForFunction(() => window.__ice.phase === 'result', null, { timeout: 20000 }); mark('ice result' + (ice.covered ? ' (spot covered by a label: judged at the site point)' : ''));
+  if ((await page.evaluate(() => window.__ice.last && window.__ice.last.cls)) !== 'dark' && !(await page.evaluate(() => window.__ice.marks.at(-1)?.cls === 'dark'))) errors.push('the ice hunter spot is not dark in the model');
+  await until(21.0);
+
+  // Quiz: a live question (the answer is computed by the app for a real site and day), answered right.
+  await say('Then test yourself in the quiz.', 'bottom');
+  await page.evaluate(() => window.__ice.setMode(false)); await page.click('.kq-btn');
+  await page.evaluate(() => window.__quiz.start(['kQ16', 'kQ01', 'kQ04', 'kQ09', 'kQ11'])); await page.waitForSelector('.kq-opt'); await page.waitForTimeout(1100);
+  const right = await page.evaluate(() => window.__quiz.text(window.__quiz.state.q).options.findIndex((o) => o.correct));
+  await page.click(`.kq-opt[data-i="${right}"]`); mark('quiz answered');
+  await until(23.6);
+
   // The proof shot: a real landing replayed. The box on the left shows what happened next to the model's sunrise and sunset.
   const real = 'For Chandrayaan-3, our sunset is the day India put it to sleep.';
-  await say(real, true);
-  await page.click('#back'); await page.waitForTimeout(700);
+  await say(real);
+  await page.evaluate(() => window.__quiz.close());
   await page.selectOption('#a-famous', { label: 'Chandrayaan-3 (2023)' });
-  await page.waitForFunction(() => window.__history && document.body.classList.contains('mode-surface'), null, { timeout: 60000 });
-  await say(real); await until(26.4);
-  await say('Next: free lessons for Central Asian schools.'); await until(SECONDS);
+  await page.waitForFunction(() => window.__history && document.body.classList.contains('mode-surface') && !document.getElementById('fade').classList.contains('on'), null, { timeout: 60000 }); mark('Chandrayaan-3 site');
+  await say(real, 'low'); await until(27.5);
+  await say('Free for schools across Central Asia.', 'low'); await until(SECONDS);
   // Readable: at most 3.7 words a second for the time each caption really stayed on screen.
   caps.forEach((c, i) => { const on = (caps[i + 1]?.t ?? SECONDS) - c.t, w = c.text.split(/\s+/).length;
     console.log(`${c.t.toFixed(1).padStart(5)} s  ${(w / on).toFixed(1)} words/s  ${c.text}`);
@@ -114,7 +135,7 @@ const SECONDS = 29;
   fs.writeFileSync(path.join(ROOT, 'docs', 'demo-captions.json'), JSON.stringify(caps.map((c, k) => ({ ...c, end: caps[k + 1]?.t ?? SECONDS })), null, 1) + '\n');
   recording = false; await capture;
   await browser.close(); srv.close();
-  const total = SECONDS * 25; // exactly 29 s at 25 fps: frame i is the newest capture taken by i * 40 ms
+  const total = Math.round(SECONDS * 25); // exactly 29.5 s at 25 fps: frame i is the newest capture taken by i * 40 ms
   for (let i = 0, k = 0; i < total; i++) {
     while (k + 1 < frames.length && frames[k + 1].t <= i * 40) k++;
     fs.linkSync(frames[k].f, path.join(FRAMES, `o${String(i).padStart(5, '0')}.jpg`));
