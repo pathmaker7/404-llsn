@@ -1,8 +1,9 @@
 # Online presentation script (Naryn local jury)
 
 The Naryn info session PDF says online teams prepare a presentation, but gives no length, format or time. This script
-runs **3 minutes** with the live app, and has a **1 minute** cut if they ask for less. Ask the Local Lead for the
-real limit and cut from the bottom of each slide's lines.
+runs **3 minutes 40 seconds** with the live app (about **3 minutes** if you skip the row marked "four toys"), and has a
+**1 minute** cut if they ask for less. Ask the Local Lead for the real limit and cut from the bottom of each slide's
+lines.
 
 Before you start: open https://lunar-navigator-explained.web.app/deck.html in one tab (press N for notes) and
 https://lunar-navigator-404.web.app in a second tab, already loaded (the Moon takes a few seconds). Share the whole
@@ -17,9 +18,10 @@ require. The app has a Kyrgyz and Russian button (top right) if the jury prefers
 | 0:20 | 2, then the app | "At the Moon's south pole the Sun and Earth stay near the horizon. Each row is a landing site, each block a landing day. Green: a solar mission survives 14 days. Look at one year: one short window a month, because Earth is up only about a week. And months with almost nothing: the Sun's dark season." | In the app press **Next year**. Point at a green window, then at the empty months |
 | 0:55 | 3, then the app | "Five years: it repeats every 354 days, twelve lunar months, so good days come about 11 days earlier each year, like Orozo. NASA chooses landing dates from cycles like these; a student sees them in one click." | Press **Next 5 years** |
 | 1:20 | 4, then the app | "Click a green day and you stand on the site, on real NASA terrain, with the Sun and Earth where they really are. The answer: mission survived, eleven checks, and why." | Press **Next month**, click a green block, press **Look at Sun**, then play ▶ for 3 seconds |
-| 1:50 | 5, then the app | "Is it right? We replay real landings. At Chandrayaan-3's site our sunset is the exact day India put the lander to sleep. And honestly: at IM-2 our model says the day was fine; the lander fell on its side. We judge the place and the day, not the touchdown." | Back to **All sites**, then **Replay a real landing → Chandrayaan-3**. Point at the box on the left |
-| 2:25 | 6 | "Everything is NASA data: LOLA terrain, the Data Book sites, JPL positions. Our Sun and Earth positions match JPL Horizons to 0.0047 degrees. On sharp ridges our sunlight is higher than NASA's map, so we call those numbers an upper estimate." | |
-| 2:45 | 7 | "It is free, in Kyrgyz, Russian and English, and comes with a 45 minute lesson plan for schools in Kyrgyzstan and Central Asia. Thank you." | Leave the app link on screen |
+| 1:50 | 4, then the app (four toys, skip for 3 minutes) | "For children there are four toys, all judged by the same rule as the grid. Build your own lander with a Kyrgyz ak kalpak: click a day and it drops onto the Moon, green if it survives, frozen if it is lost. In Keep me alive you watch the battery fill in sunlight and drain in shadow for 14 days. In Ice hunter you tap a dark spot: if our model never sees the Sun there, water ice could hide there. We say could, we do not detect ice. And a five question quiz." | Open the **My lander** card, pick a hat, click a red block and watch the drop. On a site press **Play: Keep me alive**, **Try a red day**, speed 4x. Back on the map press **Ice hunter** and tap a dark crater near the pole. Press **Quiz** and answer one question |
+| 2:25 | 5, then the app | "Is it right? We replay real landings. At Chandrayaan-3's site our sunset is the exact day India put the lander to sleep. And honestly: at IM-2 our model says the day was fine; the lander fell on its side. We judge the place and the day, not the touchdown." | Back to **All sites**, then **Replay a real landing → Chandrayaan-3**. Point at the box on the left |
+| 3:00 | 6 | "Everything is NASA data: LOLA terrain, the Data Book sites, JPL positions. Our Sun and Earth positions match JPL Horizons to 0.0047 degrees. On sharp ridges our sunlight is higher than NASA's map, so we call those numbers an upper estimate. A spot a child picks uses coarser terrain, 320 metres, so small shadows are missed." | |
+| 3:25 | 7 | "It is free, in Kyrgyz, Russian and English, and comes with a 45 minute lesson plan for schools in Kyrgyzstan and Central Asia. Thank you." | Leave the app link on screen |
 
 ## 1 minute cut
 
@@ -37,6 +39,11 @@ it to sleep"), slide 7 line.
 | Why is your sunlight above NASA's map? | Three possible causes we have not separated: we stand 2 m above ground, our terrain is 80 m against their 60 m, and best spots were picked on our own terrain. Read ridge numbers as an upper estimate. |
 | Did you test it in a school? | Not yet. The lesson plan is ready in three languages; lessons in Naryn schools are the next step. |
 | Did you use AI? | Yes, Claude as a coding assistant; every number is checked against NASA JPL Horizons and NASA maps, and the film carries an AI watermark. Details in docs/SI-usage.md. |
+| Does Ice hunter find ice? | No. It says water ice "could" hide where our model never sees the Sun from 2021 to 2031. Only a spacecraft that goes there can tell; NASA's LCROSS found water in the shadowed crater Cabeus in 2009. A spot the Sun does reach is called too warm for ice by a simple rule, not a temperature model. |
+| Is Keep me alive a real power model? | No, it is a teaching rule: a full battery lasts 2 days in the dark, one hour of Sun refills it. The 2 days and the 3 days of radio silence are our example values, not NASA's. What is real is the hourly Sun and Earth data, and the end of the game is the same verdict as the grid. |
+| A child drops a lander on the Moon: how good is that answer? | It is judged on NASA terrain averaged to 320 metres, not the 80 metres of our fifteen sites, so small shadows and small sunlit peaks are missed. The app says so on that site's panel. |
+| Are the quiz answers true? Who checked the Russian and Kyrgyz? | The ten questions marked "Real data from the app" (of 25) name a real site and date and are answered by the same rule as the grid, so they are true to the app. The other fifteen are fixed facts from NASA and mission pages. The Russian and Kyrgyz texts were drafted with AI; say honestly whether your native speakers have checked them yet, and if not, call them a draft. |
+| Are the hats right? | They are simplified drawings made in code: Kyrgyz ak kalpak, Kazakh kalpak, Uzbek doppi, Tajik toqi. No photos, no real person. We welcome corrections from people who wear them. |
 
 ## If something breaks
 
