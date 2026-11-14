@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lunar Landing Site Navigator: 7 slides</title>
+<meta name="description" content="Project demo in seven slides: Lunar Landing Site Navigator by team 404 agents, Naryn, NASA Space Apps Challenge 2026.">
+<style>
+  :root { --bg: #0a0c10; --panel: #11141a; --line: #222732; --text: #eceef2; --muted: #8b93a3; --sun: #ffc83d; --ok: #5fd38d; --bad: #ff6b6b; }
+  * { box-sizing: border-box; }
+  html { scroll-snap-type: y mandatory; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 18px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  section { min-height: 100dvh; scroll-snap-align: start; display: grid; grid-template-columns: 5fr 7fr; gap: 48px; align-items: center; padding: 56px 64px; max-width: 1500px; margin: 0 auto; position: relative; }
+  section.text-only { grid-template-columns: 1fr; max-width: 1100px; }
+  h1 { font-size: clamp(34px, 4.4vw, 60px); line-height: 1.04; letter-spacing: -.03em; margin: 0 0 18px; }
+  h2 { font-size: clamp(28px, 3.2vw, 44px); line-height: 1.08; letter-spacing: -.02em; margin: 0 0 16px; }
+  p, li { color: #c9ced8; margin: 0 0 10px; max-width: 60ch; }
+  ul { padding-left: 20px; margin: 0; }
+  .lead { font-size: 21px; color: var(--muted); }
+  .sun { color: var(--sun); } .ok { color: var(--ok); } .bad { color: var(--bad); }
+  figure { margin: 0; }
+  img { width: 100%; display: block; border-radius: 12px; border: 1px solid var(--line); }
+  figcaption { color: var(--muted); font-size: 14px; margin-top: 8px; }
+  .team { color: var(--muted); font-size: 17px; margin-top: 22px; }
+  .team b { color: var(--text); font-weight: 600; }
+  .nums { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .num { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
+  .num b { display: block; font-size: 30px; letter-spacing: -.02em; color: var(--text); font-variant-numeric: tabular-nums; }
+  .num span { color: var(--muted); font-size: 15px; }
+  .num.warn b { color: var(--sun); }
+  .links a { display: inline-block; background: var(--sun); color: #1a1300; font-weight: 600; padding: 11px 20px; border-radius: 12px; text-decoration: none; margin: 6px 10px 6px 0; }
+  .links a.ghost { background: transparent; color: var(--sun); border: 1px solid var(--line); }
+  .links a:focus-visible, .links a:hover { outline: 2px solid var(--sun); outline-offset: 2px; }
+  .ai { position: fixed; right: 14px; bottom: 12px; font-size: 13px; color: var(--muted); background: #0a0c10d9; padding: 4px 10px; border-radius: 12px; border: 1px solid var(--line); z-index: 2; }
+  .page { position: absolute; left: 64px; bottom: 22px; color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; }
+  .notes { display: none; grid-column: 1 / -1; background: var(--panel); border: 1px dashed var(--line); border-radius: 12px; padding: 14px 18px; color: var(--muted); font-size: 16px; }
+  .notes::before { content: "Speaker notes: "; color: var(--sun); font-weight: 600; }
+  body.show-notes .notes { display: block; }
+  @media (max-width: 900px) {
+    html { scroll-snap-type: none; }
+    section, section.text-only { grid-template-columns: 1fr; gap: 22px; padding: 40px 16px 56px; min-height: auto; }
+    .page { left: 16px; bottom: 16px; }
+    .nums { grid-template-columns: 1fr; }
+    .ai { position: static; display: block; margin: 0 16px 24px; }
+  }
+  @media print { html { scroll-snap-type: none; } section { page-break-after: always; min-height: auto; } .ai { position: static; } }
+</style>
+</head>
+<body>
+
+<section id="s1">
+  <div>
+    <h1>Will a solar robot survive a landing here, on this day?</h1>
+    <p class="lead">Lunar Landing Site Navigator answers it for any site at the Moon's south pole and any day from 2021 to 2031.</p>
+    <p class="team">Team <b>404 agents</b>, Naryn, Kyrgyzstan: <b>Manuchehr, Aruzhan, Kairat, Arsen, Amirbek</b><br>
+    NASA Space Apps Challenge 2026, challenge <b>Lunar Landing Site Navigator</b></p>
+  </div>
+  <figure><img src="shots/map.png" alt="The app's first screen: the Moon's south pole in 3D with fifteen sites, and under it one row per site with one block per landing day"></figure>
+  <p class="notes">Name the team and the challenge. One sentence: we turn Sun and Earth positions into a yes or no for a solar robot. Everything on this slide is a real screenshot of the live app.</p>
+  <span class="page">1 / 7</span>
+</section>
+
+<section id="s2" class="text-only">
+  <div>
+    <h2>At the south pole one hill can hide the Sun for days</h2>
+    <ul>
+      <li>The Sun never climbs more than a couple of degrees. It slides along the horizon, so a ridge kilometres away decides power.</li>
+      <li>Earth sits low too. When it drops behind terrain, there is no direct radio link.</li>
+      <li>Launches slip. When the date moves, a team must re-check every site and day.</li>
+      <li>NASA's own tools (Quickmap, Moon Trek, JPL Horizons) hold the data, but answering "which days work here" means many steps in several tools.</li>
+    </ul>
+  </div>
+  <p class="notes">This is the challenge text in our words. Stress the launch slip: that is the moment our tool is for, a new date and an answer in one click.</p>
+  <span class="page">2 / 7</span>
+</section>
+
+<section id="s3">
+  <div>
+    <h2>Every site, every landing day, one screen</h2>
+    <ul>
+      <li>15 sites: 6 from NASA's Lunar Surface Data Book, 9 picked by the team on NASA LOLA terrain.</li>
+      <li>One row per site, one block per landing day: <span class="ok">green survives</span> a 14 day stay, hollow is lost.</li>
+      <li>Best site listed first. Press play and the sunlight moves over the 3D Moon.</li>
+      <li>Add any latitude and longitude, or a known landing (Apollo 11 and 17, Chandrayaan-3, IM-1, Chang'e 6, IM-2).</li>
+      <li>Set your own battery and radio limits; every block is judged again. Download the table as CSV.</li>
+    </ul>
+  </div>
+  <figure><img src="shots/map.png" alt="Timeline of landing days per site under the 3D Moon"><figcaption>First screen of the live app.</figcaption></figure>
+  <p class="notes">Point at one green block and one hollow block. Say the limits are ours (2 days of battery, 3 days of radio silence) and the user can change them.</p>
+  <span class="page">3 / 7</span>
+</section>
+
+<section id="s4">
+  <figure><img src="shots/site.png" alt="Standing on a site: the answer panel with THE ROBOT SURVIVED, the next landing days and eleven checks, next to the 3D terrain view"><figcaption>Click a day: you stand 2 m above real terrain.</figcaption></figure>
+  <div>
+    <h2>Click a day and stand on the site</h2>
+    <ul>
+      <li>The Sun and Earth sit at their true positions over the real horizon.</li>
+      <li>"Sunset in" and "Earthset in" count down; the Sun's height is shown in degrees.</li>
+      <li>One answer: <b>THE ROBOT SURVIVED</b> or <b>WAS LOST</b>, with one sentence why.</li>
+      <li>Eleven checks: longest night, longest radio silence, first sunlight, slope, NASA Artemis III site rules.</li>
+      <li>English, Russian and Kyrgyz.</li>
+    </ul>
+  </div>
+  <p class="notes">Slope, 2 km slope and distance from the pole are NASA Artemis III rules. Night, radio and first sun are teaching values; NASA says VIPER cannot endure more than 50 hours of darkness, so our 2 days is in that range.</p>
+  <span class="page">4 / 7</span>
+</section>
+
+<section id="s5">
+  <div>
+    <h2>Replay a real landing</h2>
+    <ul>
+      <li><b>Chandrayaan-3</b> (India, 2023): our model's sunset is 4 September 2023, the day ISRO put the lander to sleep.</li>
+      <li><b>Chang'e 6</b> (China, 2024): Earth never rises at that site. The real mission used a relay satellite.</li>
+      <li><b>IM-1</b> (USA, 2024): the Sun sets on 3 March 2024 at its site.</li>
+      <li><b>IM-2</b> (USA, 2025): our model says the place and day were fine. The lander fell on its side. We judge a place and a day, not a touchdown.</li>
+    </ul>
+  </div>
+  <figure><img src="shots/real-landing.png" alt="Replay of a real landing: a box compares what really happened with the model's sunrise, sunset and Earth view"><figcaption>The box shows what really happened next to the model.</figcaption></figure>
+  <p class="notes">This is the slide that shows the model is right. Say IM-2 openly; judges trust a team that names its limits.</p>
+  <span class="page">5 / 7</span>
+</section>
+
+<section id="s6">
+  <div>
+    <h2>Built on NASA data, checked against NASA</h2>
+    <ul>
+      <li>Terrain: NASA LRO LOLA <code>LDEM_80S_80M</code>, horizon traced every 0.25° out to 300 km.</li>
+      <li>Sites: NASA Lunar Surface Data Book. Positions: JPL DE440, checked with JPL Horizons.</li>
+      <li>Light maps: NASA Goddard PGDA polar illumination.</li>
+      <li>On sharp ridges our Sun share is higher than NASA's map: read ridge numbers as an upper estimate.</li>
+    </ul>
+  </div>
+  <div class="nums">
+    <div class="num"><b>0.0047°</b><span>worst Sun and Earth position error in the app against JPL Horizons, about 1/100 of the Sun's width</span></div>
+    <div class="num"><b>&lt; 0.01°</b><span>against an independent JPL DE440 series</span></div>
+    <div class="num"><b>r 0.97</b><span>Earth in view vs NASA PGDA maps, mean difference 3.3 points</span></div>
+    <div class="num warn"><b>+11.4</b><span>points: our Sun share above NASA's map on ridges (r 0.92)</span></div>
+  </div>
+  <p class="notes">Every number here is rerun by npm test or the validate scripts in the repo. The offline terrain pipeline is even closer to Horizons: 0.47 arcseconds at worst over all twenty points. If asked about +11.4: we stand 2 m above ground, our terrain is 80 m versus their 60 m, and best spots were picked on our own terrain.</p>
+  <span class="page">6 / 7</span>
+</section>
+
+<section id="s7" class="text-only">
+  <div>
+    <h2>For planners, teachers and anyone curious</h2>
+    <ul>
+      <li><b>Mission planners:</b> a launch slips, pick another day or site in one click and see what survives.</li>
+      <li><b>Teachers:</b> a ready 45 minute school lesson in English, Russian and Kyrgyz.</li>
+      <li><b>Everyone:</b> free in the browser, no login, works on a phone.</li>
+      <li><b>Next:</b> more sites through our terrain pipeline, and rover paths between sunlit spots.</li>
+    </ul>
+    <p class="links">
+      <a href="https://lunar-navigator-404.web.app">Open the app</a>
+      <a class="ghost" href="https://github.com/pathmaker7/404-llsn">Code</a>
+      <a class="ghost" href="lesson.html">School lesson</a>
+    </p>
+  </div>
+  <p class="notes">End on the app link. "Next" items are plans, not built; say so if asked.</p>
+  <span class="page">7 / 7</span>
+</section>
+
+<div class="ai">Made with AI (SI) tools: Claude. Screenshots are of the real app. Press N for notes</div>
+<script>
+  // N shows speaker notes; arrow keys and PageUp/PageDown move one slide.
+  const slides = [...document.querySelectorAll('section')];
+  const cur = () => slides.reduce((b, s, i) => Math.abs(s.getBoundingClientRect().top) < Math.abs(slides[b].getBoundingClientRect().top) ? i : b, 0);
+  if (location.hash === '#notes') document.body.classList.add('show-notes');
+  addEventListener('keydown', (e) => {
+    if (e.key === 'n' || e.key === 'N') { document.body.classList.toggle('show-notes'); return; }
+    const d = ['ArrowRight', 'ArrowDown', 'PageDown', ' '].includes(e.key) ? 1 : ['ArrowLeft', 'ArrowUp', 'PageUp'].includes(e.key) ? -1 : 0;
+    if (!d) return;
+    e.preventDefault();
+    slides[Math.max(0, Math.min(slides.length - 1, cur() + d))].scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  });
+</script>
+</body>
+</html>

@@ -2,7 +2,7 @@
 
 NASA Space Apps Challenge 2026, challenge "Lunar Landing Site Navigator". Team **404 agents**, Naryn. An independent student project, not a NASA product.
 
-**Live app:** https://lunar-navigator-404.web.app · **How it works:** https://lunar-navigator-explained.web.app
+**Live app:** https://lunar-navigator-404.web.app · **How it works:** https://lunar-navigator-explained.web.app · **7 slides:** https://lunar-navigator-explained.web.app/deck.html · **Project page text:** `docs/SUBMISSION.md` · **Film script:** `docs/VIDEO-SCRIPT.md`
 
 > If we land at this site on this day, will a solar robot survive, and on which days would it?
 
@@ -41,7 +41,7 @@ The robot survives when the four "must pass" checks pass. The battery and radio 
 
 | Claim | Check | Result |
 |---|---|---|
-| Sun and Earth positions (`app/sky.js`, astronomy-engine with the IAU lunar rotation model) match NASA JPL Horizons | `npm run validate` (needs internet) | last run before the cleanup: worst 0.0047° |
+| Sun and Earth positions (`app/sky.js`, astronomy-engine with the IAU lunar rotation model) match NASA JPL Horizons | `npm run validate` (needs internet) | run 14 Nov 2026: worst 0.0047° (limit 0.1°), PASS |
 | The same positions match an independent JPL DE440 series computed by the Python pipeline, at four sites over 2027 to 2028 | `npm test` | under 0.01° |
 | Real landings: at Chandrayaan-3's site the model's sunrise is 21 Aug 2023 and its sunset 4 Sep 2023, the day ISRO put the lander to sleep; at Chang'e 6's site Earth never rises (the mission used a relay satellite); at IM-1's site the Sun sets on 3 Mar 2024 | `npm test`, `npm run smoke` | passes |
 | Share of time with Sun and with Earth in view, against NASA Goddard's polar illumination maps (PGDA, Mazarico et al. 2011, 60 m) at all twenty points | `node tools/validate-pgda.cjs sun.img earth.img` writes `app/data/pgda.json`; `npm test` checks it | Earth: mean difference 3.3 points, r 0.97. Sun: r 0.92, ours higher by 11.4 points on average |

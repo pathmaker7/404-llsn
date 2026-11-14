@@ -35,12 +35,14 @@ const SECONDS = 29;
   // On the map screen the caption sits at the top, clear of the timeline it talks about; on the site screen it sits above the time bar.
   const say = (text, top = false) => page.evaluate(([t, up]) => { const c = window.__cap; c.textContent = t; c.style.top = up ? '120px' : 'auto'; c.style.bottom = up ? 'auto' : '230px'; c.style.left = up ? '50%' : '60%'; c.style.maxWidth = up ? '1500px' : '1300px'; }, [text, top]);
 
-  await say('Team 404 agents, Naryn. Lunar Landing Site Navigator', true); await until(3);
-  await say("At the Moon's south pole, one hill can hide the Sun or Earth for days.", true);
+  // Order follows the Space Apps project submission guide: who we are, the challenge, the title, how it works with
+  // NASA data, then what it can do for people.
+  await say('Manuchehr, Aruzhan, Kairat, Arsen, Amirbek: team 404 agents, Naryn', true); await until(2.5);
+  await say("Challenge: Lunar Landing Site Navigator. At the Moon's south pole one hill hides the Sun for days.", true);
   await page.mouse.move(800, 260); await page.mouse.down(); await page.mouse.move(1150, 300, { steps: 40 }); await page.mouse.up(); await until(5);
-  await say('Fifteen sites, or add your own. Every landing day: green survives, red is lost.', true);
+  await say('Will a solar robot survive a landing here, on this day? Green survives, hollow is lost.', true);
   await page.click('#a-play'); await until(9); await page.click('#a-play'); await until(9.5);
-  await say('Click a green day. Fly down. Stand on real NASA terrain.', true);
+  await say('Built on NASA LOLA terrain and JPL ephemerides. Click a green day and stand on the site.', true);
   // The best site's first green day after today: the film lands where the robot survives.
   const cell = await page.evaluate(() => {
     const li = document.querySelector('#sites li.a-row'), cv = li.querySelector('canvas'), b = cv.getBoundingClientRect(), n = __all.b - __all.a;
@@ -55,7 +57,7 @@ const SECONDS = 29;
   await say('Press play: the Sun slides along the horizon, Earth dips behind a ridge.');
   await page.click('#play'); await until(20.5);
   await page.click('#play');
-  await say('Green days are safe to land, red days are not. Click any day.');
+  await say('Launch slipped? Pick another day or site in one click.');
   if (await page.locator('#verdict .day.ok:not(.now)').count()) await page.locator('#verdict .day.ok:not(.now)').first().click();
   await until(23);
   // The proof shot: a real landing replayed. The box on the left shows what happened next to the model's sunrise and sunset.
@@ -65,7 +67,7 @@ const SECONDS = 29;
   await page.selectOption('#a-famous', { label: 'Chandrayaan-3 (2023)' });
   await page.waitForFunction(() => window.__history && document.body.classList.contains('mode-surface'), null, { timeout: 60000 });
   await say(real); await until(26.5);
-  await say('NASA LOLA terrain. Checked against JPL, NASA light maps and four real landings.'); await until(SECONDS);
+  await say('For mission planners, teachers and anyone curious. Free, in English, Russian and Kyrgyz.'); await until(SECONDS);
 
   recording = false; await capture;
   await browser.close(); srv.close();

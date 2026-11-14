@@ -50,7 +50,7 @@ Lunar Landing Site Navigator answers one question: if a solar robot lands at thi
 
 | Check | Result | Run it |
 |---|---|---|
-| Sun and Earth positions against NASA JPL Horizons | worst 0.47 arcseconds | `npm run validate` |
+| Sun and Earth positions against NASA JPL Horizons | app: worst 0.0047° (`npm run validate`, 14 Nov); offline pipeline: worst 0.47 arcseconds | `npm run validate` |
 | Against an independent JPL DE440 series | under 0.01 degrees | `npm test` |
 | Real landings: Chandrayaan-3 site, model sunset 4 Sep 2023 19:00 UTC; ISRO put the lander to sleep 4 Sep about 02:30 UTC. Chang'e 6 site: Earth never rises; the real mission used a relay satellite | passes | `npm test`, `npm run smoke` |
 | Against NASA Goddard illumination maps at 20 points | Earth: mean difference 3.3 points, r 0.97. Sun: r 0.92, ours higher by 11.4 | `node tools/validate-pgda.cjs sun.img earth.img` |

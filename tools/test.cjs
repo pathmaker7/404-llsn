@@ -94,5 +94,12 @@ const Sky = require('../app/sky.js');
   assert.strictEqual(pg.rows.length, points, 'every point compared with NASA');
   assert.ok(pg.earth.meanAbs < 5 && pg.earth.r > 0.95, 'Earth share agrees with NASA within 5 points on average');
   assert.ok(pg.sun.r > 0.9, 'Sun share ranks the points as NASA does');
+
+  // 8. Visible text uses no dash as punctuation (a spaced em or en dash): the jury reads these pages. A lone "—" as an
+  // empty value placeholder is allowed.
+  for (const f of ['app/index.html', 'app/i18n.js', 'explainer/index.html', 'explainer/lesson.html', 'explainer/deck.html']) {
+    const hit = fs.readFileSync(path.join(__dirname, '..', f), 'utf8').match(/\S\s[–—]\s\S/);
+    assert.ok(!hit, `${f}: dash used as punctuation near "${hit && hit[0]}"`);
+  }
   console.log('all checks pass');
 })().catch((e) => { console.error(e); process.exit(1); });
