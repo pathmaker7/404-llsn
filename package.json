@@ -9,9 +9,10 @@
     "test": "node tools/test.cjs",
     "smoke": "node tools/smoke.cjs",
     "validate": "node tools/validate-horizons.cjs",
-    "video": "node tools/record-demo.cjs",
+    "video": "node tools/record-demo.cjs && node tools/narrate.cjs",
     "deploy": "npx --yes firebase-tools@14.4.0 deploy --only hosting",
-    "deck": "node tools/deck-pdf.cjs"
+    "deck": "node tools/deck-pdf.cjs",
+    "narrate": "node tools/narrate.cjs"
   },
   "dependencies": {
     "astronomy-engine": "2.1.19"

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Film voice choice</title>
+<style>
+  :root { --bg: #0a0c10; --panel: #11141a; --line: #222732; --text: #eceef2; --muted: #8b93a3; --sun: #ffc83d; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 40px 16px 64px; }
+  h1 { font-size: clamp(28px, 5vw, 40px); letter-spacing: -.02em; margin: 0 0 10px; }
+  p { color: #c9ced8; } .muted { color: var(--muted); font-size: 15px; }
+  blockquote { margin: 14px 0; padding: 12px 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; color: var(--text); }
+  ol { padding: 0; list-style: none; display: grid; gap: 10px; margin: 20px 0; }
+  li { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; display: grid; grid-template-columns: 1fr auto; gap: 6px 16px; align-items: center; }
+  li b { font-size: 18px; } li span { color: var(--muted); font-size: 14px; }
+  audio { grid-column: 1 / -1; width: 100%; }
+  .rec { border-color: var(--sun); } .rec b::after { content: "  recommended"; color: var(--sun); font-size: 13px; font-weight: 600; }
+</style>
+</head>
+<body>
+<main>
+<h1>Pick the film's voice</h1>
+<p>Each voice reads the same two lines from the film. All are synthetic (Apple text to speech on our Mac), so the film will say so, as the Space Apps rules require for generated audio. Listen together, pick one, and send its name. The film is then rebuilt with that voice in about two minutes, still 29 seconds.</p>
+<blockquote>Lunar Landing Site Navigator: which days can a Moon mission survive? Five years: with the Sun's dark season, it repeats every 354 days.</blockquote>
+<h2 style="font-size:22px;margin:28px 0 6px">The whole film, in six voices</h2>
+<p class="muted">Same 29 second film, same captions; only the voice changes. This is the fairest way to choose.</p>
+<div id="f" style="display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(320px,1fr))"></div>
+<h2 style="font-size:22px;margin:28px 0 6px">Short samples, all fourteen voices</h2>
+<ol id="v"></ol>
+<p class="muted">Recommended: Daniel (UK) or Samantha (US), the clearest for a jury from many countries. Lengths differ because each voice has its own pace; the film adjusts the speed so every line fits its moment.</p>
+</main>
+<script>
+  // name, file, accent, seconds (measured when the samples were made)
+  const V = [
+    ['Daniel', 'daniel-uk', 'English, UK, male', 10.1, 1], ['Samantha', 'samantha-us', 'English, US, female', 9.5, 1],
+    ['Karen', 'karen', 'English, Australia, female', 9.5], ['Moira', 'moira-ireland', 'English, Ireland, female', 9.9],
+    ['Tessa', 'tessa-southafrica', 'English, South Africa, female', 10.8], ['Rishi', 'rishi-india', 'English, India, male', 10.3],
+    ['Aman', 'aman', 'English, India, male', 7.7], ['Tara', 'tara', 'English, India, female', 7.8],
+    ['Reed (US)', 'reed-us', 'English, US, male', 11.5], ['Reed (UK)', 'reed-uk', 'English, UK, male', 11.4],
+    ['Eddy', 'eddy-us', 'English, US, male', 11.5], ['Flo', 'flo-us', 'English, US, female', 11.5],
+    ['Sandy', 'sandy-uk', 'English, UK, female', 11.4], ['Shelley', 'shelley-uk', 'English, UK, female', 11.4],
+  ];
+  const FILMS = [['Daniel', 'daniel-uk', 'UK'], ['Samantha', 'samantha-us', 'US'], ['Karen', 'karen', 'Australia'], ['Moira', 'moira-ireland', 'Ireland'], ['Reed', 'reed-us', 'US'], ['Rishi', 'rishi-india', 'India']];
+  document.getElementById('f').innerHTML = FILMS.map(([n, f, a]) => `<figure style="margin:0"><video controls preload="none" playsinline src="voices/film-${f}.mp4" style="width:100%;border-radius:12px;border:1px solid var(--line)"></video><figcaption><b>${n}</b> <span class="muted">${a}</span></figcaption></figure>`).join('');
+  document.getElementById('v').innerHTML = V.map(([n, f, a, s, r]) =>
+    `<li${r ? ' class="rec"' : ''}><b>${n}</b><span>${a} · ${s.toFixed(1)} s</span><audio controls preload="none" src="voices/${f}.m4a"></audio></li>`).join('');
+</script>
+</body>
+</html>

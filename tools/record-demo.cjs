@@ -1,13 +1,14 @@
-// Records the 29 second demo film of the app, with English captions and a visible SI (AI) watermark drawn by this
-// recorder on top of the page. No audio. Space Apps rules: video of 30 seconds or less, SI-made video carries a watermark.
-// Output: docs/demo-30s.mp4, 1920x1080, 25 fps. Run: node tools/record-demo.cjs
+// Records the 29 second demo film of the app as a real user would use it, with English captions and a visible SI (AI)
+// watermark drawn on top of the page. Space Apps rules: video of 30 seconds or less, SI-made video and audio say so.
+// Output: docs/demo-silent.mp4 (1920x1080, 25 fps) and docs/demo-captions.json (each caption and when it appeared);
+// tools/narrate.cjs then lays a synthetic voice reading the same captions under them. Run: npm run video
 const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright-core');
 const { execFileSync } = require('child_process');
 const { serve } = require('./smoke.cjs');
 const FFMPEG = '/opt/homebrew/bin/ffmpeg';
-const ROOT = path.join(__dirname, '..'), FRAMES = path.join(ROOT, 'docs', 'frames'), DEST = path.join(ROOT, 'docs', 'demo-30s.mp4');
+const ROOT = path.join(__dirname, '..'), FRAMES = path.join(ROOT, 'docs', 'frames'), DEST = path.join(ROOT, 'docs', 'demo-silent.mp4');
 const SECONDS = 29;
 
 (async () => {
@@ -21,7 +22,8 @@ const SECONDS = 29;
   await page.waitForFunction(() => window.__all && window.__all.ready, null, { timeout: 120000 });
   await page.evaluate(() => {
     const box = (css, text) => { const d = document.createElement('div'); d.style.cssText = 'position:fixed;z-index:99;font-family:system-ui;pointer-events:none;' + css; d.textContent = text; document.body.appendChild(d); return d; };
-    box('right:16px;top:60px;font-size:16px;color:#fff;background:#000c;padding:5px 10px;border-radius:6px', 'Made with AI (SI) tools: Claude. Checked by team 404 agents');
+    box('right:16px;top:60px;font-size:16px;color:#fff;background:#000c;padding:5px 10px;border-radius:6px', 'Made with AI (SI) tools: Claude. Synthetic voice. Checked by team 404 agents');
+    window.__names = box('left:50%;transform:translateX(-50%);top:205px;font-size:26px;color:#fff;background:#000d;padding:8px 18px;border-radius:10px', 'Manuchehr, Aruzhan, Kairat, Arsen, Amirbek');
     window.__cap = box('left:50%;transform:translateX(-50%);bottom:230px;width:max-content;max-width:1500px;text-align:center;font-size:38px;font-weight:700;color:#fff;background:#000d;padding:14px 26px;border-radius:12px', '');
   });
   const t0 = Date.now(), frames = []; let recording = true;
@@ -42,16 +44,19 @@ const SECONDS = 29;
   // zooming out from one year to five (measured: the best sites repeat every 354 days, 12 lunar months; in the dark
   // season "night" fails, in the other months "radio" fails, so the monthly window is Earth's).
   const period = (k) => page.click(`.a-range button[data-y="${k}"]`);
-  await say('Team 404 agents, Naryn: Manuchehr, Aruzhan, Kairat, Arsen, Amirbek', true); await until(3);
-  await say('Lunar Landing Site Navigator: which days can a Moon mission survive?', true);
-  await page.mouse.move(800, 260); await page.mouse.down(); await page.mouse.move(1150, 300, { steps: 40 }); await page.mouse.up(); await until(6);
+  // The voice reads each caption word for word (subtitles = speech), so each line is short enough to be spoken at a
+  // calm pace in the time it stays on screen.
+  await say('Team 404 agents, Naryn, Kyrgyzstan.', true); await until(3.6);
+  await page.evaluate(() => window.__names.remove());
+  await say('Which days can a Moon mission survive?', true);
+  await page.mouse.move(800, 260); await page.mouse.down(); await page.mouse.move(1150, 300, { steps: 40 }); await page.mouse.up(); await until(6.2);
   await period('1');
-  await say('One year: green, the mission survives. Earth is up one week a month.', true); await until(10);
+  await say('Earth is up one week a month. The Sun has a dark season.', true); await until(10.2);
   await period('5');
-  await say("Five years: with the Sun's dark season, it repeats every 354 days.", true); await until(13.5);
+  await say('Over five years, it repeats every 354 days.', true); await until(14);
   await period('1m');
-  await say('Click a green day. Stand on real NASA terrain.', true);
-  // The best site's first green day after today: the film lands where the robot survives.
+  await say('Click a green day. Stand on NASA terrain.', true);
+  // The best site's first green day after today: the film lands where the mission survives.
   const cell = await page.evaluate(() => {
     const li = document.querySelector('#sites li.a-row'), cv = li.querySelector('canvas'), b = cv.getBoundingClientRect(), n = __all.b - __all.a;
     const day = (d) => new Date(Date.parse(__all.from + 'T00:00:00Z') + d * 864e5).toISOString().slice(0, 10);
@@ -60,22 +65,24 @@ const SECONDS = 29;
   });
   await page.mouse.move(cell.x, cell.y, { steps: 12 }); await page.waitForTimeout(500); await page.mouse.click(cell.x, cell.y);
   await page.waitForFunction(() => window.__verdict && document.body.classList.contains('mode-surface'), null, { timeout: 60000 });
-  await page.click('#look-sun'); await until(16.5);
-  await say('One answer, eleven checks. The Sun slides along the horizon.');
-  await page.click('#play'); await until(20); await page.click('#play');
+  await page.click('#look-sun'); await until(17.4);
+  // The Details panel (top right): Sun and Earth paths on, then time moves. Battery and radio limits are named, not shown.
+  await say('Mission survived. Show paths, move time, set your limits.');
+  await page.click('#opt-paths'); await page.click('#play'); await until(22.2); await page.click('#play');
   // The proof shot: a real landing replayed. The box on the left shows what happened next to the model's sunrise and sunset.
-  const real = 'Chandrayaan-3, replayed: our sunset matches the day India put it to sleep.';
+  const real = 'Chandrayaan-3: our sunset is the day India put it to sleep.';
   await say(real, true);
   await page.click('#back'); await page.waitForTimeout(700);
   await page.selectOption('#a-famous', { label: 'Chandrayaan-3 (2023)' });
   await page.waitForFunction(() => window.__history && document.body.classList.contains('mode-surface'), null, { timeout: 60000 });
-  await say(real); await until(25);
-  await say('Built for schools in Kyrgyzstan and Central Asia: Kyrgyz, Russian, English.'); await until(SECONDS);
+  await say(real); await until(26.4);
+  await say('Free for schools across Central Asia.'); await until(SECONDS);
   // Readable: at most 3.7 words a second for the time each caption really stayed on screen.
   caps.forEach((c, i) => { const on = (caps[i + 1]?.t ?? SECONDS) - c.t, w = c.text.split(/\s+/).length;
     console.log(`${c.t.toFixed(1).padStart(5)} s  ${(w / on).toFixed(1)} words/s  ${c.text}`);
     if (w / on > 3.7) errors.push(`caption too fast to read (${(w / on).toFixed(1)} words/s): ${c.text}`); });
 
+  fs.writeFileSync(path.join(ROOT, 'docs', 'demo-captions.json'), JSON.stringify(caps.map((c, k) => ({ ...c, end: caps[k + 1]?.t ?? SECONDS })), null, 1) + '\n');
   recording = false; await capture;
   await browser.close(); srv.close();
   const total = SECONDS * 25; // exactly 29 s at 25 fps: frame i is the newest capture taken by i * 40 ms
@@ -84,7 +91,7 @@ const SECONDS = 29;
     fs.linkSync(frames[k].f, path.join(FRAMES, `o${String(i).padStart(5, '0')}.jpg`));
   }
   execFileSync(FFMPEG, ['-y', '-loglevel', 'error', '-framerate', '25', '-i', path.join(FRAMES, 'o%05d.jpg'), '-vf', 'format=yuv420p', '-c:v', 'libx264', '-crf', '20',
-    '-metadata', 'comment=Screen footage and captions made with SI (AI) tools: Claude (Anthropic). Checked by team 404 agents.', DEST]);
+    '-metadata', 'comment=Screen footage and captions made with SI (AI) tools: Claude (Anthropic). Voice is synthetic (Apple text to speech). Checked by team 404 agents.', DEST]);
   fs.rmSync(FRAMES, { recursive: true, force: true });
   console.log(`${frames.length} captures, ${(frames.length / SECONDS).toFixed(1)} per second`);
   if (errors.length) { console.error('PAGE ERRORS:\n' + errors.join('\n')); process.exit(1); }

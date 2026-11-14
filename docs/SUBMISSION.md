@@ -38,7 +38,7 @@ We built a free web app that answers one question for the Moon's south pole: if 
 
 https://lunar-navigator-explained.web.app/demo-30s.mp4
 
-(29 seconds, English captions, no voice; it plays in the browser. Do not use the GitHub file link: GitHub sends it as a download. Put the film in this field. The seven slides are for the Naryn online presentation, see below.)
+(29 seconds, a synthetic English voice with matching English captions; it plays in the browser. Do not use the GitHub file link: GitHub sends it as a download. Put the film in this field. The seven slides are for the Naryn online presentation, see below.)
 
 ## Link to Final Project
 
@@ -68,7 +68,7 @@ https://lunar-navigator-404.web.app
 
 ## Use of Super Intelligence (SI)
 
-Yes. We used Claude (Anthropic) as a coding assistant: for the 3D view and terrain pipeline (directed by our teammate), for the answer panel, the survival rules, the date range 2021 to 2031 and the tests (directed by the team), and for the README, the explainer page and the Russian and Kyrgyz texts. The idea, the choice of rules and the checks were the team's. Every result was checked by tests against NASA JPL Horizons and by the team playing the app. The demo film is recorded from the real app and carries a visible "Made with AI (SI) tools" watermark; its file metadata says the same. No image, sound or text in the app was generated as a picture or audio by AI, and no NASA logo, flag or mission identifier is used. Details: https://github.com/pathmaker7/404-llsn/blob/main/docs/SI-usage.md
+Yes. We used Claude (Anthropic) as a coding assistant: for the 3D view and terrain pipeline (directed by our teammate), for the answer panel, the survival rules, the date range 2021 to 2031 and the tests (directed by the team), and for the README, the explainer page and the Russian and Kyrgyz texts. The idea, the choice of rules and the checks were the team's. Every result was checked by tests against NASA JPL Horizons and by the team playing the app. The demo film is recorded from the real app and carries a visible "Made with AI (SI) tools: Claude. Synthetic voice." watermark; the voice is synthetic (Apple text to speech reading our captions), and the file metadata says so. No image, sound or text in the app was generated as a picture or audio by AI, and no NASA logo, flag or mission identifier is used. Details: https://github.com/pathmaker7/404-llsn/blob/main/docs/SI-usage.md
 
 ## NASA Data
 
