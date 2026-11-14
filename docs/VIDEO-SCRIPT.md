@@ -13,6 +13,12 @@ Pick the voice together: https://lunar-navigator-explained.web.app/voices.html (
 short samples of fourteen). Then rebuild with the chosen name, about one minute, no re-recording:
 `npm run narrate -- "Samantha (English (US))"`. The default is Daniel (English (UK)).
 
+A team member's own voice: record it at https://lunar-navigator-explained.web.app/record.html (each line with its
+time limit, checked as you speak, downloaded as one my-voice-take.wav; nothing is uploaded). Then re-record the film
+with the voice notice changed and lay the take under it:
+`VOICE_NOTE="Voice: Manuchehr, team member" npm run video` and
+`VOICE_NOTE="Voice: Manuchehr, team member" npm run narrate -- ~/Downloads/my-voice-take.wav "Manuchehr"`.
+
 A recorded voice works too, for example the ElevenLabs voice "The Professional Presenter": paste
 docs/VOICE-TAKE.txt (the eight lines, numbers written as spoken, a blank line between lines) as ONE take, download
 the mp3, then `npm run narrate -- ~/Downloads/take.mp3 "ElevenLabs, The Professional Presenter"`. The take is cut at

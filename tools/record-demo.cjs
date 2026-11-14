@@ -20,12 +20,13 @@ const SECONDS = 29;
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto(`http://127.0.0.1:${srv.address().port}/`);
   await page.waitForFunction(() => window.__all && window.__all.ready, null, { timeout: 120000 });
-  await page.evaluate(() => {
+  // A person's own voice (VOICE_NOTE="Voice: Manuchehr, team member") replaces the synthetic voice notice; the AI notice stays.
+  await page.evaluate((voiceNote) => {
     const box = (css, text) => { const d = document.createElement('div'); d.style.cssText = 'position:fixed;z-index:99;font-family:system-ui;pointer-events:none;' + css; d.textContent = text; document.body.appendChild(d); return d; };
-    box('right:16px;top:60px;font-size:16px;color:#fff;background:#000c;padding:5px 10px;border-radius:6px', 'Made with AI (SI) tools: Claude. Synthetic voice. Checked by team 404 agents');
+    box('right:16px;top:60px;font-size:16px;color:#fff;background:#000c;padding:5px 10px;border-radius:6px', `Made with AI (SI) tools: Claude. ${voiceNote}. Checked by team 404 agents`);
     window.__names = box('left:50%;transform:translateX(-50%);top:205px;font-size:26px;color:#fff;background:#000d;padding:8px 18px;border-radius:10px', 'Manuchehr, Aruzhan, Kairat, Arsen, Amirbek');
     window.__cap = box('left:50%;transform:translateX(-50%);bottom:230px;width:max-content;max-width:1500px;text-align:center;font-size:38px;font-weight:700;color:#fff;background:#000d;padding:14px 26px;border-radius:12px', '');
-  });
+  }, process.env.VOICE_NOTE || 'Synthetic voice');
   const t0 = Date.now(), frames = []; let recording = true;
   const capture = (async () => {
     while (recording) {
@@ -91,7 +92,7 @@ const SECONDS = 29;
     fs.linkSync(frames[k].f, path.join(FRAMES, `o${String(i).padStart(5, '0')}.jpg`));
   }
   execFileSync(FFMPEG, ['-y', '-loglevel', 'error', '-framerate', '25', '-i', path.join(FRAMES, 'o%05d.jpg'), '-vf', 'format=yuv420p', '-c:v', 'libx264', '-crf', '20',
-    '-metadata', 'comment=Screen footage and captions made with SI (AI) tools: Claude (Anthropic). Voice is synthetic (Apple text to speech). Checked by team 404 agents.', DEST]);
+    '-metadata', 'comment=Screen footage and captions made with SI (AI) tools: Claude (Anthropic). ' + (process.env.VOICE_NOTE || 'Voice is synthetic') + '. Checked by team 404 agents.', DEST]);
   fs.rmSync(FRAMES, { recursive: true, force: true });
   console.log(`${frames.length} captures, ${(frames.length / SECONDS).toFixed(1)} per second`);
   if (errors.length) { console.error('PAGE ERRORS:\n' + errors.join('\n')); process.exit(1); }

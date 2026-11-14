@@ -58,7 +58,7 @@ const delays = lines.map((l, i) => `[${i + 1}:a]adelay=${Math.round(l.t * 1000)}
 const mix = `${delays};${lines.map((_, i) => `[a${i}]`).join('')}amix=inputs=${lines.length}:normalize=0,apad,atrim=0:${film}[a]`;
 execFileSync(FFMPEG, ['-y', '-loglevel', 'error', '-i', path.join(ROOT, 'docs', 'demo-silent.mp4'), ...inputs, '-filter_complex', mix,
   '-map', '0:v', '-map', '[a]', '-c:v', 'copy', '-c:a', 'aac', '-b:a', '128k', '-t', String(film),
-  '-metadata', `comment=Screen footage and captions made with SI (AI) tools: Claude (Anthropic). Synthetic voice: ${TAKE ? VOICE : 'Apple text to speech, ' + VOICE}. Checked by team 404 agents.`, out]);
+  '-metadata', `comment=Screen footage and captions made with SI (AI) tools: Claude (Anthropic). ${process.env.VOICE_NOTE || 'Synthetic voice: ' + (TAKE ? VOICE : 'Apple text to speech, ' + VOICE)}. Checked by team 404 agents.`, out]);
 if (!PREVIEW) fs.copyFileSync(out, path.join(ROOT, 'explainer', 'demo-30s.mp4'));
 fs.rmSync(TMP, { recursive: true, force: true });
 const total = dur(out);

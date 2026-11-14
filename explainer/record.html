@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Record the film voice</title>
+<style>
+  :root { --bg: #0a0c10; --panel: #11141a; --line: #222732; --text: #eceef2; --muted: #8b93a3; --sun: #ffc83d; --ok: #3ddc84; --bad: #ff5d5d; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 820px; margin: 0 auto; padding: 36px 16px 80px; }
+  h1 { font-size: clamp(26px, 5vw, 38px); letter-spacing: -.02em; margin: 0 0 8px; }
+  p, li { color: #c9ced8; } .muted { color: var(--muted); font-size: 15px; }
+  ol.how { padding-left: 20px; margin: 10px 0 24px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; margin: 12px 0; }
+  .card.cur { border-color: var(--sun); }
+  .n { color: var(--muted); font-size: 14px; display: flex; justify-content: space-between; gap: 12px; }
+  .say { font-size: clamp(22px, 3.6vw, 30px); line-height: 1.3; margin: 6px 0 12px; font-weight: 600; }
+  .bar { height: 8px; background: #1b2029; border-radius: 4px; overflow: hidden; margin-bottom: 12px; }
+  .bar i { display: block; height: 100%; width: 0; background: var(--sun); }
+  .bar.over i { background: var(--bad); }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  button { font: inherit; font-size: 15px; font-weight: 600; border-radius: 10px; border: 1px solid var(--line); background: #1b2029; color: var(--text); padding: 9px 16px; cursor: pointer; }
+  button:active { transform: translateY(1px); }
+  button.rec { background: var(--sun); color: #111; border-color: var(--sun); }
+  button.stop { background: var(--bad); color: #111; border-color: var(--bad); }
+  button:disabled { opacity: .45; cursor: default; }
+  .res { font-size: 15px; } .res.ok { color: var(--ok); } .res.bad { color: var(--bad); }
+  .final { position: sticky; bottom: 0; background: var(--bg); border-top: 1px solid var(--line); padding: 14px 0; margin-top: 20px; }
+  pre { white-space: pre-wrap; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; font-size: 15px; }
+</style>
+</head>
+<body>
+<main>
+<h1>Record the film voice</h1>
+<p>Read each line in your own voice. Every line has a time it must fit in (it starts when its caption appears in the film). The yellow bar fills over that time while you speak; finish before it turns red.</p>
+<ol class="how">
+  <li>Use Chrome, a quiet room, headphones off the desk, the laptop mic about 20 cm from your mouth. Allow the microphone when asked.</li>
+  <li>Press <b>Record</b> (or the Space key), wait half a second, read the line calmly and clearly, press <b>Stop</b> (or Space). Silence at the start and end is cut off automatically.</li>
+  <li>Green means it fits. Red means read a little faster or redo it. Press <b>Play</b> to listen, <b>Redo</b> to try again. Only the last take of each line is kept.</li>
+  <li>When all eight are green, press <b>Download my voice</b> and tell Claude "recorded". The file stays on your Mac; this page uploads nothing.</li>
+</ol>
+<div id="cards"></div>
+<div class="final row"><button id="dl" disabled>Download my voice</button><span id="sum" class="muted"></span></div>
+<h2 style="font-size:20px;margin:30px 0 8px">The full text</h2>
+<pre id="full"></pre>
+<p class="muted">Numbers are written the way to say them: "four oh four" for 404, "three fifty-four" for 354. Chandrayaan is said "chun-dra-YAAN three".</p>
+</main>
+<script>
+  // Spoken text and the seconds each line may last (from docs/demo-captions.json: next caption minus 0.2 s).
+  // The film may speed a line up by at most 12 percent, so a take up to budget x 1.12 still fits.
+  const LINES = [
+    ['Team four oh four agents, Naryn, Kyrgyzstan.', 3.21],
+    ['Which days can a Moon mission survive?', 2.28],
+    ['Earth is up one week a month. The Sun has a dark season.', 3.57],
+    ['Over five years, it repeats every three fifty-four days.', 4.43],
+    ['Click a green day. Stand on NASA terrain.', 3.05],
+    ['Mission survived. Show paths, move time, set your limits.', 4.51],
+    ['Chandrayaan-3: our sunset is the day India put it to sleep.', 3.95],
+    ['Free for schools across Central Asia.', 2.40],
+  ];
+  const MAX = 1.12, RATE = 48000, takes = [], $ = (s, e = document) => e.querySelector(s);
+  let cur = 0, rec = null, stream = null, raf = 0, ctx = null;
+  $('#full').textContent = LINES.map((l) => l[0]).join('\n\n');
+  $('#cards').innerHTML = LINES.map(([t, s], i) => `<div class="card" data-i="${i}"><div class="n"><span>Line ${i + 1} of 8</span><span>fit in ${s.toFixed(1)} s</span></div>
+    <div class="say">${t}</div><div class="bar"><i></i></div>
+    <div class="row"><button class="go rec">Record</button><button class="play" disabled>Play</button><span class="res muted">not recorded</span></div></div>`).join('');
+  const card = (i) => $(`.card[data-i="${i}"]`);
+  const focus = (i) => { cur = i; document.querySelectorAll('.card').forEach((c) => c.classList.toggle('cur', +c.dataset.i === i)); };
+  focus(0);
+
+  // Cut silence from both ends: 20 ms frames, keep from the first to the last frame louder than -42 dBFS, plus 60 ms of air.
+  function trim(buf) {
+    const d = buf.getChannelData(0), f = Math.round(buf.sampleRate * 0.02), th = Math.pow(10, -42 / 20);
+    const loud = []; for (let s = 0; s + f <= d.length; s += f) { let q = 0; for (let k = s; k < s + f; k++) q += d[k] * d[k]; loud.push(Math.sqrt(q / f) > th); }
+    const a = loud.indexOf(true), b = loud.lastIndexOf(true); if (a < 0) return null;
+    const pad = Math.round(buf.sampleRate * 0.06), from = Math.max(0, a * f - pad), to = Math.min(d.length, (b + 1) * f + pad);
+    return { data: d.slice(from, to), rate: buf.sampleRate };
+  }
+  const secs = (t) => t.data.length / t.rate;
+
+  async function start(i) {
+    focus(i);
+    try { stream = stream || await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: true, autoGainControl: true, channelCount: 1 } }); }
+    catch (e) { alert('The microphone is blocked. Allow it in the address bar and press Record again.'); return; }
+    ctx = ctx || new AudioContext();
+    const chunks = [], c = card(i), bar = $('.bar', c), go = $('.go', c), t0 = performance.now(), lim = LINES[i][1];
+    rec = new MediaRecorder(stream); rec.ondataavailable = (e) => chunks.push(e.data);
+    rec.onstop = async () => {
+      cancelAnimationFrame(raf); go.textContent = 'Redo'; go.className = 'go'; rec = null;
+      const buf = await ctx.decodeAudioData(await new Blob(chunks).arrayBuffer()), t = trim(buf), res = $('.res', c);
+      if (!t) { res.textContent = 'nothing heard, check the microphone'; res.className = 'res bad'; return; }
+      takes[i] = t; $('.play', c).disabled = false;
+      const s = secs(t), fits = s <= lim * MAX;
+      res.textContent = fits ? `${s.toFixed(1)} s, fits` + (s > lim ? ` (sped up ${Math.round((s / lim - 1) * 100)}%)` : '') : `${s.toFixed(1)} s, too long by ${(s - lim * MAX).toFixed(1)} s: read a little faster`;
+      res.className = 'res ' + (fits ? 'ok' : 'bad'); bar.classList.toggle('over', !fits); $('i', bar).style.width = Math.min(100, (s / lim) * 100) + '%';
+      update(); if (fits && i < LINES.length - 1) focus(i + 1);
+    };
+    rec.start(); go.textContent = 'Stop'; go.className = 'go stop'; bar.classList.remove('over');
+    const tick = () => { const s = (performance.now() - t0) / 1000; $('i', bar).style.width = Math.min(100, (s / lim) * 100) + '%'; bar.classList.toggle('over', s > lim); raf = requestAnimationFrame(tick); };
+    tick();
+  }
+  function play(i) {
+    const t = takes[i]; if (!t) return; const b = ctx.createBuffer(1, t.data.length, t.rate); b.copyToChannel(t.data, 0);
+    const s = ctx.createBufferSource(); s.buffer = b; s.connect(ctx.destination); s.start();
+  }
+  function update() {
+    const done = takes.filter(Boolean).length, ok = LINES.every(([, l], i) => takes[i] && secs(takes[i]) <= l * MAX);
+    $('#dl').disabled = done < LINES.length; $('#sum').textContent = `${done} of 8 recorded` + (done === 8 && !ok ? ', some are red: you can still download, Claude will tell which line to redo' : '');
+  }
+  document.addEventListener('click', (e) => {
+    const c = e.target.closest('.card'); if (!c) return; const i = +c.dataset.i;
+    if (e.target.classList.contains('go')) rec ? rec.stop() : start(i);
+    if (e.target.classList.contains('play')) play(i);
+  });
+  document.addEventListener('keydown', (e) => { if (e.code !== 'Space' || e.target.tagName === 'BUTTON') return; e.preventDefault(); rec ? rec.stop() : start(cur); });
+
+  // One WAV: half a second of silence, then each line with 1.5 s of silence between, so the film tool finds the 7 cuts.
+  $('#dl').onclick = () => {
+    const gap = 1.5, lead = 0.5, parts = takes.map((t) => resample(t.data, t.rate));
+    const n = Math.round((lead * 2 + gap * 7) * RATE) + parts.reduce((a, p) => a + p.length, 0), pcm = new Float32Array(n);
+    let o = Math.round(lead * RATE); parts.forEach((p) => { pcm.set(p, o); o += p.length + Math.round(gap * RATE); });
+    const v = new DataView(new ArrayBuffer(44 + n * 2)), w = (p, s) => [...s].forEach((ch, k) => v.setUint8(p + k, ch.charCodeAt(0)));
+    w(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); w(8, 'WAVEfmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+    v.setUint32(24, RATE, true); v.setUint32(28, RATE * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, 'data'); v.setUint32(40, n * 2, true);
+    pcm.forEach((x, k) => v.setInt16(44 + k * 2, Math.max(-1, Math.min(1, x)) * 32767, true));
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([v], { type: 'audio/wav' })); a.download = 'my-voice-take.wav'; a.click();
+  };
+  function resample(d, r) { if (r === RATE) return d; const out = new Float32Array(Math.round(d.length * RATE / r));
+    for (let k = 0; k < out.length; k++) { const x = k * r / RATE, j = Math.floor(x), f = x - j; out[k] = (d[j] || 0) * (1 - f) + (d[j + 1] || 0) * f; } return out; }
+</script>
+</body>
+</html>
