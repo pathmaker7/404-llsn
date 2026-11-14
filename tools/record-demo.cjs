@@ -47,16 +47,16 @@ const SECONDS = 29;
   const period = (k) => page.click(`.a-range button[data-y="${k}"]`);
   // The voice reads each caption word for word (subtitles = speech), so each line is short enough to be spoken at a
   // calm pace in the time it stays on screen.
-  await say('Team 404 agents, Naryn, Kyrgyzstan.', true); await until(3.4);
+  await say('Hi, we're team 404 agents from Naryn, Kyrgyzstan.', true); await until(3.4);
   await page.evaluate(() => window.__names.remove());
-  await say('Which days can a Moon mission survive?', true);
+  await say('So, when can a Moon mission survive?', true);
   await page.mouse.move(800, 260); await page.mouse.down(); await page.mouse.move(1150, 300, { steps: 40 }); await page.mouse.up(); await until(5.8);
   await period('1');
-  await say('Earth is up one week a month. The Sun has a dark season.', true); await until(9.6);
+  await say('Earth's up one week a month, and the Sun has a dark season.', true); await until(9.6);
   await period('5');
-  await say('Over five years, it repeats every 354 days.', true); await until(14.2);
+  await say('Zoom out five years: the pattern repeats every 354 days.', true); await until(14.2);
   await period('1m');
-  await say('Click a green day. Stand on NASA terrain.', true);
+  await say('Click a green day, and you're standing on NASA terrain.', true);
   // The best site's first green day after today: the film lands where the mission survives.
   const cell = await page.evaluate(() => {
     const li = document.querySelector('#sites li.a-row'), cv = li.querySelector('canvas'), b = cv.getBoundingClientRect(), n = __all.b - __all.a;
@@ -68,16 +68,16 @@ const SECONDS = 29;
   await page.waitForFunction(() => window.__verdict && document.body.classList.contains('mode-surface'), null, { timeout: 60000 });
   await page.click('#look-sun'); await until(17.4);
   // The Details panel (top right): Sun and Earth paths on, then time moves. Battery and radio limits are named, not shown.
-  await say('Mission survived. Show paths, move time, set your limits.');
+  await say('Mission survived! Turn on the paths, play time, set your own limits.');
   await page.click('#opt-paths'); await page.click('#play'); await until(22.2); await page.click('#play');
   // The proof shot: a real landing replayed. The box on the left shows what happened next to the model's sunrise and sunset.
-  const real = 'Chandrayaan-3: our sunset is the day India put it to sleep.';
+  const real = 'For Chandrayaan-3, our sunset is the day India put it to sleep.';
   await say(real, true);
   await page.click('#back'); await page.waitForTimeout(700);
   await page.selectOption('#a-famous', { label: 'Chandrayaan-3 (2023)' });
   await page.waitForFunction(() => window.__history && document.body.classList.contains('mode-surface'), null, { timeout: 60000 });
   await say(real); await until(26.4);
-  await say('Free for schools across Central Asia.'); await until(SECONDS);
+  await say('It's free for schools across Central Asia.'); await until(SECONDS);
   // Readable: at most 3.7 words a second for the time each caption really stayed on screen.
   caps.forEach((c, i) => { const on = (caps[i + 1]?.t ?? SECONDS) - c.t, w = c.text.split(/\s+/).length;
     console.log(`${c.t.toFixed(1).padStart(5)} s  ${(w / on).toFixed(1)} words/s  ${c.text}`);
