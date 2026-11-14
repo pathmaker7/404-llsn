@@ -31,7 +31,7 @@ Lunar Landing Site Navigator
 
 ## High-Level Project Summary
 
-We built a free web app that answers one question for the Moon's south pole: if a solar robot lands at this site on this day, does it survive a 14 day stay, and on which days would it? At the pole the Sun and Earth stay within a few degrees of the horizon, so one hill can cut power or radio for days, and when a launch slips every site and date must be checked again. Our app shows every site and every landing day on one screen (green survives, hollow is lost), lets you stand on the site in 3D with the Sun and Earth at their true positions over real NASA LOLA terrain, and replays real landings (Chandrayaan-3, IM-1, Chang'e 6, IM-2) to show the model agrees with what happened. It serves mission planners who need a quick answer, and teachers and the public who want to see why landing near the pole is hard.
+We built a free web app that answers one question for the Moon's south pole: if a solar robot lands at this site on this day, does it survive a 14 day stay, and on which days would it? At the pole the Sun and Earth stay within a few degrees of the horizon, so one hill can cut power or radio for days, and when a launch slips every site and date must be checked again. Our app shows every site and every landing day on one screen (green survives, hollow is lost), lets you stand on the site in 3D with the Sun and Earth at their true positions over real NASA LOLA terrain, and replays real landings (Chandrayaan-3, IM-1, Chang'e 6, IM-2) to show the model agrees with what happened. It is built as a teaching tool for students in Kyrgyzstan and Central Asia, in Kyrgyz, Russian and English: zoom out to one year and to five, and the two cycles that decide landing days appear (Earth up about one week a month, the Sun's dark season, repeating every 354 days), the same Sun and Earth cycles mission planners choose dates from. It also gives planners a quick answer when a launch slips.
 
 ## Link to Project Demo
 
@@ -48,7 +48,7 @@ https://lunar-navigator-404.web.app
 **What it does.**
 1. The first screen shows the whole Moon in 3D, gliding to the south pole. Under it, one row per site and one block per landing day: a green block means a solar robot landing that day survives 14 days, a hollow block means it is lost. The best site is listed first. Play moves the sunlight over the Moon.
 2. Fifteen sites: six from NASA's Lunar Surface Data Book and nine the team picked on NASA LOLA terrain. Any latitude and longitude can be added, and known landings can be picked (Apollo 11 and 17, Chandrayaan-3, IM-1, Chang'e 6, IM-2).
-3. Any day from 2021 to 2031, from a two week view up to the whole period.
+3. Any day from 2021 to 2031, from a two week view up to the whole period. Zoomed out, the cycles show: one short window a month while Earth is above the horizon, months with almost no good day while the Sun is in its low season (Feb to Jul 2027 at the best site), and the whole pattern returning about every 354 days, 12 lunar months, measured in the app's own verdicts for 9 of the 10 sites that have any good day.
 4. Click a day and you stand 2 m above the real terrain at that site. The Sun and Earth sit at their true positions; the Sun's height, "sunset in" and "Earthset in" are shown.
 5. One answer panel: THE ROBOT SURVIVED or THE ROBOT WAS LOST, one sentence why, the next 120 landing days, and eleven checks with a tick or a cross (longest night, longest radio silence, first sunlight, slope, and NASA Artemis III site rules for slope within 2 km and distance from the pole).
 6. Your own mission: change how many days the battery lasts without Sun and how many days of radio silence are allowed; every site and day is judged again. The table downloads as CSV, and the page address keeps your sites and limits so a comparison can be shared as a link.
@@ -61,7 +61,7 @@ https://lunar-navigator-404.web.app
 
 **Limits we state.** On sharp ridges our share of time in sunlight is higher than NASA's maps (11 points on average): read ridge numbers as an upper estimate. The model judges a place and a day, not a touchdown: it passes IM-2's site and day, and the real lander fell on its side. The battery and radio limits (2 and 3 days) are our teaching values, not NASA requirements; for scale, NASA says its VIPER rover cannot endure more than 50 hours of continuous darkness.
 
-**Benefits.** When a launch slips, a planner sees in one click which other days and sites still work. A teacher gets a lesson that turns Moon geometry into a yes or no answer. Anyone can see why the Moon's south pole is hard.
+**Benefits.** Students in Kyrgyzstan and Central Asia learn, in their own language, how real Moon missions are planned and why only some days work; a teacher gets a ready lesson that turns Moon geometry into a yes or no answer. When a launch slips, a planner sees in one click which other days and sites still work.
 
 **Tools.** JavaScript, three.js, astronomy-engine, Python (NumPy, Skyfield), Firebase Hosting, Playwright for end to end checks. Code: https://github.com/pathmaker7/404-llsn (Apache-2.0). The 3D view and terrain pipeline are by our teammate: https://github.com/steppekid/lunar_3d_nasa_hackathon
 

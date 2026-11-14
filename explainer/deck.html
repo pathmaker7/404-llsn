@@ -12,6 +12,7 @@
   body { margin: 0; background: var(--bg); color: var(--text); font: 18px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
   section { min-height: 100dvh; scroll-snap-align: start; display: grid; grid-template-columns: 5fr 7fr; gap: 48px; align-items: center; padding: 56px 64px; max-width: 1500px; margin: 0 auto; position: relative; }
   section.text-only { grid-template-columns: 1fr; max-width: 1100px; }
+  section:has(> figure:first-child) { grid-template-columns: 7fr 5fr; } /* the picture always gets the wide column */
   h1 { font-size: clamp(34px, 4.4vw, 60px); line-height: 1.04; letter-spacing: -.03em; margin: 0 0 18px; }
   h2 { font-size: clamp(28px, 3.2vw, 44px); line-height: 1.08; letter-spacing: -.02em; margin: 0 0 16px; }
   p, li { color: #c9ced8; margin: 0 0 10px; max-width: 60ch; }
@@ -54,7 +55,7 @@
 <section id="s1">
   <div>
     <h1>Will a solar robot survive a landing here, on this day?</h1>
-    <p class="lead">Lunar Landing Site Navigator answers it for any site at the Moon's south pole and any day from 2021 to 2031.</p>
+    <p class="lead">Lunar Landing Site Navigator answers it for any site at the Moon's south pole and any day from 2021 to 2031, and teaches students in Kyrgyzstan and Central Asia how Moon landings are planned.</p>
     <p class="team">Team <b>404 agents</b>, Naryn, Kyrgyzstan: <b>Manuchehr, Aruzhan, Kairat, Arsen, Amirbek</b><br>
     NASA Space Apps Challenge 2026, challenge <b>Lunar Landing Site Navigator</b></p>
   </div>
@@ -63,33 +64,32 @@
   <span class="page">1 / 7</span>
 </section>
 
-<section id="s2" class="text-only">
+<section id="s2">
   <div>
-    <h2>At the south pole one hill can hide the Sun for days</h2>
+    <h2>One year at the south pole: two cycles</h2>
     <ul>
-      <li>The Sun never climbs more than a couple of degrees. It slides along the horizon, so a ridge kilometres away decides power.</li>
-      <li>Earth sits low too. When it drops behind terrain, there is no direct radio link.</li>
-      <li>Launches slip. When the date moves, a team must re-check every site and day.</li>
-      <li>NASA's own tools (Quickmap, Moon Trek, JPL Horizons) hold the data, but answering "which days work here" means many steps in several tools.</li>
+      <li>One row per site, one block per landing day: <span class="ok">green</span>, a solar robot survives 14 days; hollow, it is lost.</li>
+      <li><b>Earth, about 27 days.</b> From the pole Earth sits on the horizon and the Moon nods, so Earth is up about one week a month: one short green window a month.</li>
+      <li><b>Sun, about a year.</b> The Moon's axis tilts 1.5°. For months the Sun stays so low that hills hide it for days: almost no green.</li>
+      <li>A launch slips? The same screen shows the next day that works.</li>
     </ul>
   </div>
-  <p class="notes">This is the challenge text in our words. Stress the launch slip: that is the moment our tool is for, a new date and an answer in one click.</p>
+  <figure><img src="shots/year-1y.png" alt="One year of landing days for fifteen sites: short green windows each month, and a stretch of months with almost no green"><figcaption>"Next year" in the live app.</figcaption></figure>
+  <p class="notes">Measured in the app: from Nov to Jan and Aug to Oct the check that fails is radio (Earth hidden) on 22 to 24 days a month; from Feb to Jul 2027 it is night (Sun hidden) on 14 to 21 days a month. Point at a monthly window, then at the empty months.</p>
   <span class="page">2 / 7</span>
 </section>
 
 <section id="s3">
+  <figure><img src="shots/year-5y.png" alt="Five years of landing days: the green clusters come back every year, a little earlier each time"><figcaption>"Next 5 years" in the live app.</figcaption></figure>
   <div>
-    <h2>Every site, every landing day, one screen</h2>
+    <h2>Five years: the pattern repeats</h2>
     <ul>
-      <li>15 sites: 6 from NASA's Lunar Surface Data Book, 9 picked by the team on NASA LOLA terrain.</li>
-      <li>One row per site, one block per landing day: <span class="ok">green survives</span> a 14 day stay, hollow is lost.</li>
-      <li>Best site listed first. Press play and the sunlight moves over the 3D Moon.</li>
-      <li>Add any latitude and longitude, or a known landing (Apollo 11 and 17, Chandrayaan-3, IM-1, Chang'e 6, IM-2).</li>
-      <li>Set your own battery and radio limits; every block is judged again. Download the table as CSV.</li>
+      <li>The good days come back about every <b>354 days</b>: 12 lunar months, so about 11 days earlier each calendar year.</li>
+      <li>The share of good days barely changes year to year (16 to 22% at the best site). The pattern is the cycles.</li>
+      <li>Mission planners choose landing sites and dates from Sun and Earth cycles like these. Students can see them in one click.</li>
     </ul>
   </div>
-  <figure><img src="shots/map.png" alt="Timeline of landing days per site under the 3D Moon"><figcaption>First screen of the live app.</figcaption></figure>
-  <p class="notes">Point at one green block and one hollow block. Say the limits are ours (2 days of battery, 3 days of radio silence) and the user can change them.</p>
+  <p class="notes">354 days is the strongest repeat in the app's own verdicts for 9 of the 10 sites that have any green day, 2021 to 2031. For a Kyrgyz audience: it is the same reason Orozo comes about 11 days earlier every year, 12 lunar months are shorter than our year. The challenge text itself says NASA's CLPS and other missions "depend on careful selection of landing sites and dates".</p>
   <span class="page">3 / 7</span>
 </section>
 
@@ -102,7 +102,7 @@
       <li>"Sunset in" and "Earthset in" count down; the Sun's height is shown in degrees.</li>
       <li>One answer: <b>THE ROBOT SURVIVED</b> or <b>WAS LOST</b>, with one sentence why.</li>
       <li>Eleven checks: longest night, longest radio silence, first sunlight, slope, NASA Artemis III site rules.</li>
-      <li>English, Russian and Kyrgyz.</li>
+      <li>15 sites, or add any latitude and longitude. Change the battery and radio limits and every day is judged again.</li>
     </ul>
   </div>
   <p class="notes">Slope, 2 km slope and distance from the pole are NASA Artemis III rules. Night, radio and first sun are teaching values; NASA says VIPER cannot endure more than 50 hours of darkness, so our 2 days is in that range.</p>
@@ -146,12 +146,13 @@
 
 <section id="s7" class="text-only">
   <div>
-    <h2>For planners, teachers and anyone curious</h2>
+    <h2>For schools in Kyrgyzstan and Central Asia</h2>
     <ul>
+      <li><b>Students:</b> see how real Moon missions are planned, and why only some days work, in Kyrgyz, Russian or English.</li>
+      <li><b>Teachers:</b> a ready 45 minute lesson in the same three languages, built on the app.</li>
       <li><b>Mission planners:</b> a launch slips, pick another day or site in one click and see what survives.</li>
-      <li><b>Teachers:</b> a ready 45 minute school lesson in English, Russian and Kyrgyz.</li>
       <li><b>Everyone:</b> free in the browser, no login, works on a phone.</li>
-      <li><b>Next:</b> more sites through our terrain pipeline, and rover paths between sunlit spots.</li>
+      <li><b>Next:</b> try the lesson in Naryn schools, more sites through our terrain pipeline.</li>
     </ul>
     <p class="links">
       <a href="https://lunar-navigator-404.web.app">Open the app</a>
