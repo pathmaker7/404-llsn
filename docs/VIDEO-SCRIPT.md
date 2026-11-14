@@ -48,6 +48,10 @@ The voice says "four oh four" and "Chandrayaan three" where the captions show th
 a second (the fastest is 3.1), if the dropped lander does not survive on the green day, if the ice hunter spot is not
 dark in the model, or if no surviving day with a long shadow exists for the battery game.
 
+The file is written so that any device plays it (`tools/narrate.cjs`): H.264 picture, 1920x1080, 25 frames a second, the
+ordinary pixel format (yuv420p); AAC sound, 48 kHz, stereo, the voice on both sides; the index at the front of the file,
+so it starts in a browser before it has all arrived.
+
 ## What the two cycles are (so whoever speaks can explain them)
 
 Measured in the app on 14 Nov 2026 (best site, Peak near Shackleton, 2021 to 2031):

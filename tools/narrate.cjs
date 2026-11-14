@@ -57,9 +57,13 @@ const lines = caps.map((c, i) => {
 const PREVIEW = process.argv[TAKE ? 4 : 3], out = PREVIEW ? path.resolve(PREVIEW) : path.join(ROOT, 'docs', 'demo-30s.mp4');
 const inputs = lines.flatMap((l) => ['-i', l.f]);
 const delays = lines.map((l, i) => `[${i + 1}:a]adelay=${Math.round(l.t * 1000)}:all=1[a${i}]`).join(';');
-const mix = `${delays};${lines.map((_, i) => `[a${i}]`).join('')}amix=inputs=${lines.length}:normalize=0,apad,atrim=0:${film}[a]`;
+const mix = `${delays};${lines.map((_, i) => `[a${i}]`).join('')}amix=inputs=${lines.length}:normalize=0,apad,atrim=0:${film},pan=stereo|c0=c0|c1=c0[a]`; // the one voice channel on both sides at full level (a plain upmix would make it 3 dB quieter)
 execFileSync(FFMPEG, ['-y', '-loglevel', 'error', '-i', path.join(ROOT, 'docs', 'demo-silent.mp4'), ...inputs, '-filter_complex', mix,
-  '-map', '0:v', '-map', '[a]', '-c:v', 'copy', '-c:a', 'aac', '-b:a', '128k', '-t', String(film),
+  // A file any judge's device plays: ordinary colour range and pixel format (the captures arrive as full range JPEG
+  // colours), 48 kHz stereo sound (the voice chain hands over 96 kHz mono), and the index at the front of the file so
+  // the film starts in a browser before it has all arrived.
+  '-map', '0:v', '-map', '[a]', '-vf', 'scale=in_range=full:out_range=tv,format=yuv420p', '-c:v', 'libx264', '-preset', 'slow', '-crf', '17', '-color_range', 'tv',
+  '-c:a', 'aac', '-b:a', '160k', '-ar', '48000', '-ac', '2', '-movflags', '+faststart', '-t', String(film),
   '-metadata', `comment=Screen footage and captions made with SI (AI) tools: Claude (Anthropic). ${process.env.VOICE_NOTE || 'Synthetic voice: ' + (TAKE ? VOICE : 'Apple text to speech, ' + VOICE)}. Checked by team 404 agents.`, out]);
 if (!PREVIEW) fs.copyFileSync(out, path.join(ROOT, 'explainer', 'demo-30s.mp4'));
 fs.rmSync(TMP, { recursive: true, force: true });
