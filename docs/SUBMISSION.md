@@ -41,7 +41,7 @@ We built a free web app that answers one question for the Moon's south pole: if 
 
 https://lunar-navigator-explained.web.app/deck.pdf
 
-(Seven slides as one PDF, in English; it opens in the browser with no login. Paste only ONE link into the field, not this note. The PDF shows the last frame of each slide; the same seven slides with their animations playing are at https://lunar-navigator-explained.web.app/deck.html , and slide 1 links to them.)
+(Seven slides as one PDF, in English; it opens in the browser with no login. Paste only ONE link into the field, not this note. The scenes of slides 2 to 7 move inside the PDF when it is opened in Chrome's own PDF viewer: each starts when its page is opened, and repeats. A viewer that does not run PDF scripts, such as Safari, Preview or a phone, shows the last frame of each slide. The same seven slides as a web page are at https://lunar-navigator-explained.web.app/deck.html , and slide 1 links to them. A copy of the PDF that never moves is at https://lunar-navigator-explained.web.app/deck-still.pdf .)
 
 ## Link to Final Project
 

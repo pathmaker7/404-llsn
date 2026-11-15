@@ -248,7 +248,7 @@
   /* tools/deck-pdf.cjs prints one slide per 16:10 page into deck.pdf: the last frame of every scene. Seven pages, never more. */
   @page { size: 1440px 900px; margin: 0; }
   @media print { html { scroll-snap-type: none; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    * { animation: none !important; } .replay, .nav { display: none; }
+    * { animation: none !important; } .replay, .nav, .bar { display: none; }
     section { height: 900px; min-height: 0; overflow: hidden; break-after: page; } section:last-of-type { break-after: auto; } }
 </style>
 </head>
@@ -266,7 +266,7 @@
       <dt>App</dt><dd><a href="https://lunar-navigator-404.web.app">lunar-navigator-404.web.app</a></dd>
       <dt>Code</dt><dd><a href="https://github.com/pathmaker7/404-llsn">github.com/pathmaker7/404-llsn</a></dd>
     </dl>
-    <p class="note">Slides 2 to 7 are short animations. Each one starts when you open it and repeats, so nothing is missed. Our four landers explain. Reading the <a href="https://lunar-navigator-explained.web.app/deck.pdf">PDF</a>? You see the last frame of each: the moving slides are at <a href="https://lunar-navigator-explained.web.app/deck.html">lunar-navigator-explained.web.app/deck.html</a></p>
+    <p class="note">Slides 2 to 7 are short animations. Each one starts when you open it and repeats, so nothing is missed. Our four landers explain. They move in this PDF too when it is opened in Chrome. If a slide stands still, you are seeing its last frame: the moving slides are also at <a href="https://lunar-navigator-explained.web.app/deck.html">lunar-navigator-explained.web.app/deck.html</a></p>
   </div>
   <div>
     <figure style="margin:0"><img src="shots/first-screen.png" alt="The app's first screen: the Moon's south pole in 3D with fifteen named sites, a card to build your own lander, buttons for three games, and one row of landing days per site"></figure>

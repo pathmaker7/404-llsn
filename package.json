@@ -11,7 +11,7 @@
     "validate": "node tools/validate-horizons.cjs",
     "video": "node tools/record-demo.cjs && node tools/narrate.cjs",
     "deploy": "npx --yes firebase-tools@14.4.0 deploy --only hosting",
-    "deck": "node tools/deck-pdf.cjs",
+    "deck": "node tools/deck-pdf.cjs && cp explainer/deck.pdf explainer/deck-still.pdf && node tools/deck-animate.cjs",
     "narrate": "node tools/narrate.cjs",
     "texts": "node tools/texts-sheet.cjs",
     "test:kids": "node tools/test-kids-shell.cjs && node tools/test-lander.cjs && node tools/test-game.cjs && node tools/test-ice.cjs && node tools/test-quiz.cjs && node tools/test-tour.cjs"
