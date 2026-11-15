@@ -20,15 +20,6 @@
   a:hover, a:focus-visible { text-decoration: underline; }
   .ok { color: var(--ok); } .bad { color: var(--bad); }
   /* Slide 1: the one still slide. Everything a judge must find is written here. */
-  #s1 { grid-template-columns: 6fr 6fr; gap: 14px 44px; align-items: center; }
-  #s1 .lead { font-size: 21px; }
-  #s1 img { width: 100%; display: block; border-radius: var(--r); border: 1px solid var(--line); }
-  .team { font-size: 17px; margin: 14px 0 0; border-top: 1px solid var(--line); padding-top: 12px; display: grid; grid-template-columns: auto 1fr; gap: 4px 18px; }
-  .team dt { color: var(--muted); } .team dd { margin: 0; color: var(--text); }
-  .note { border-left: 3px solid var(--accent); padding: 2px 0 2px 16px; margin: 14px 0 0; color: var(--text); font-size: 18px; }
-  .cast { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; text-align: center; font-size: 15px; color: var(--muted); }
-  .cast svg { width: 100%; max-width: 124px; display: block; margin: 0 auto; }
-  .cast b { display: block; font-size: 16px; }
   /* Slides 2 to 7: a headline and one big drawn scene. */
   .scene { width: 100%; height: auto; display: block; border-radius: var(--r); background: #06080c; border: 1px solid var(--line); }
   .scene text { fill: var(--text); font-family: inherit; }
@@ -85,147 +76,134 @@
   @keyframes bar { from { scale: 0 1; } }
 
   /* Slide 2: the Sun slides behind a hill, the shadow reaches the lander, the battery empties; then Earth sets behind a ridge. */
-  #s2.play .sun { animation: s2-sun 3.4s ease-in-out both 3s; }
-  #s2.play .shadow { animation: s2-shadow 2.4s ease-in both 5.2s; }
-  #s2.play .charge { animation: s2-charge 3s linear both 7s; }
-  #s2.play .earth { animation: s2-earth 2.5s ease-in-out both 10.5s; }
-  #s2 .shadow, #s2 .charge { transform-origin: left center; }
-  @keyframes s2-sun { from { translate: 0 -150px; } }
-  #s2 .ray { stroke: #ffb547; stroke-width: 3; stroke-dasharray: 3 9; stroke-linecap: round; fill: none; }
-  @keyframes s2-shadow { from { scale: 0 1; opacity: 0; } }
-  @keyframes s2-charge { from { scale: 9 1; fill: #5fd38d; } }
-  @keyframes s2-earth { from { translate: -40px -78px; } }
+    /*PART s1*/
+#s1 { grid-template-columns: 1fr; gap: 10px; }
+  /* Slide 1: an intro. The Sun and Earth rise, four landers drop in one after another, bounce once and say hello. */
+  #s1 .q { font-size: 44px; font-weight: 700; letter-spacing: -.01em; text-anchor: middle; }
+  #s1 .tag { font-size: 24px; font-weight: 600; fill: var(--text); }
+  #s1 .fine { font-size: 19px; fill: #9aa4b2; text-anchor: middle; }
+  #s1.play .sun, #s1.play .earth { animation: s1-rise 1.5s cubic-bezier(.2,.7,.3,1) both .3s; }
+  #s1.play .drop { animation: s1-drop 1.15s both; animation-delay: var(--t, 0s); }
+  @keyframes s1-rise { from { translate: 0 150px; } }
+  @keyframes s1-drop {
+    0% { translate: 0 -600px; animation-timing-function: cubic-bezier(.5, 0, .9, .6); }
+    72% { translate: 0 0; animation-timing-function: cubic-bezier(.2, .7, .4, 1); }
+    82% { translate: 0 -22px; animation-timing-function: cubic-bezier(.6, 0, .9, .5); }
+    92% { translate: 0 0; animation-timing-function: cubic-bezier(.2, .7, .4, 1); }
+    96% { translate: 0 -6px; animation-timing-function: cubic-bezier(.6, 0, .9, .5); }
+    100% { translate: 0 0; }
+  }
+  /*END s1*/
+  /*PART s2*/
+/* Slide 2: the Sun sinks behind the hill, its shadow reaches Naryn-1, the battery empties; then Earth sets behind the ridge. */
+  #s2 .tag { font-size: 24px; fill: #c9ced8; }
+  #s2 .bubble text { font-size: 26px; }
+  #s2 .q { font-size: 44px; font-weight: 700; letter-spacing: -.01em; fill: var(--accent); text-anchor: middle; }
+  #s2 .shadow { transform-origin: left center; }
+  #s2.play .sun { animation: s2-sun 2s ease-in-out both .4s; }
+  #s2.play .shadow { animation: s2-shadow 2s ease-in both .4s; }
+  #s2.play .earth { animation: s2-earth 1s ease-in-out both 4.4s; }
+  @keyframes s2-sun { from { translate: -210px -60px; } }
+  @keyframes s2-shadow { from { scale: 0 1; opacity: 0; } 10% { opacity: .62; } }
+  @keyframes s2-earth { from { translate: -60px -100px; } }
+  /*END s2*/
   /*PART s3*/
-  #s3 .sc { transform-box: view-box; transform-origin: 0 0; }
-  #s3 .one { transform-box: view-box; transform-origin: 20.0px 14.0px; }
-  #s3 .tag { font-size: 17px; }
-  #s3 .panel { fill: var(--panel); stroke: var(--line); stroke-width: 2; }
-  #s3 .t22 { font-size: 22px; font-weight: 600; fill: var(--text); }
-  #s3 .t21 { font-size: 21px; font-weight: 600; fill: var(--body); }
-  #s3 .teal { fill: var(--accent); font-weight: 700; }
-  #s3 .lbl { font-size: 20px; font-weight: 700; fill: var(--accent); text-anchor: middle; }
-  #s3 .hl-earth { stroke: var(--earth); stroke-width: 3; }
-  #s3 .hl-sun { stroke: var(--sun); stroke-width: 4; }
-  #s3 .hl-thin { stroke-width: 2.5; }
-  #s3 .band { fill: var(--accent); opacity: .12; }
-  #s3 .bk { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linejoin: round; }
-  #s3.play .one { animation: s3-settle 1.0s cubic-bezier(.45,0,.2,1) both 3.7s; }
-  #s3.play .sweep { animation: s3-sweep 2.8s linear both 0.7s; }
-  #s3.play .five { animation: s3-five .8s cubic-bezier(.2,.8,.2,1) both 13.3s; }
-  #s3.play .hop { animation: s3-hop 18.0s both; }
-  @keyframes s3-settle { from { translate: 0 190px; scale: 1.55; } }
-  @keyframes s3-sweep { from { translate: -609px 0; } }
-  @keyframes s3-five { from { translate: 0 26px; opacity: 0; } }
-  @keyframes s3-hop {
-    0%, 58.89% { translate: 0 -78px; animation-timing-function: cubic-bezier(.2,.7,.4,1); }
-    61.11% { translate: 0 -108px; animation-timing-function: cubic-bezier(.6,0,.9,.5); }
-    63.89%, 73.33% { translate: 0 56px; animation-timing-function: cubic-bezier(.2,.7,.4,1); }
-    75.83% { translate: 0 -128px; animation-timing-function: cubic-bezier(.6,0,.9,.5); }
-    77.78%, 92.78% { translate: 0 -118px; animation-timing-function: cubic-bezier(.2,.7,.4,1); }
-    95.00% { translate: 0 -126px; animation-timing-function: cubic-bezier(.6,0,.9,.5); }
-    97.78%, 100% { translate: 0 0; }
+/* Slide 3 only. The picture is the last frame; animation only says where things come from. */
+  #s3 .tag { font-size: 24px; }
+  #s3 .bubble text { font-size: 24px; }
+  #s3 .line { font-size: 32px; font-weight: 700; }
+  #s3 .num { font-size: 64px; font-weight: 700; letter-spacing: -.02em; fill: #5fd38d; }
+  #s3 .numcap { font-size: 26px; font-weight: 600; fill: var(--body); }
+  #s3 .moon { fill: #2a2d33; }
+  #s3 .today { stroke: #ffb547; stroke-width: 3; stroke-linecap: round; }
+  #s3.play .sweep { animation: s3-sweep 2.5s linear both 1s; }
+  #s3.play .fly { animation: s3-fly 1.4s cubic-bezier(.2,.7,.3,1) both .8s; }
+  #s3.play .hopx { animation: s3-hopx .9s cubic-bezier(.45,0,.2,1) both 4s; }
+  #s3.play .hopy { animation: s3-hopy .9s both 4s; }
+  @keyframes s3-sweep { from { translate: -748px 0; } }
+  @keyframes s3-fly { from { translate: -460px -150px; } }
+  @keyframes s3-hopx { from { translate: -825px 0; } }
+  @keyframes s3-hopy {
+    0% { translate: 0 0; animation-timing-function: cubic-bezier(.2,.7,.4,1); }
+    50% { translate: 0 -70px; animation-timing-function: cubic-bezier(.6,0,.9,.5); }
+    100% { translate: 0 0; }
   }
   /*END s3*/
   /*PART s4*/
-  /* Slide 4: a pointer clicks the chosen day, the app stands you on the site, Sun and Earth are read, one verdict, eleven checks. */
-  #s4 .tag { font-size: 17px; }
-  #s4 .f1 { font-size: 21px; fill: var(--body); }
-  #s4 .lab { font-size: 20px; fill: var(--body); }
-  #s4 .h20 { font-size: 20px; font-weight: 700; fill: var(--accent); }
-  #s4 .h19m { font-size: 19px; font-weight: 700; fill: var(--muted); }
-  #s4 .row { font-size: 20px; font-weight: 600; }
-  #s4 .row .par { font-size: 17px; font-weight: 500; fill: var(--muted); }
-  #s4 .rowm { font-size: 20px; font-weight: 600; fill: var(--muted); }
-  #s4 .note { font-size: 18px; fill: var(--muted); }
-  #s4 .tick { fill: none; stroke: var(--accent); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
-  #s4 .pill { stroke-width: 2.5; }
+#s4 .tag { font-size: 24px; }
+  #s4 .bubble text { font-size: 26px; }
+  #s4 .row { font-size: 30px; font-weight: 700; fill: var(--text); }
+  #s4 .tick { fill: none; stroke: var(--accent); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+  #s4 .cap2 { font-size: 24px; fill: var(--muted); }
+  #s4 .pill { stroke-width: 3; }
   #s4 .pill-ok { fill: rgba(95,211,141,.16); stroke: #5fd38d; }
   #s4 .pill-bad { fill: rgba(255,107,107,.14); stroke: #ff6b6b; }
-  #s4 .pill-t { font-size: 24px; font-weight: 700; text-anchor: middle; letter-spacing: .01em; }
+  #s4 .pill-t { font-size: 26px; font-weight: 700; text-anchor: middle; letter-spacing: .01em; }
   #s4 .pill-t.ok { fill: #5fd38d; }
   #s4 .pill-t.bad { fill: #ff6b6b; }
-  #s4 .or { font-size: 20px; fill: var(--muted); text-anchor: middle; }
-  #s4 .card rect.bg { fill: var(--panel); stroke: var(--line); stroke-width: 2; }
-  #s4 .card rect.edge { fill: var(--accent); }
-  #s4 .card text { font-size: 21px; font-weight: 600; fill: var(--text); }
-  #s4 .bar1 { fill: var(--accent); }
-  #s4 .ptr path { fill: #f4f6fa; stroke: #10141b; stroke-width: 1.5; stroke-linejoin: round; }
-  #s4 .ring { fill: none; stroke: var(--accent); stroke-width: 3; }
-  #s4.play .ptr { animation: s4-ptr 1.4s cubic-bezier(.3,.7,.3,1) both .8s; }
-  #s4.play .ring { animation: s4-ring .9s ease-out both 2.2s; }
-  /* The kit's a-up, a-pop and a-fade end on the element's own opacity, which a .z element sets to 0, so a passing remark
-     (class "a z") never shows. These copies end on opacity 1; the kit rule's z-gone still takes it away at --e. */
-  #s4.play .a.z { animation: s4-in .6s cubic-bezier(.2,.8,.2,1) both var(--t, 0s), z-gone .35s forwards var(--e, 0s); }
-  #s4.play .a.fade.z { animation: s4-fade .3s both var(--t, 0s), z-gone .3s forwards var(--e, 0s); }
-  @keyframes s4-in { from { opacity: 0; translate: 0 14px; } to { opacity: 1; } }
-  @keyframes s4-fade { from { opacity: 0; } to { opacity: 1; } }
-  @keyframes s4-ptr { from { translate: 330px -150px; } }
-  @keyframes s4-ring { from { scale: .3; opacity: 1; } to { scale: 1.9; opacity: 0; } }
+  #s4.play .drop { animation: s4-drop .8s cubic-bezier(.2,.7,.3,1) both .8s; }
+  #s4.play .hop { animation: s4-hop .7s ease-in-out both 5.4s; }
+  @keyframes s4-drop { from { translate: 0 -760px; } }
+  @keyframes s4-hop { 40% { translate: 0 -30px; } }
   /*END s4*/
   /*PART s5*/
-  /* Slide 5 only. Inputs (teal markers, one way arrows) and checks (grey markers, two way arrows) are drawn apart on purpose. */
-  #s5 .chip { fill: var(--panel); stroke: var(--line); stroke-width: 2; }
-  #s5 .in { fill: var(--accent); }
-  #s5 .ck { fill: #5b667a; }
-  #s5 .t { font-size: 21px; font-weight: 700; }
-  #s5 .s { font-size: 20px; fill: var(--body); }
-  #s5 .n { font-size: 46px; font-weight: 700; letter-spacing: -.02em; }
-  #s5 .nn { font-size: 42px; font-weight: 700; letter-spacing: -.02em; }
-  #s5 .l { font-size: 20px; fill: var(--body); }
-  #s5 .lab { font-size: 18px; font-weight: 700; letter-spacing: .08em; }
-  #s5 .tag { font-size: 17px; }
-  #s5 .appbox { fill: var(--panel); stroke: var(--accent); stroke-width: 2; }
-  #s5 .appt { font-size: 24px; font-weight: 700; text-anchor: middle; }
-  #s5 .appc { font-size: 20px; fill: var(--body); text-anchor: middle; }
-  #s5 .flow { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; }
-  #s5 .head { fill: var(--accent); }
-  #s5 .cmp { fill: none; stroke: #c9ced8; stroke-width: 3; stroke-linecap: round; }
-  #s5 .cmph { fill: #c9ced8; }
-  #s5 .row { fill: var(--panel); stroke: var(--accent); stroke-width: 2; }
-  #s5 .rowt { font-size: 21px; font-weight: 600; }
-  #s5 .rowt tspan { fill: var(--accent); font-weight: 700; }
-  #s5 .nt { font-size: 21px; fill: var(--body); }
-  #s5 .sday { fill: #0a0c10; stroke: var(--accent); stroke-width: 2; }
-  #s5 .sdayt { font-size: 22px; font-weight: 700; text-anchor: middle; fill: var(--accent); }
-  #s5 .brk { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
-  #s5 .div { stroke: var(--line); stroke-width: 2; }
-  #s5 .sun { fill: var(--sun); }
-  #s5 .lens { fill: rgba(143, 233, 255, .12); stroke: #cfd6e3; stroke-width: 4; }
-  #s5 .handle { stroke: #cfd6e3; stroke-width: 6; stroke-linecap: round; }
-  #s5.play .shotg { animation: s5-shot .8s cubic-bezier(.2,.8,.2,1) both 10.4s; }
-  #s5.play .insp { animation: s5-hop .7s ease-out both 17.1s; }
-  @keyframes s5-shot { from { opacity: 0; translate: 70px 0; } }
-  @keyframes s5-hop { 40% { translate: 0 -22px; } }
+/* Slide 5: three tiles pop left to right (input, check, real landing); Almaty-4 drops in, hops under each, then states the limit. */
+  #s5 .tile { fill: #11151c; stroke: #232a35; stroke-width: 1; }
+  #s5 .lbl { font-size: 24px; font-weight: 700; letter-spacing: .08em; text-anchor: middle; }
+  #s5 .ttl { font-size: 32px; font-weight: 700; text-anchor: middle; }
+  #s5 .num { font-size: 64px; font-weight: 700; letter-spacing: -.02em; text-anchor: middle; }
+  #s5 .cp { font-size: 26px; text-anchor: middle; fill: var(--body); }
+  #s5 .arr { fill: none; stroke: var(--accent); stroke-width: 4; stroke-linecap: round; }
+  #s5 .arrh { fill: var(--accent); }
+  #s5 .tag { font-size: 24px; }
+  #s5 .bubble text { font-size: 26px; }
+  #s5 .grey { font-size: 24px; fill: var(--muted); text-anchor: end; }
+  #s5.play .drop { animation: s5-drop .6s cubic-bezier(.3,.7,.4,1) both 1s; }
+  #s5.play .hop { animation: s5-hop 5.4s both; }
+  @keyframes s5-drop { from { translate: 0 -110px; opacity: 0; } }
+  /* under tile 1 at rest; hops to tile 2 (1.7 to 2.2 s), tile 3 (3.3 to 3.9 s), then back home (4.5 to 5.3 s) */
+  @keyframes s5-hop {
+    0%, 31.48% { translate: 0 0; animation-timing-function: ease-out; }
+    36.11% { translate: 213px -60px; animation-timing-function: ease-in; }
+    40.74%, 61.11% { translate: 426px 0; animation-timing-function: ease-out; }
+    66.67% { translate: 639px -60px; animation-timing-function: ease-in; }
+    72.22%, 83.33% { translate: 852px 0; animation-timing-function: ease-out; }
+    90.74% { translate: 426px -70px; animation-timing-function: ease-in; }
+    98.15%, 100% { translate: 0 0; }
+  }
   /*END s5*/
   /*PART s6*/
-  /* Slide 6: four games, each with its own lander beside its screenshot; one rule line; the one joke. */
-  #s6 .ln { font-size: 20px; fill: var(--body); }
-  #s6 .gname { font-size: 26px; font-weight: 700; fill: var(--accent); text-anchor: middle; }
-  #s6 .tag { font-size: 17px; }
-  #s6 .sc { transform-box: view-box; transform-origin: 0 0; }
-  #s6 .aside { font-style: italic; font-weight: 500; font-size: 21px; }
-  #s6 .rule { fill: var(--accent); }
-  #s6.play .hop { animation: s6-hop .9s cubic-bezier(.3,.7,.3,1) both; animation-delay: var(--t, 0s); }
-  #s6.play .tip { animation: s6-tip .9s ease-in-out both; animation-delay: var(--t, 0s); }
-  @keyframes s6-hop { from { opacity: 0; translate: 90px -6px; } 55% { opacity: 1; translate: 28px -34px; } }
-  @keyframes s6-tip { 40% { translate: 0 -12px; rotate: -8deg; } 70% { translate: 0 -3px; rotate: 3deg; } }
+/* Slide 6: four cards (crop, name, one line), four landers drop in under them, one joke, one hop together. */
+  #s6 .gname { font-size: 30px; font-weight: 700; fill: var(--accent); text-anchor: middle; }
+  #s6 .ln { font-size: 24px; fill: var(--muted); text-anchor: middle; }
+  #s6 .tag { font-size: 24px; }
+  #s6 .bubble text { font-size: 24px; }
+  #s6 .aside text { font-style: italic; font-weight: 500; }
+  #s6 .cardbg { fill: #0b0e14; }
+  #s6.play .drop { animation: s6-drop .8s cubic-bezier(.3,.7,.3,1) both; animation-delay: var(--t, 0s); }
+  #s6.play .jump { animation: s6-jump .7s ease-in-out 7.2s both; }
+  @keyframes s6-drop { from { opacity: 0; translate: 0 -150px; } 40% { opacity: 1; } }
+  @keyframes s6-jump { 50% { translate: 0 -26px; } }
   /*END s6*/
   /*PART s7*/
-  /* Slide 7: the lesson page, four landers say one fact each in turn, then they gather under the closing line. */
-  #s7 .tag { font-size: 17px; }
-  #s7 .bubble .strong { font-weight: 800; }
-  #s7 .lnk text { fill: #46e0c8; font-size: 22px; font-weight: 600; }
-  #s7 .lnk:hover text, #s7 .lnk:focus-visible text { text-decoration: underline; }
-  #s7 .close { font-size: 40px; font-weight: 700; letter-spacing: -.01em; text-anchor: middle; }
-  /* each lander: appears in its row, waits there while it speaks, drops down the column and hops left into the closing row, then all four hop once together */
-  #s7.play .in { animation: s7-in .7s cubic-bezier(.2,.8,.2,1) var(--t) both; }
-  #s7.play .go { animation: s7-go 1.4s ease-in-out var(--g) both; }
-  #s7.play .arc { animation: s7-arc .7s ease-in-out both; animation-delay: calc(var(--g) + .7s); }
-  #s7.play .jump { animation: s7-jump .7s ease-in-out 18s both; }
-  @keyframes s7-in { from { opacity: 0; translate: 0 -60px; scale: .6; } }
-  @keyframes s7-go { from { translate: var(--dx) var(--dy); scale: .8; } 50% { translate: var(--dx) 0px; scale: 1; } }
-  @keyframes s7-arc { 50% { translate: 0 -38px; } }
-  @keyframes s7-jump { 40% { translate: 0 -16px; } }
+/* Slide 7: four landers drop in and land in a row, three chips pop in, two real links, two bubbles, one hop. */
+  #s7 .chip { fill: var(--panel); stroke: var(--line); stroke-width: 2; }
+  #s7 .chip-t { font-size: 30px; font-weight: 700; text-anchor: middle; }
+  #s7 .scene .lnk text { fill: #46e0c8; text-anchor: middle; font-weight: 700; }
+  #s7 .scene .lnk:hover text, #s7 .scene .lnk:focus-visible text { text-decoration: underline; }
+  #s7 .scene .lnk text.l1 { font-size: 52px; letter-spacing: -.01em; }
+  #s7 .scene .lnk text.l2 { font-size: 26px; font-weight: 600; }
+  #s7 .scene text.tag { font-size: 24px; font-weight: 600; fill: var(--text); }
+  #s7 .scene .bubble text { font-size: 24px; }
+  #s7.play .drop { animation: s7-drop 1s both; animation-delay: var(--t, 0s); }
+  #s7.play .hop { animation: s7-hop .7s ease-in-out 7.2s both; }
+  @keyframes s7-drop {
+    0% { translate: 0 -760px; animation-timing-function: cubic-bezier(.5, 0, .9, .6); }
+    62% { translate: 0 0; animation-timing-function: cubic-bezier(.2, .7, .4, 1); }
+    78% { translate: 0 -28px; animation-timing-function: cubic-bezier(.6, 0, .9, .5); }
+    90%, 100% { translate: 0 0; }
+  }
+  @keyframes s7-hop { 45% { translate: 0 -34px; } }
   /*END s7*/
   /*STYLES*/
 
@@ -233,13 +211,11 @@
   @media (max-width: 900px) {
     html { scroll-snap-type: none; }
     body { font-size: 17px; }
-    section, #s1 { grid-template-columns: 1fr; padding: 28px 16px 84px; min-height: auto; }
+    section { grid-template-columns: 1fr; padding: 28px 16px 84px; min-height: auto; }
     h2 { padding-right: 0; }
     .replay { position: static; justify-self: start; }
     .foot { position: static; flex-direction: column; gap: 2px; }
     .nav { left: 0; right: 0; bottom: 0; justify-content: center; padding: 8px; background: var(--bg); border-top: 1px solid var(--line); }
-    .cast { grid-template-columns: repeat(2, 1fr); }
-    .team dd, .note a { overflow-wrap: anywhere; }
   }
   /* A scene is drawn for a wide screen: on an upright phone its text is too small, so say what helps. */
   @media (max-width: 700px) and (orientation: portrait) {
@@ -254,532 +230,338 @@
 </head>
 <body>
 
-<section id="s1">
-  <div>
-    <h1>Which landing days can a Moon mission survive?</h1>
-    <p class="lead"><b>Lunar Landing Site Navigator</b> is a free web app for students. Pick one of 15 sites near the Moon's south pole, or drop your own, and any day from 2021 to 2031. It shows whether a solar robot landing there is still alive after 14 days.</p>
-    <dl class="team">
-      <dt>Team</dt><dd><b>404 agents</b>, Naryn, Kyrgyzstan</dd>
-      <dt>Members</dt><dd>Manuchehr, Aruzhan, Kairat, Arsen, Amirbek</dd>
-      <dt>Challenge</dt><dd>Lunar Landing Site Navigator, NASA Space Apps Challenge 2026</dd>
-      <dt>NASA data</dt><dd>Built on LRO LOLA terrain; tested against JPL Horizons and Goddard illumination maps</dd>
-      <dt>App</dt><dd><a href="https://lunar-navigator-404.web.app">lunar-navigator-404.web.app</a></dd>
-      <dt>Code</dt><dd><a href="https://github.com/pathmaker7/404-llsn">github.com/pathmaker7/404-llsn</a></dd>
-    </dl>
-    <p class="note">Slides 2 to 7 are short animations. Each one starts when you open it and repeats, so nothing is missed. Our four landers explain. They move in this PDF too when it is opened in Chrome. If a slide stands still, you are seeing its last frame: the moving slides are also at <a href="https://lunar-navigator-explained.web.app/deck.html">lunar-navigator-explained.web.app/deck.html</a></p>
-  </div>
-  <div>
-    <figure style="margin:0"><img src="shots/first-screen.png" alt="The app's first screen: the Moon's south pole in 3D with fifteen named sites, a card to build your own lander, buttons for three games, and one row of landing days per site"></figure>
-    <div class="cast">
-      <div><svg viewBox="0 0 200 200" role="img" aria-label="Naryn-1, a lander wearing a Kyrgyz ak kalpak"><g class="bot" data-hat="kyrgyz" data-type="lander" data-color="#e9edf4" data-faces="happy"></g></svg><b>Naryn-1</b>Kyrgyz ak kalpak</div>
-      <div><svg viewBox="0 0 200 200" role="img" aria-label="Samarkand-2, a rover wearing an Uzbek doppi"><g class="bot" data-hat="uzbek" data-type="rover" data-color="#7db3ff" data-faces="ok"></g></svg><b>Samarkand-2</b>Uzbek doppi</div>
-      <div><svg viewBox="0 0 200 200" role="img" aria-label="Khujand-3, a hopper wearing a Tajik toqi"><g class="bot" data-hat="tajik" data-type="hopper" data-color="#f2c98a" data-faces="happy"></g></svg><b>Khujand-3</b>Tajik toqi</div>
-      <div><svg viewBox="0 0 200 200" role="img" aria-label="Almaty-4, a lander wearing a Kazakh kalpak"><g class="bot" data-hat="kazakh" data-type="lander" data-color="#c9b8f5" data-faces="ok"></g></svg><b>Almaty-4</b>Kazakh kalpak</div>
-    </div>
-  </div>
-  <p class="notes">Name the team and the challenge. One sentence: we turn Sun and Earth positions into a yes or no for a solar mission that must last 14 days. Slide 1 is still; slides 2 to 7 each play a short drawn scene with our four landers, the same drawings as in the app's game Keep me alive. Every screenshot is of the live app, taken on 15 November 2026.</p>
+<!--SLIDES-->
+<section id="s1" data-dur="13">
+  <h2>Lunar Landing Site Navigator</h2>
+  <button class="replay" type="button">Replay</button>
+  <svg class="scene" viewBox="0 0 1312 690" role="img" aria-labelledby="s1-t s1-d">
+    <title id="s1-t">Team 404 agents introduce Lunar Landing Site Navigator</title>
+    <desc id="s1-d">The Sun and Earth rise over the Moon's grey ground. Four small landers with Central Asian hats drop in, land in a row and smile. Two of them say hello and that six short animations show what the team built. The question on top asks which days a Moon mission can survive; the team's names and the challenge are written along the bottom.</desc>
+    <g class="star"><circle cx="90" cy="60" r="1.6"/><circle cx="250" cy="170" r="1.2"/><circle cx="420" cy="215" r="1.8"/><circle cx="610" cy="200" r="1.2"/><circle cx="800" cy="215" r="1.6"/><circle cx="960" cy="190" r="1.3"/><circle cx="1240" cy="70" r="1.7"/><circle cx="1250" cy="240" r="1.2"/><circle cx="60" cy="300" r="1.1"/><circle cx="170" cy="230" r="1.1"/><circle cx="1130" cy="40" r="1.3"/><circle cx="330" cy="40" r="1.2"/><circle cx="1180" cy="330" r="1.2"/><circle cx="700" cy="40" r="1.1"/></g>
+    <!-- the Sun and Earth rise from behind the ridge: drawn before the ground so it covers them -->
+    <g class="sun"><circle cx="110" cy="468" r="72" fill="#ffb547" opacity=".08"/><circle cx="110" cy="468" r="54" fill="#ffb547" opacity=".16"/><circle cx="110" cy="468" r="36" fill="#ffb547"/></g>
+    <g transform="translate(1214 478)"><g class="earth"><g transform="scale(1.4)"><circle r="24" fill="#5fb4ff"/><path d="M-16 -8 q10 -8 18 0 q8 8 16 2" stroke="#d8f0ff" stroke-width="4" fill="none" stroke-linecap="round"/></g></g></g>
+    <path class="ground2" d="M0 524 L1312 524 L1312 690 L0 690 Z"/>
+    <path class="ground" d="M0 548 L1312 548 L1312 690 L0 690 Z"/>
+    <g fill="#23262b"><ellipse cx="90" cy="610" rx="60" ry="9"/><ellipse cx="1220" cy="620" rx="70" ry="10"/><ellipse cx="1150" cy="672" rx="50" ry="6"/></g>
+    <!-- landing shadows, then the four landers (feet at y 561), each dropping in, bouncing once and smiling -->
+    <g fill="#16181c"><ellipse class="a fade" style="--t:2.4s" cx="290" cy="562" rx="72" ry="9"/><ellipse class="a fade" style="--t:3.2s" cx="540" cy="562" rx="72" ry="9"/><ellipse class="a fade" style="--t:4s" cx="790" cy="562" rx="72" ry="9"/><ellipse class="a fade" style="--t:4.8s" cx="1040" cy="562" rx="72" ry="9"/></g>
+    <g transform="translate(205 400)"><g class="drop" style="--t:1.5s"><g transform="scale(.85)"><g class="bot" data-hat="kyrgyz" data-type="lander" data-color="#e9edf4" data-faces="ok:0,happy:2.4"></g></g></g></g>
+    <g transform="translate(455 400)"><g class="drop" style="--t:2.3s"><g transform="scale(.85)"><g class="bot" data-hat="uzbek" data-type="rover" data-color="#7db3ff" data-faces="ok:0,happy:3.2"></g></g></g></g>
+    <g transform="translate(705 400)"><g class="drop" style="--t:3.1s"><g transform="scale(.85)"><g class="bot" data-hat="tajik" data-type="hopper" data-color="#f2c98a" data-faces="ok:0,happy:4"></g></g></g></g>
+    <g transform="translate(955 400)"><g class="drop" style="--t:3.9s"><g transform="scale(.85)"><g class="bot" data-hat="kazakh" data-type="lander" data-color="#c9b8f5" data-faces="ok:0,happy:4.8"></g></g></g></g>
+    <text class="tag a pop" style="--t:2.4s" x="290" y="600" text-anchor="middle">Naryn-1</text>
+    <text class="tag a pop" style="--t:3.2s" x="540" y="600" text-anchor="middle">Samarkand-2</text>
+    <text class="tag a pop" style="--t:4s" x="790" y="600" text-anchor="middle">Khujand-3</text>
+    <text class="tag a pop" style="--t:4.8s" x="1040" y="600" text-anchor="middle">Almaty-4</text>
+    <text class="q a pop" style="--t:.6s" x="656" y="150">Which days can a Moon mission survive?</text>
+    <g class="say a" style="--t:5.2s" transform="translate(234 283)" data-w="240" data-tail="bl" data-say="Hi! We are|team 404 agents."></g>
+    <g class="say a" style="--t:6.5s" transform="translate(808 283)" data-w="290" data-tail="br" data-say="Six short animations|show what we built."></g>
+    <text class="fine a pop" style="--t:7.2s" x="656" y="640">Team 404 agents, Naryn, Kyrgyzstan: Manuchehr, Aruzhan, Kairat, Arsen, Amirbek</text>
+    <text class="fine a pop" style="--t:7.2s" x="656" y="668">NASA Space Apps Challenge 2026. Challenge: Lunar Landing Site Navigator</text>
+    <rect class="bar" style="--dur:13s" x="0" y="684" width="1312" height="6"/>
+  </svg>
+  <p class="notes">Team 404 agents from Naryn, Kyrgyzstan. The app: pick one of 15 sites near the Moon's south pole, or drop your own, and any day from 2021 to 2031. It shows whether a solar robot landing there is still alive after 14 days. App: https://lunar-navigator-404.web.app Code: https://github.com/pathmaker7/404-llsn</p>
   <div class="foot"><span>1 / 7</span><span>Made with AI (SI) tools: Claude. Screenshots show our live app; the drawings are made with AI tools.</span></div>
 </section>
 
-<!--SLIDES-->
-<section id="s2" data-dur="22">
+<section id="s2" data-dur="13">
   <h2>One hill can end a Moon mission</h2>
   <button class="replay" type="button">Replay</button>
   <svg class="scene" viewBox="0 0 1312 690" role="img" aria-labelledby="s2-t s2-d">
     <title id="s2-t">Why a landing day matters at the Moon's south pole</title>
-    <desc id="s2-d">The Sun sits low on the horizon. It slides behind a hill, the hill's long shadow reaches a lander and its battery runs empty. Then Earth sets behind a ridge and a rover loses its radio link.</desc>
+    <desc id="s2-d">The Sun sinks behind a hill and the hill's shadow reaches a lander, whose battery goes from full to nearly empty and which falls asleep: a hill hides the Sun, no power. Then Earth sets behind a ridge and a rover loses its radio: a ridge hides Earth, no radio. The question: where and when is it safe to land?</desc>
     <g class="star"><circle cx="90" cy="60" r="1.6"/><circle cx="250" cy="150" r="1.2"/><circle cx="420" cy="190" r="1.8"/><circle cx="610" cy="210" r="1.2"/><circle cx="800" cy="186" r="1.6"/><circle cx="960" cy="200" r="1.3"/><circle cx="1240" cy="70" r="1.7"/><circle cx="1250" cy="220" r="1.2"/><circle cx="60" cy="300" r="1.1"/><circle cx="160" cy="220" r="1.1"/></g>
-    <!-- the Sun, drawn before the hill so the hill covers it -->
-    <g class="sun"><circle cx="150" cy="446" r="48" fill="#ffb547" opacity=".18"/><circle cx="150" cy="446" r="34" fill="#ffb547"/></g>
-    <path class="ray z" style="--e:3.2s" d="M188 300 L690 404"/>
-    <path class="ray a fade" style="--t:6.4s" d="M188 440 L318 390"/>
+    <!-- the Sun, drawn before the hill so the hill covers it; its halo still shows around the hill's slopes -->
+    <g class="sun"><circle cx="340" cy="440" r="100" fill="#ffb547" opacity=".14"/><circle cx="340" cy="440" r="64" fill="#ffb547" opacity=".24"/><circle cx="340" cy="440" r="34" fill="#ffb547"/></g>
     <!-- Earth, drawn before the ridge so the ridge covers it -->
     <g class="earth"><circle cx="1178" cy="452" r="24" fill="#5fb4ff"/><path d="M1162 444 q10 -8 18 0 q8 8 16 2" stroke="#d8f0ff" stroke-width="4" fill="none" stroke-linecap="round"/></g>
-    <path class="ground2" d="M0 470 L250 470 L360 330 L470 470 L1040 470 L1120 392 L1180 420 L1240 470 L1312 470 L1312 690 L0 690 Z"/>
+    <path d="M0 470 L250 470 L360 330 L470 470 L1040 470 L1120 392 L1180 420 L1240 470 L1312 470 L1312 690 L0 690 Z" class="ground2"/>
     <path class="ground" d="M0 500 L1312 500 L1312 690 L0 690 Z"/>
     <g fill="#23262b"><ellipse cx="180" cy="590" rx="60" ry="12"/><ellipse cx="900" cy="640" rx="80" ry="14"/><ellipse cx="560" cy="650" rx="40" ry="8"/></g>
     <!-- the hill's long shadow -->
     <path class="shadow" d="M470 500 L960 500 L1010 600 L420 600 Z" fill="#000" opacity=".62"/>
-    <text class="cap a fade" style="--t:1s" x="150" y="216" text-anchor="middle">the Sun: only a few</text><text class="cap a fade" style="--t:1s" x="150" y="238" text-anchor="middle">degrees up, all year</text>
-    <text class="cap a fade" style="--t:13.2s" x="1196" y="384" text-anchor="middle">Earth: low on the horizon too</text>
     <!-- Naryn-1 with its battery -->
     <g transform="translate(600 392)">
-      <g class="bob"><g transform="scale(.92)"><g class="bot" data-hat="kyrgyz" data-type="lander" data-color="#e9edf4" data-faces="ok:0,worry:6,sleep:9.6"></g></g></g>
-      <g transform="translate(196 58)"><rect x="0" y="0" width="112" height="34" rx="7" fill="none" stroke="#cfd6e3" stroke-width="3"/><rect x="112" y="10" width="7" height="14" rx="2" fill="#cfd6e3"/><rect class="charge" x="6" y="6" width="11" height="22" rx="3" fill="#ff6b6b"/></g>
-      <text class="tag" x="92" y="204">Naryn-1</text>
+      <g transform="scale(.92)"><g class="bot" data-hat="kyrgyz" data-type="lander" data-color="#e9edf4" data-faces="ok:0,worry:2.6,sleep:4"></g></g>
     </g>
+    <path d="M780 508 H796" stroke="#cfd6e3" stroke-width="4"/>
+    <g transform="translate(796 482)">
+      <rect x="0" y="0" width="150" height="52" rx="9" fill="none" stroke="#cfd6e3" stroke-width="4"/>
+      <rect x="150" y="14" width="9" height="24" rx="2" fill="#cfd6e3"/>
+      <rect class="z" style="--e:2.6s" x="7" y="7" width="136" height="38" rx="4" fill="#5fd38d"/>
+      <rect class="a pop" style="--t:2.6s" x="7" y="7" width="16" height="38" rx="4" fill="#ff6b6b"/>
+    </g>
+    <text class="tag" x="692" y="630" text-anchor="middle">Naryn-1</text>
     <!-- Samarkand-2 with its radio -->
     <g transform="translate(1010 404)">
-      <g class="bob" style="animation-delay:-1.2s"><g transform="scale(.86)"><g class="bot" data-hat="uzbek" data-type="rover" data-color="#7db3ff" data-faces="ok:0,worry:12.6" data-waves="12.4"></g></g></g>
-      <text class="tag" x="86" y="190">Samarkand-2</text>
+      <g transform="scale(.86)"><g class="bot" data-hat="uzbek" data-type="rover" data-color="#7db3ff" data-faces="ok:0,worry:4.4"></g>
+        <g class="z" style="--e:4.9s"><path class="g-wave" d="M158 30 q9 7 7 19"/><path class="g-wave" d="M165 24 q13 10 10 27"/></g></g>
     </g>
-    <g class="say a z" style="--t:1.2s;--e:5s" transform="translate(690 250)" data-w="420" data-tail="bl" data-say="At the Moon's south pole the Sun|and Earth hug the horizon."></g>
-    <g class="say a" style="--t:5.6s" transform="translate(330 250)" data-w="330" data-tail="br" data-say="A hill hides the Sun:|no power. For days."></g>
-    <g class="say a" style="--t:13s" transform="translate(770 250)" data-w="310" data-tail="br" data-say="A ridge hides Earth:|no radio."></g>
-    <g class="banner a" style="--t:15.5s"><rect x="126" y="24" width="1060" height="112" rx="12"/><text x="656" y="70">We built it so every student can learn how a real Moon</text><text x="656" y="106">mission is planned. No telescope, no lab: just a browser.</text></g>
-    <rect class="bar" style="--dur:22s" x="0" y="684" width="1312" height="6"/>
+    <text class="tag" x="1096" y="630" text-anchor="middle">Samarkand-2</text>
+    <g transform="translate(390 250)"><g class="say a pop" style="--t:3s" data-w="350" data-tail="br" data-say="A hill hides the Sun:|no power."></g></g>
+    <g transform="translate(830 250)"><g class="say a pop" style="--t:5.6s" data-w="335" data-tail="br" data-say="A ridge hides Earth:|no radio."></g></g>
+    <text class="q a pop" style="--t:7s" x="656" y="104">Where and when is it safe to land?</text>
+    <rect class="bar" style="--dur:13s" x="0" y="684" width="1312" height="6"/>
   </svg>
   <p class="notes">The problem in plain words: a solar robot needs sunlight for power and a view of Earth for radio. At the pole both sit on the horizon, so terrain decides. It is real: India put its Chandrayaan-3 lander to sleep on 4 September 2023, ahead of the lunar night. A launch that slips by a few days turns a good landing day into a lost one. Our three goals: one honest answer from NASA data (this site, this day: survive or not); a tool a student can play with, in Kyrgyz, Russian or English; nothing to install.</p>
   <div class="foot"><span>2 / 7</span><span>Made with AI (SI) tools: Claude. Screenshots show our live app; the drawings are made with AI tools.</span></div>
 </section>
-<section id="s3" data-dur="26">
-  <h2>Replay any period: <span class="ok">green</span> days survive, <span class="bad">red</span> days don't</h2>
+
+<section id="s3" data-dur="13">
+  <h2>Pick a day: <span class="ok">green</span> survives, <span class="bad">red</span> does not</h2>
   <button class="replay" type="button">Replay</button>
   <svg class="scene" viewBox="0 0 1312 690" role="img" aria-labelledby="s3-t s3-d">
-    <title id="s3-t">The app's calendar: one year, then five years</title>
-    <desc id="s3-d">Two screenshots of the app's calendar for the fifteen sites. One year from 15 November 2026 shows mostly red rows with short green windows, once a month; the best site survives on 76 of 365 days and five sites on none. The five year view below shows the green clusters coming back about every 354 days. Khujand-3, the hopper, explains each part in a speech bubble.</desc>
-    <defs>
-      <clipPath id="s3-c1"><rect x="20.0" y="14.0" width="800.0" height="178.7" rx="8"/></clipPath>
-      <clipPath id="s3-c2"><rect x="20.0" y="236.0" width="800.0" height="125.2" rx="8"/></clipPath>
-      <clipPath id="s3-c3"><rect x="752.0" y="610" width="540" height="29.3" rx="6"/></clipPath>
-    </defs>
+    <title id="s3-t">Green days survive, red days do not</title>
+    <desc id="s3-d">The app's calendar for five landing sites over one year: each block is one landing day, green if a landing survives, red if not. The best site has 76 good days of 365. Khujand-3, the hopper, says good days are rare and that the app finds the next good day when a launch is late.</desc>
+    <g class="star"><circle cx="1180" cy="170" r="1.6"/><circle cx="1010" cy="214" r="1.3"/><circle cx="860" cy="168" r="1.8"/><circle cx="1250" cy="262" r="1.2"/><circle cx="700" cy="196" r="1.3"/><circle cx="1100" cy="300" r="1.1"/><circle cx="560" cy="150" r="1.2"/><circle cx="940" cy="270" r="1.5"/></g>
+    <path class="moon" d="M0 612 L1312 612 L1312 690 L0 690 Z"/>
 
-    <!-- the one year calendar: starts large in the middle, then moves up to its place -->
-    <g class="a fade" style="--t:0.2s"><g class="one">
-      <image href="shots/year-1y.png" x="20.0" y="-42.9" width="800.0" height="244.7" clip-path="url(#s3-c1)" preserveAspectRatio="none"/>
-      <rect class="shot-frame" x="20.0" y="14.0" width="800.0" height="178.7" rx="8"/>
-      <!-- fact 2: the count and the five red rows -->
-      <rect class="hl a draw" style="--t:5.9s;--d:0.6s;" pathLength="1" x="769.9" y="29.4" width="47.8" height="11.9" rx="4" fill="none"/>
-      <rect class="hl a draw" style="--t:6.5s;--d:0.9s;" pathLength="1" x="23.4" y="138.6" width="794.3" height="53.5" rx="4" fill="none"/>
-      <!-- fact 3: Earth, one window every month -->
-      <rect class="hl hl-earth a draw" style="--t:7.8s;--d:0.6s;" pathLength="1" x="182.7" y="29.4" width="18.8" height="43.8" rx="4" fill="none"/>
-      <rect class="hl hl-earth hl-thin a draw" style="--t:8.4s;--d:0.4s;" pathLength="1" x="228.8" y="29.4" width="18.2" height="43.8" rx="4" fill="none"/>
-      <rect class="hl hl-earth hl-thin a draw" style="--t:8.7s;--d:0.4s;" pathLength="1" x="276" y="29.4" width="17.1" height="43.8" rx="4" fill="none"/>
-      <rect class="hl hl-earth hl-thin a draw" style="--t:9.0s;--d:0.4s;" pathLength="1" x="323.8" y="29.4" width="15.4" height="43.8" rx="4" fill="none"/>
-      <rect class="hl hl-earth hl-thin a draw" style="--t:9.3s;--d:0.4s;" pathLength="1" x="369.9" y="29.4" width="15.4" height="43.8" rx="4" fill="none"/>
-      <!-- fact 4: the Sun's dark season -->
-      <rect class="hl hl-sun a draw" style="--t:11.8s;--d:1.0s;" pathLength="1" x="388.7" y="28.8" width="161.6" height="109.2" rx="4" fill="none"/>
-      <!-- the app's replay: the orange today line sweeps the year -->
-      <g class="a fade z" style="--t:0.6s;--e:3.7s"><g class="sweep"><line x1="762" y1="28.8" x2="762" y2="192.1" stroke="#ffb547" stroke-width="3"/></g></g>
-    </g></g>
-
-    <!-- facts 1 and 2 -->
-    <g class="a" style="--t:4.4s">
-      <rect class="panel" x="840" y="14" width="452" height="150" rx="10"/>
-      <text class="t22" x="858" y="48">Each row is a site,</text>
-      <text class="t22" x="858" y="76">each block a landing day.</text>
-      <rect x="858" y="93" width="22" height="22" rx="4" fill="#5fd38d"/><text class="t21" x="890" y="111">Green: a landing that day survives.</text>
-      <rect x="858" y="125" width="22" height="22" rx="4" fill="#ff6b6b"/><text class="t21" x="890" y="143">Red: it does not.</text>
+    <!-- the app's calendar, first five sites: names, day blocks, counts -->
+    <g class="a pop" style="--t:.3s">
+      <svg x="26" y="24" width="1260" height="187" viewBox="10 127 660 98" preserveAspectRatio="xMidYMid slice">
+        <image href="shots/year-1y.png" width="1406" height="430"/>
+      </svg>
+      <rect class="shot-frame" x="26" y="24" width="1260" height="187" rx="10"/>
     </g>
-    <g class="a" style="--t:5.6s">
-      <rect class="panel" x="840" y="178" width="452" height="166" rx="10"/>
-      <text class="t22" x="858" y="212" style="font-weight:700">Good days are rare.</text>
-      <text class="t22" x="858" y="240">In the year from 15 November 2026</text>
-      <text class="t22" x="858" y="268">the best site survives on</text>
-      <text class="t22 teal" x="858" y="296">76 of 365 landing days.</text>
-      <text class="t22 teal" x="858" y="324">Five sites survive on none.</text>
+    <!-- the app's replay: the orange today line sweeps the day blocks -->
+    <g class="a fade z" style="--t:1s;--e:3.5s"><g class="sweep"><line class="today" x1="1282" y1="26" x2="1282" y2="210"/></g></g>
+
+    <!-- one block, one landing day -->
+    <rect class="hl a pop" style="--t:2.2s" x="550" y="63" width="66" height="36" rx="5" fill="none"/>
+    <text class="line a pop" style="--t:2.2s" x="26" y="266">Each block: one landing day.</text>
+
+    <!-- the key number -->
+    <g class="a pop" style="--t:3.8s">
+      <text class="num" x="26" y="376">76 of 365</text>
+      <text class="numcap" x="26" y="418">good days at the best site, next year</text>
     </g>
 
-    <!-- the five year calendar slides in under it -->
-    <g class="five">
-      <image href="shots/year-5y.png" x="20.0" y="179.1" width="800.0" height="244.7" clip-path="url(#s3-c2)" preserveAspectRatio="none"/>
-      <rect class="shot-frame" x="20.0" y="236.0" width="800.0" height="125.2" rx="8"/>
-      <rect class="band a fade" style="--t:14.3s" x="223.7" y="249.7" width="95.6" height="110.4" rx="4"/><rect class="band a fade" style="--t:14.7s" x="343.8" y="249.7" width="96.7" height="110.4" rx="4"/><rect class="band a fade" style="--t:15.1s" x="463.8" y="249.7" width="96.7" height="110.4" rx="4"/><rect class="band a fade" style="--t:15.5s" x="583.9" y="249.7" width="96.2" height="110.4" rx="4"/><rect class="band a fade" style="--t:15.9s" x="703.9" y="249.7" width="58.6" height="110.4" rx="4"/>
-            <rect class="hl hl-thin a draw" style="--t:14.3s;--d:0.5s;" pathLength="1" x="223.7" y="249.7" width="95.6" height="110.4" rx="4" fill="none"/>
-      <rect class="hl hl-thin a draw" style="--t:14.7s;--d:0.5s;" pathLength="1" x="343.8" y="249.7" width="96.7" height="110.4" rx="4" fill="none"/>
-      <rect class="hl hl-thin a draw" style="--t:15.1s;--d:0.5s;" pathLength="1" x="463.8" y="249.7" width="96.7" height="110.4" rx="4" fill="none"/>
-      <rect class="hl hl-thin a draw" style="--t:15.5s;--d:0.5s;" pathLength="1" x="583.9" y="249.7" width="96.2" height="110.4" rx="4" fill="none"/>
-      <rect class="hl hl-thin a draw" style="--t:15.9s;--d:0.5s;" pathLength="1" x="703.9" y="249.7" width="58.6" height="110.4" rx="4" fill="none"/>
-    </g>
-    <text class="cap a fade" style="--t:13.600000000000001s" x="26" y="222">Five years</text>
-    <path class="bk a draw" style="--t:14.8s;--d:.6s" pathLength="1" d="M223.7 232 V224 H343.8 V232"/>
-    <text class="lbl a fade" style="--t:15.1s" x="283.7" y="216">354 days</text>
-    <path class="bk a draw" style="--t:15.3s;--d:.5s" pathLength="1" d="M343.8 232 V224 H463.8 V232"/>
-    <path class="bk a draw" style="--t:15.6s;--d:.5s" pathLength="1" d="M463.8 232 V224 H583.9 V232"/>
-    <path class="bk a draw" style="--t:15.9s;--d:.5s" pathLength="1" d="M583.9 232 V224 H703.9 V232"/>
-
-    <!-- Khujand-3 hops from fact to fact -->
-    <g class="a fade" style="--t:4.6s"><g class="hop">
-      <g class="bob"><g class="sc" transform="translate(594 477.4) scale(0.62)"><g class="bot" data-hat="tajik" data-type="hopper" data-color="#f2c98a" data-faces="ok:0,happy:17.400000000000002"></g></g></g>
-      <text class="tag" x="656" y="616">Khujand-3</text>
-    </g></g>
-
-    <g class="bubble a" style="--t:7.6s">
-    <rect x="20" y="374" width="540" height="160" rx="14" style="stroke:#5fb4ff;stroke-width:4"/>
-    <path class="z" style="--e:10.799999999999999s" d="M558 442 L618 454 L558 466 Z"/>
-    <text x="40" y="408">Earth, every month: at most sites it</text>
-    <text x="40" y="436">is up about two weeks and hidden about</text>
-    <text x="40" y="464">two weeks. With 3 days of radio silence</text>
-    <text x="40" y="492">allowed, about one week of landing days</text>
-    <text x="40" y="520">is left at the best sites.</text>
-    </g>
-    <g class="bubble a" style="--t:11.6s">
-    <rect x="20" y="548" width="540" height="104" rx="14" style="stroke:#ffb547;stroke-width:4"/>
-    <path class="z" style="--e:13.399999999999999s" d="M558 576 L618 588 L558 600 Z"/>
-    <text x="40" y="582">Sun, every year: a dark season of</text>
-    <text x="40" y="610">months with almost no green day,</text>
-    <text x="40" y="638">a little earlier each year.</text>
-    </g>
-    <g class="bubble a" style="--t:14.1s">
-    <rect x="752" y="374" width="540" height="104" rx="14" style="stroke:#46e0c8;stroke-width:4"/>
-    <path class="z" style="--e:16.9s" d="M754 402 L694 414 L754 426 Z"/>
-    <text x="772" y="408">The pattern returns about every 354 days,</text>
-    <text x="772" y="436">12 lunar months: the reason Ramadan comes</text>
-    <text x="772" y="464">about 11 days earlier each year.</text>
-    </g>
-    <g class="bubble a" style="--t:17.7s">
-    <rect x="752" y="492" width="540" height="104" rx="14" style="stroke:#46e0c8;stroke-width:4"/>
-    <path d="M754 520 L694 532 L754 544 Z"/>
-    <text x="772" y="526">Launch slipped? Type the days: the app</text>
-    <text x="772" y="554">names a site that still survives and how</text>
-    <text x="772" y="582">many more, or the next good day.</text>
+    <!-- Khujand-3 flies in from the left, lands under the calendar, hops to the right -->
+    <g transform="translate(885 415)">
+      <g class="fly">
+        <g class="hopx">
+          <g class="hopy"><g transform="scale(1.05)"><g class="bot" data-hat="tajik" data-type="hopper" data-color="#f2c98a" data-faces="ok:0,worry:4.6,happy:6.2"></g></g></g>
+          <text class="tag" x="105" y="235">Khujand-3</text>
+        </g>
+      </g>
     </g>
 
-    <!-- fact 6: the app's own field and answer line -->
-    <g class="a" style="--t:17.9s">
-      <image href="shots/year-1y.png" x="744.7" y="545.9" width="1286.8" height="393.6" clip-path="url(#s3-c3)" preserveAspectRatio="none"/>
-      <rect class="shot-frame" x="752.0" y="610" width="540" height="29.3" rx="6"/>
-      <rect class="hl hl-thin a draw" style="--t:18.3s;--d:0.5s;" pathLength="1" x="754.7" y="611.8" width="170.2" height="25.6" rx="4" fill="none"/>
-      <rect class="hl hl-thin a draw" style="--t:18.7s;--d:0.6s;" pathLength="1" x="929.6" y="616.4" width="360.6" height="19.2" rx="4" fill="none"/>
-    </g>
-    <rect class="bar" style="--dur:26s" x="0" y="684" width="1312" height="6"/>
+    <g class="say a z" style="--t:4.6s;--e:6s" transform="translate(738 329)" data-w="310" data-tail="br" data-say="Good days are rare."></g>
+    <g class="say a" style="--t:6.2s" transform="translate(638 299)" data-w="410" data-tail="br" data-say="Launch late? The app finds|the next good day."></g>
+    <rect class="bar" style="--dur:13s" x="0" y="684" width="1312" height="6"/>
   </svg>
   <p class="notes">Click Next year live, then Next 5 years. Why Earth: from the pole Earth sits on the horizon and the Moon nods (libration), so Earth is up about two weeks and hidden about two weeks (13 to 17 days up at most sites, measured in the app). A 14 day stay with at most 3 days of silence fits only if it lands in the first days Earth is up. Why the Sun: the Moon's axis tilts 1.5 degrees, so for months the Sun stays so low that hills hide it for days. 354 days is 12 lunar months, the strongest repeat in the app's own verdicts for 9 of the 10 sites with any green day. For a Kyrgyz audience: the same reason Orozo (Ramadan) comes about 11 days earlier every year. Launch slip: type the days late in "Launch slips by" and one line answers.</p>
   <div class="foot"><span>3 / 7</span><span>Made with AI (SI) tools: Claude. Screenshots show our live app; the drawings are made with AI tools.</span></div>
 </section>
 
-<section id="s4" data-dur="24">
-  <h2>Click a day. Stand there. Survived or lost?</h2>
+<section id="s4" data-dur="13">
+  <h2>Click a day: survived or lost, and why</h2>
   <button class="replay" type="button">Replay</button>
   <svg class="scene" viewBox="0 0 1312 690" role="img" aria-labelledby="s4-t s4-d">
-    <title id="s4-t">Click a landing day and read one verdict</title>
-    <desc id="s4-d">A pointer clicks a day in the app. The app stands you on Peak near Shackleton, shows where the Sun and Earth are, and gives one verdict, MISSION SURVIVED. Four of the eleven checks decide survival: night, radio silence, first sunlight and slope at the spot. Earth is hidden at landing but rises in 2 days 16 hours, inside the 3 day limit, so the mission survives.</desc>
+    <title id="s4-t">Click a day: survived or lost, and why</title>
+    <desc id="s4-d">A crop of the app shows the Sun and Earth positions and the green MISSION SURVIVED box. Naryn-1, the lander, lands beside it. Four checks decide survival: night 2 days at most, radio gap 3 days at most, first sunlight within 24 hours, slope under 10 degrees. Naryn-1 says Earth rises in 2 days, so he survives. The answer is either MISSION SURVIVED or MISSION LOST.</desc>
 
-    <!-- the real app, left -->
-    <clipPath id="s4-c1"><rect x="20" y="16" width="620" height="409.2" rx="10"/></clipPath>
-    <g class="a fade" style="--t:.1s">
-      <image href="shots/site.png" x="20" y="16" width="620" height="409.2" clip-path="url(#s4-c1)" preserveAspectRatio="xMidYMid slice"/>
-      <rect class="shot-frame" x="20" y="16" width="620" height="409.2" rx="10"/>
+    <!-- the real app: only the Sun and Earth numbers and the verdict box -->
+    <clipPath id="s4-c1"><rect x="30" y="36" width="620" height="403.3" rx="10"/></clipPath>
+    <g class="a pop" style="--t:.3s">
+      <g clip-path="url(#s4-c1)"><svg x="30" y="36" width="620" height="403.3" viewBox="0 182 372 242" preserveAspectRatio="xMidYMid slice">
+        <image href="shots/site.png" width="1000" height="660"/>
+      </svg></g>
+      <rect class="shot-frame" x="30" y="36" width="620" height="403.3" rx="10"/>
     </g>
 
-    <!-- the pointer clicks the chosen day on the strip of days -->
-    <g transform="translate(28 386)">
-      <g class="a z" style="--t:2.2s;--e:3.4s"><circle class="ring" cx="0" cy="0" r="16"/></g>
-      <g class="a z fade" style="--t:.8s;--e:3.6s"><g class="ptr"><path d="M0 0 L0 22 L6 17 L10 27 L14 25 L10 16 L18 16 Z"/></g></g>
+    <!-- four checks, right -->
+    <g class="a pop" style="--t:1.6s"><path class="tick" transform="translate(692 87)" d="M0 0 l9 10 l19 -22"/><text class="row" x="740" y="96">Night: 2 days at most</text></g>
+    <g class="a pop" style="--t:2.3s"><path class="tick" transform="translate(692 167)" d="M0 0 l9 10 l19 -22"/><text class="row" x="740" y="176">Radio gap: 3 days at most</text></g>
+    <g class="a pop" style="--t:3s"><path class="tick" transform="translate(692 247)" d="M0 0 l9 10 l19 -22"/><text class="row" x="740" y="256">First sunlight: within 24 hours</text></g>
+    <g class="a pop" style="--t:3.7s"><path class="tick" transform="translate(692 327)" d="M0 0 l9 10 l19 -22"/><text class="row" x="740" y="336">Slope: under 10 degrees</text></g>
+
+    <text class="cap2 a" style="--t:4.6s" x="692" y="404">Night and radio limits can be changed.</text>
+    <text class="cap2 a" style="--t:4.6s" x="692" y="436">Slope is a NASA Artemis III rule.</text>
+
+    <!-- Naryn-1 drops in under the crop, worried until Earth is explained, hops once when he speaks -->
+    <g transform="translate(40 484)">
+      <g class="drop"><g class="hop"><g transform="scale(.8)" style="transform-box:view-box;transform-origin:0 0"><g class="bot" data-hat="kyrgyz" data-type="lander" data-color="#e9edf4" data-faces="worry:0,happy:5.4"></g></g></g></g>
+      <text class="tag" x="80" y="178">Naryn-1</text>
     </g>
+    <g class="say a pop" style="--t:5.4s" transform="translate(246 500)" data-w="362" data-tail="none" data-say="Earth rises in 2 days:|I survive!"><path d="M2 36 l-26 14 l26 14 Z"/></g>
 
-    <!-- highlights on the real screenshot: Sun and Earth numbers, then the verdict and its reason -->
-    <rect class="hl a draw" style="--t:4.4s;--d:.8s" pathLength="1" x="24" y="130" width="224" height="71" rx="8"/>
-    <rect class="hl a draw" style="--t:7s;--d:.9s" pathLength="1" x="22" y="215" width="228" height="64" rx="8"/>
+    <!-- the two possible answers -->
+    <g class="a pop" style="--t:6.6s"><rect class="pill pill-ok" x="692" y="520" width="330" height="58" rx="29"/><text class="pill-t ok" x="857" y="558">MISSION SURVIVED</text></g>
+    <g class="a pop" style="--t:7s"><rect class="pill pill-bad" x="1046" y="520" width="240" height="58" rx="29"/><text class="pill-t bad" x="1166" y="558">MISSION LOST</text></g>
 
-    <!-- stand there -->
-    <rect class="bar1 a" style="--t:2.6s" x="20" y="448" width="4" height="88" rx="2"/>
-    <text class="f1 a" style="--t:2.6s" x="38" y="470">You stand 2 m above real NASA terrain.</text>
-    <text class="f1 a" style="--t:3.3s" x="38" y="500">The Sun and Earth sit where they really are.</text>
-    <text class="f1 a" style="--t:4s" x="38" y="530">Press play and watch the 14 days pass.</text>
-
-    <!-- one answer -->
-    <text class="lab a" style="--t:7.6s" x="20" y="576">One answer, with the reason in one sentence:</text>
-    <g class="a pop" style="--t:7.9s"><rect class="pill pill-ok" x="20" y="590" width="300" height="44" rx="22"/><text class="pill-t ok" x="170" y="621">MISSION SURVIVED</text></g>
-    <text class="or a fade" style="--t:8.3s" x="352" y="620">or</text>
-    <g class="a pop" style="--t:8.6s"><rect class="pill pill-bad" x="384" y="590" width="232" height="44" rx="22"/><text class="pill-t bad" x="500" y="621">MISSION LOST</text></g>
-
-    <!-- eleven checks, right: four decide survival (ticked), two NASA site rules are only shown (muted, no mark) -->
-    <text class="big a" style="--t:9.4s" x="668" y="46">Eleven checks</text>
-    <text class="h20 a" style="--t:9.8s" x="668" y="86">Four decide survival</text>
-
-    <text class="row a" style="--t:10.1s" x="702" y="120">Night: at most 2 days<tspan class="par" dx="10">(our limit, you can change it)</tspan></text>
-    <g transform="translate(672 112)"><path class="tick a draw" style="--t:10.35s;--d:.4s" pathLength="1" d="M0 0 l7 8 l15 -17"/></g>
-
-    <text class="row a" style="--t:10.9s" x="702" y="154">Radio silence: at most 3 days<tspan class="par" dx="10">(our limit, you can change it)</tspan></text>
-    <g transform="translate(672 146)"><path class="tick a draw" style="--t:11.15s;--d:.4s" pathLength="1" d="M0 0 l7 8 l15 -17"/></g>
-    <rect class="hl a draw" style="--t:11.2s;--d:.7s" pathLength="1" x="662" y="131" width="630" height="34" rx="8"/>
-
-    <text class="row a" style="--t:12.3s" x="702" y="188">First sunlight: within 24 hours<tspan class="par" dx="10">(our limit)</tspan></text>
-    <g transform="translate(672 180)"><path class="tick a draw" style="--t:12.55s;--d:.4s" pathLength="1" d="M0 0 l7 8 l15 -17"/></g>
-
-    <text class="row a" style="--t:13.1s" x="702" y="222">Slope at the spot: under 10 degrees<tspan class="par" dx="10">(NASA Artemis III rule)</tspan></text>
-    <g transform="translate(672 214)"><path class="tick a draw" style="--t:13.35s;--d:.4s" pathLength="1" d="M0 0 l7 8 l15 -17"/></g>
-
-    <text class="h19m a" style="--t:14.1s" x="668" y="268">Two more NASA Artemis III site rules, shown but not deciding</text>
-    <text class="rowm a" style="--t:14.4s" x="702" y="302">Slope within 2 km: under 20 degrees</text>
-    <text class="rowm a" style="--t:14.7s" x="702" y="334">Within 6 degrees of the pole</text>
-    <text class="note a" style="--t:15s" x="668" y="372">Five more lines are information only.</text>
-
-    <!-- Naryn-1: the lander in the picture; worried while Earth is hidden, happy when the radio check ticks -->
-    <g transform="translate(1172 404)">
-      <g class="a pop" style="--t:.3s"><g class="bob"><g transform="scale(.56)" style="transform-box:view-box;transform-origin:0 0"><g class="bot" data-hat="kyrgyz" data-type="lander" data-color="#e9edf4" data-faces="ok:0,worry:4.6,happy:11.4"></g></g></g></g>
-      <text class="tag" x="56" y="128">Naryn-1</text>
-    </g>
-    <g class="say a z" style="--t:2.5s;--e:4.4s" transform="translate(950 420)" data-w="200" data-tail="none" data-say="That is me!"><path d="M198 22 l26 14 l-26 14 Z"/></g>
-    <g class="say a z" style="--t:4.8s;--e:11s" transform="translate(794 420)" data-w="356" data-tail="none" data-say="Earth is hidden at landing!"><path d="M354 22 l26 14 l-26 14 Z"/></g>
-    <g class="say a" style="--t:11.5s" transform="translate(675 402)" data-w="475" data-tail="none" data-say="Earth is hidden at landing but rises|in 2 days 16 hours, inside the|3 day limit: the mission survives."><path d="M473 40 l26 14 l-26 14 Z"/></g>
-
-    <!-- your own lander and sharing -->
-    <g class="card a" style="--t:15.8s"><rect class="bg" x="668" y="546" width="624" height="58" rx="10"/><rect class="edge" x="668" y="546" width="6" height="58" rx="3"/><text x="694" y="571">Drop your own lander anywhere near the pole:</text><text x="694" y="594">it gets its own row of landing days.</text></g>
-    <g class="card a" style="--t:16.5s"><rect class="bg" x="668" y="614" width="624" height="58" rx="10"/><rect class="edge" x="668" y="614" width="6" height="58" rx="3"/><text x="694" y="639">Share it: a comparison is a link,</text><text x="694" y="662">the table is a CSV file.</text></g>
-
-    <rect class="bar" style="--dur:24s" x="0" y="684" width="1312" height="6"/>
+    <rect class="bar" style="--dur:13s" x="0" y="684" width="1312" height="6"/>
   </svg>
   <p class="notes">Click a green day live, then Look at Sun and press play. "Sunset in" and "Earthset in" count down. Slope, slope within 2 km and distance from the pole are NASA Artemis III rules. Night (2 days), radio (3 days) and first sun (24 hours) are our teaching values; NASA says VIPER cannot endure more than 50 hours of darkness, so 2 days is in that range. A spot you pick yourself uses 320 m terrain, coarser than the 80 m of our fifteen sites. The table downloads as CSV and the page address keeps your sites and limits, so a comparison can be shared as a link.</p>
   <div class="foot"><span>4 / 7</span><span>Made with AI (SI) tools: Claude. Screenshots show our live app; the drawings are made with AI tools.</span></div>
 </section>
 
-<section id="s5" data-dur="26">
+<section id="s5" data-dur="13">
   <h2>Built on NASA data, tested against it</h2>
   <button class="replay" type="button">Replay</button>
   <svg class="scene" viewBox="0 0 1312 690" role="img" aria-labelledby="s5-t s5-d">
-    <title id="s5-t">What the app is built on and how it was checked against NASA</title>
-    <desc id="s5-d">Two NASA inputs feed the app: LRO LOLA terrain at 80 metres per pixel and 6 sites from the Lunar Surface Data Book plus 9 of ours. It is tested against two NASA checks: JPL Horizons, worst error 0.0047 degrees, and Goddard illumination maps at 20 points, correlation 0.97 for Earth in view and 11 points too sunny on average. A real landing, Chandrayaan-3, was put to sleep on 4 September 2023, the day our model says the Sun sets. The lander Almaty-4 states the limit: we judge a place and a day, not a touchdown.</desc>
-    <clipPath id="s5-c1"><rect x="728" y="42" width="560" height="323" rx="10"/></clipPath>
+    <title id="s5-t">NASA data in, NASA data to check, one real landing</title>
+    <desc id="s5-d">Three tiles. Input: NASA LRO LOLA terrain, 80 metres per pixel. Check: NASA JPL Horizons, worst Sun and Earth error 0.0047 degrees. Real landing: Chandrayaan-3 went to sleep on the same day our model says the Sun sets, 4 September 2023. The lander Almaty-4 states the known limit: the app reads 11 points too sunny compared with NASA Goddard maps at 20 points.</desc>
+    <clipPath id="s5-clip"><rect x="0" y="0" width="380" height="300" rx="10"/></clipPath>
 
-    <!-- BUILT ON: the two inputs -->
-    <text class="lab a fade" style="--t:.3s;fill:#46e0c8" x="24" y="28">BUILT ON (INPUTS)</text>
-    <g class="a" style="--t:.6s">
-      <rect class="chip" x="24" y="38" width="280" height="96" rx="10"/><rect class="in" x="31" y="48" width="5" height="76" rx="2.5"/>
-      <text class="t" x="50" y="70">NASA LRO LOLA</text>
-      <text class="s" x="50" y="98">terrain, 80 m per pixel</text>
-    </g>
-    <g class="a" style="--t:1.5s">
-      <rect class="chip" x="320" y="38" width="380" height="96" rx="10"/><rect class="in" x="327" y="48" width="5" height="76" rx="2.5"/>
-      <text class="t" x="346" y="70">NASA Lunar Surface Data Book</text>
-      <text class="s" x="346" y="98">6 sites from it,</text>
-      <text class="s" x="346" y="122">9 picked by us on that terrain</text>
-    </g>
-    <g class="a" style="--t:2.3s">
-      <rect class="appbox" x="24" y="168" width="676" height="64" rx="10"/>
-      <text class="appt" x="362" y="196">the app</text>
-      <text class="appc" x="362" y="221">Without LOLA terrain the horizon cannot be traced.</text>
-    </g>
-    <path class="flow a draw" style="--t:2.9s;--d:.5s" pathLength="1" d="M164 136 V158"/>
-    <path class="head a fade" style="--t:3.3s" d="M156 156 L164 167 L172 156 Z"/>
-    <path class="flow a draw" style="--t:3s;--d:.5s" pathLength="1" d="M510 136 V158"/>
-    <path class="head a fade" style="--t:3.4s" d="M502 156 L510 167 L518 156 Z"/>
-
-    <!-- TESTED AGAINST: the two checks, compared with the app both ways -->
-    <text class="lab a fade" style="--t:4s;fill:#c9ced8" x="322" y="262" text-anchor="middle">TESTED AGAINST (CHECKS)</text>
-    <g class="a" style="--t:4s"><path class="cmp" d="M149 246 V266"/><path class="cmph" d="M141 247 L149 236 L157 247 Z M141 265 L149 276 L157 265 Z"/></g>
-    <g class="a" style="--t:6.4s"><path class="cmp" d="M495 246 V266"/><path class="cmph" d="M487 247 L495 236 L503 247 Z M487 265 L495 276 L503 265 Z"/></g>
-
-    <g class="a" style="--t:4.4s">
-      <rect class="chip" x="24" y="278" width="250" height="250" rx="10"/><rect class="ck" x="31" y="288" width="5" height="230" rx="2.5"/>
-      <text class="t" x="50" y="310">NASA JPL Horizons</text>
-      <text class="s" x="50" y="338">Sun and Earth</text>
-      <text class="s" x="50" y="362">positions checked</text>
-      <text class="s" x="50" y="386">at sample times</text>
-    </g>
-    <g class="a pop" style="--t:5.4s">
-      <text class="n" x="50" y="466">0.0047°</text>
-      <text class="l" x="50" y="498">worst error</text>
-    </g>
-
-    <g class="a" style="--t:6.8s">
-      <rect class="chip" x="290" y="278" width="410" height="250" rx="10"/><rect class="ck" x="297" y="288" width="5" height="230" rx="2.5"/>
-      <text class="t" x="316" y="310">NASA Goddard illumination maps</text>
-      <text class="s" x="316" y="338">compared at 20 points</text>
-      <line class="div" x1="474" y1="360" x2="474" y2="510"/>
-    </g>
-    <g class="a pop" style="--t:7.8s">
-      <text class="nn" x="316" y="408">r 0.97</text>
-      <text class="l" x="316" y="440">correlation:</text>
-      <text class="l" x="316" y="464">Earth in view</text>
-    </g>
-    <g class="a pop" style="--t:9s">
-      <text class="nn sun" x="490" y="408">11 points</text>
-      <text class="l" x="490" y="440">too sunny on average</text>
-      <text class="l" x="490" y="464">vs NASA's map (21 at</text>
-      <text class="l" x="490" y="488">the best lit spots)</text>
-      <text class="l" x="490" y="512">we overestimate</text>
-    </g>
-
-    <!-- A real landing -->
-    <text class="t a fade" style="--t:10.2s;font-size:22px" x="728" y="30">A real landing: Chandrayaan-3 (ISRO)</text>
-    <g class="shotg">
-      <image href="shots/real-landing.png" x="728" y="42" width="560" height="323" clip-path="url(#s5-c1)" preserveAspectRatio="xMidYMid slice"/>
-      <rect class="shot-frame" x="728" y="42" width="560" height="323" rx="10"/>
-    </g>
-    <rect class="hl a draw" style="--t:11.8s;--d:.8s" pathLength="1" x="750" y="247" width="308" height="18" rx="4" fill="none"/>
-    <rect class="hl a draw" style="--t:13.2s;--d:.8s" pathLength="1" x="750" y="331" width="284" height="19" rx="4" fill="none"/>
-    <g class="a" style="--t:12.4s">
-      <rect class="row" x="728" y="378" width="560" height="42" rx="10"/>
-      <text class="rowt" x="746" y="406"><tspan>Real:</tspan> lander put to sleep on 4 September 2023</text>
-    </g>
-    <g class="a" style="--t:13.8s">
-      <rect class="row" x="728" y="428" width="560" height="42" rx="10"/>
-      <text class="rowt" x="746" y="456"><tspan>Our model:</tspan> the Sun sets on 4 September 2023</text>
-    </g>
-    <path class="brk a draw" style="--t:14.6s;--d:.8s" pathLength="1" d="M1062 256 H1160 V340 H1036"/>
-    <g class="a pop" style="--t:15.2s">
-      <rect class="sday" x="1168" y="284" width="114" height="34" rx="9"/>
-      <text class="sdayt" x="1225" y="308">same day</text>
-    </g>
-    <text class="nt a" style="--t:15.8s" x="728" y="502">That site is outside our polar terrain, so it</text>
-    <text class="nt a" style="--t:15.8s" x="728" y="528">tests Sun timing, not hills.</text>
-
-    <!-- Almaty-4, the inspector, states the limit -->
-    <g class="a" style="--t:3.8s"><g transform="translate(28 506)">
-      <g class="insp">
-        <g class="bob">
-          <g transform="scale(.58)"><g class="bot" data-hat="kazakh" data-type="lander" data-color="#c9b8f5" data-faces="ok:0,worry:17.2"></g></g>
-          <g transform="translate(14 104)"><circle class="lens" cx="0" cy="0" r="17"/><path class="handle" d="M12 13 L26 31"/></g>
-        </g>
-      </g>
-      <text class="tag" x="100" y="170">Almaty-4</text>
+    <!-- tile 1: the input -->
+    <g transform="translate(40 36)"><g class="a pop" style="--t:.4s">
+      <rect class="tile" x=".5" y=".5" width="379" height="299" rx="10"/>
+      <rect x="0" y="0" width="380" height="6" fill="#46e0c8" clip-path="url(#s5-clip)"/>
+      <text class="lbl" x="190" y="62" fill="#46e0c8" style="fill:#46e0c8">INPUT</text>
+      <text class="ttl" x="190" y="116">NASA LRO LOLA</text>
+      <text class="num" x="190" y="198">80 m</text>
+      <text class="cp" x="190" y="244">terrain per pixel</text>
     </g></g>
-    <g class="say a" style="--t:17.2s" transform="translate(236 556)" data-w="884" data-tail="none" data-say="IM-2's site and day pass in our model, yet the real lander tipped over.|We judge a place and a day, not a touchdown."><path d="M2 30 L-30 46 L2 60 Z"/></g>
-    <rect class="bar" style="--dur:26s" x="0" y="684" width="1312" height="6"/>
+    <g class="a pop" style="--t:1.7s"><path class="arr" d="M427 186 H446"/><path class="arrh" d="M444 175 L460 186 L444 197 Z"/></g>
+
+    <!-- tile 2: the check -->
+    <g transform="translate(466 36)"><g class="a pop" style="--t:2s">
+      <rect class="tile" x=".5" y=".5" width="379" height="299" rx="10"/>
+      <rect x="0" y="0" width="380" height="6" fill="#5b667a" clip-path="url(#s5-clip)"/>
+      <text class="lbl" x="190" y="62" style="fill:#c9ced8">CHECK</text>
+      <text class="ttl" x="190" y="116">NASA JPL Horizons</text>
+      <text class="num" x="190" y="198">0.0047°</text>
+      <text class="cp" x="190" y="244">worst Sun and Earth error</text>
+    </g></g>
+    <g class="a pop" style="--t:3.3s"><path class="arr" d="M853 186 H872"/><path class="arrh" d="M870 175 L886 186 L870 197 Z"/></g>
+
+    <!-- tile 3: the real landing -->
+    <g transform="translate(892 36)"><g class="a pop" style="--t:3.6s">
+      <rect class="tile" x=".5" y=".5" width="379" height="299" rx="10"/>
+      <rect x="0" y="0" width="380" height="6" fill="#5b667a" clip-path="url(#s5-clip)"/>
+      <text class="lbl" x="190" y="62" style="fill:#c9ced8">REAL LANDING</text>
+      <text class="ttl" x="190" y="116">Chandrayaan-3</text>
+      <text class="num" x="190" y="198" style="fill:#5fd38d">same day</text>
+      <text class="cp" x="190" y="244">real sleep and our sunset:</text>
+      <text class="cp" x="190" y="276">4 September 2023</text>
+    </g></g>
+
+    <!-- Almaty-4: drops in under tile 1, hops under each tile as it pops, comes home, states the limit -->
+    <g transform="translate(155 420)"><g class="drop"><g class="hop">
+      <g transform="scale(.75)"><g class="bot" data-hat="kazakh" data-type="lander" data-color="#c9b8f5" data-faces="ok:0,worry:5.6"></g></g>
+      <text class="tag" x="75" y="224">Almaty-4</text>
+    </g></g></g>
+    <g class="say a" style="--t:5.6s" transform="translate(350 442)" data-w="350" data-tail="none" data-say="Known limit: we read|11 points too sunny."><path d="M2 30 L-30 46 L2 60 Z"/></g>
+
+    <text class="grey a" style="--t:7s" x="1272" y="650">Compared with NASA Goddard maps at 20 points.</text>
+    <rect class="bar" style="--dur:13s" x="0" y="684" width="1312" height="6"/>
   </svg>
   <p class="notes">0.0047 degrees is about a hundredth of the Sun's width. Terrain is LOLA LDEM_80S_80M, horizon traced every 0.25 degrees out to 300 km. Positions also agree with an independent JPL DE440 series to under 0.01 degrees. Against NASA Goddard's maps at twenty points our Earth in view share differs by 3.3 points on average (r 0.97). Our Sun share is above NASA's map by 11.4 points on average over the twenty points, and by 21 at the best lit spots: read our Sun numbers as an upper estimate. Causes we have not separated: we stand 2 m above ground, our terrain is 80 m against their 60 m, and best spots were picked on our own terrain. Other replays in the app: IM-1 and Chang'e 6.</p>
   <div class="foot"><span>5 / 7</span><span>Made with AI (SI) tools: Claude. Screenshots show our live app; the drawings are made with AI tools.</span></div>
 </section>
 
-<section id="s6" data-dur="26">
-  <h2>Build a lander and play three games, all on the same NASA data</h2>
+<section id="s6" data-dur="13">
+  <h2>Build a lander, play three games</h2>
   <button class="replay" type="button">Replay</button>
   <svg class="scene" viewBox="0 0 1312 690" role="img" aria-labelledby="s6-t s6-d">
-    <title id="s6-t">The four things a student plays with in the app</title>
-    <desc id="s6-d">Four screenshots of the app, each with its own lander beside it: My lander, Keep me alive, Ice hunter and Moon quiz, each with what you do in it. A line says every survived and lost in the games comes from the same rule as the calendar. Two speech bubbles tell the team's joke about a hat for every lander, and all four landers tip their hats.</desc>
+    <title id="s6-t">Build a lander, play three games</title>
+    <desc id="s6-d">Four cards in a row: My lander (pick a hat), Keep me alive (watch the battery), Ice hunter (find dark craters) and Moon quiz (real sites, real days), each with a piece of the app's own screen. Under each card stands one of the four landers in its Central Asian hat. Naryn-1 jokes that every lander has a hat, and Samarkand-2 adds that the Moon does not care, but we do.</desc>
 
-    <defs>
-      <clipPath id="s6-c1"><rect x="14" y="94" width="384" height="183" rx="8"/></clipPath>
-      <clipPath id="s6-c2"><rect x="662" y="94" width="384" height="183" rx="8"/></clipPath>
-      <clipPath id="s6-c3"><rect x="14" y="372" width="384" height="183" rx="8"/></clipPath>
-      <clipPath id="s6-c4"><rect x="662" y="372" width="384" height="179" rx="8"/></clipPath>
-    </defs>
-
-    <!-- the joke (drawn first so a hat lifting passes in front of a tail): Naryn-1 first, a beat, then Samarkand-2 -->
-    <g class="bubble a" style="--t:14.4s" transform="translate(14 8)"><rect x="0" y="0" width="800" height="58" rx="14"/><path d="M504 56 L518 80 L534 56 Z"/><text x="20" y="38">We even packed in the soul of Central Asia: a hat for every lander.</text></g>
-    <g class="bubble a" style="--t:17s" transform="translate(850 8)"><rect x="0" y="0" width="448" height="76" rx="14"/><path d="M314 74 L328 94 L344 74 Z"/><text class="aside" x="20" y="33">(Eleven checks, none about hats.<tspan x="20" dy="27">The Moon does not care. We do.)</tspan></text></g>
-
-    <!-- 1. My lander -->
-    <g class="a pop" style="--t:.3s">
-      <image href="shots/game-lander.png" x="14" y="94" width="384" height="183" clip-path="url(#s6-c1)" preserveAspectRatio="xMidYMid slice"/>
-      <rect class="shot-frame" x="14" y="94" width="384" height="183" rx="8"/>
+    <!-- card 1: My lander -->
+    <g class="a pop" style="--t:.4s">
+      <rect class="cardbg" x="26" y="16" width="300" height="170" rx="10"/>
+      <svg x="26" y="26" width="300" height="150" viewBox="14 24 482 241" preserveAspectRatio="xMidYMid slice"><image href="shots/game-lander.png" width="905" height="431"/></svg>
+      <rect class="shot-frame" x="26" y="16" width="300" height="170" rx="10"/>
+      <text class="gname" x="176" y="228">My lander</text>
+      <text class="ln" x="176" y="262">pick a hat</text>
     </g>
-    <g transform="translate(464 100)"><g class="hop" style="--t:.6s"><g class="bob"><g class="tip" style="--t:18.6s"><g class="sc" transform="scale(.66)">
-      <g class="bot" data-hat="kyrgyz" data-type="lander" data-color="#e9edf4" data-faces="ok:0,happy:14.4"></g>
-    </g></g></g></g></g>
-    <text class="tag a" style="--t:.8s" x="530" y="240">Naryn-1</text>
-    <text class="gname a" style="--t:.8s" x="530" y="272">My lander</text>
-    <text class="ln a" style="--t:1s" x="16" y="303">Build a lander, rover or hopper, name it, pick a Kyrgyz,<tspan x="16" dy="26">Kazakh, Uzbek or Tajik hat. Drop it on a day: it waves its</tspan><tspan x="16" dy="26">hat or frosts over, and says why.</tspan></text>
-    <rect class="hl a draw" style="--t:1.5s;--d:.8s" pathLength="1" x="87" y="177" width="138" height="28" rx="4" fill="none"/>
-    <rect class="hl a draw" style="--t:2.3s;--d:.8s" pathLength="1" x="264" y="193" width="118" height="47" rx="4" fill="none"/>
-
-    <!-- 2. Keep me alive -->
-    <g class="a pop" style="--t:3.3s">
-      <image href="shots/game-battery.png" x="662" y="94" width="384" height="183" clip-path="url(#s6-c2)" preserveAspectRatio="xMidYMid slice"/>
-      <rect class="shot-frame" x="662" y="94" width="384" height="183" rx="8"/>
+    <!-- card 2: Keep me alive -->
+    <g class="a pop" style="--t:1.4s">
+      <rect class="cardbg" x="346" y="16" width="300" height="170" rx="10"/>
+      <svg x="393" y="16" width="206" height="170" viewBox="0 0 330 272" preserveAspectRatio="xMidYMid slice"><image href="shots/game-battery.png" width="1406" height="670"/></svg>
+      <rect class="shot-frame" x="346" y="16" width="300" height="170" rx="10"/>
+      <text class="gname" x="496" y="228">Keep me alive</text>
+      <text class="ln" x="496" y="262">watch the battery</text>
     </g>
-    <g transform="translate(1112 100)"><g class="hop" style="--t:3.6s"><g class="bob" style="animation-delay:-1.2s"><g class="tip" style="--t:18.75s"><g class="sc" transform="scale(.66)">
-      <g class="bot" data-hat="uzbek" data-type="rover" data-color="#7db3ff" data-faces="ok:0,happy:18.5"></g>
-    </g></g></g></g></g>
-    <text class="tag a" style="--t:3.8s" x="1178" y="240">Samarkand-2</text>
-    <text class="gname a" style="--t:3.8s" x="1178" y="272">Keep me alive</text>
-    <text class="ln a" style="--t:4s" x="664" y="303">Watch the 14 days in about 40 seconds. The battery fills in<tspan x="664" dy="26">sunlight and drains in shadow. Will it last?</tspan></text>
-    <rect class="hl a draw" style="--t:4.5s;--d:.8s" pathLength="1" x="664" y="96" width="82" height="72" rx="4" fill="none"/>
-
-    <!-- 3. Ice hunter -->
-    <g class="a pop" style="--t:6.3s">
-      <image href="shots/game-ice.png" x="14" y="372" width="384" height="183" clip-path="url(#s6-c3)" preserveAspectRatio="xMidYMid slice"/>
-      <rect class="shot-frame" x="14" y="372" width="384" height="183" rx="8"/>
+    <!-- card 3: Ice hunter -->
+    <g class="a pop" style="--t:2.4s">
+      <rect class="cardbg" x="666" y="16" width="300" height="170" rx="10"/>
+      <svg x="666" y="16" width="300" height="170" viewBox="584 30 300 170" preserveAspectRatio="xMidYMid slice"><image href="shots/game-ice.png" width="910" height="433"/></svg>
+      <rect class="shot-frame" x="666" y="16" width="300" height="170" rx="10"/>
+      <text class="gname" x="816" y="228">Ice hunter</text>
+      <text class="ln" x="816" y="262">find dark craters</text>
     </g>
-    <g transform="translate(464 378)"><g class="hop" style="--t:6.6s"><g class="bob" style="animation-delay:-2.1s"><g class="tip" style="--t:18.9s"><g class="sc" transform="scale(.66)">
-      <g class="bot" data-hat="tajik" data-type="hopper" data-color="#f2c98a" data-faces="ok:0,happy:18.5"></g>
-    </g></g></g></g></g>
-    <text class="tag a" style="--t:6.8s" x="530" y="518">Khujand-3</text>
-    <text class="gname a" style="--t:6.8s" x="530" y="550">Ice hunter</text>
-    <text class="ln a" style="--t:7s" x="16" y="581">Tap a dark crater. If our model never sees the Sun there<tspan x="16" dy="26">from 2021 to 2031, water ice could hide there.</tspan></text>
-    <rect class="hl a draw" style="--t:7.5s;--d:.7s" pathLength="1" x="85" y="439" width="40" height="40" rx="4" fill="none"/>
-    <rect class="hl a draw" style="--t:8.3s;--d:.8s" pathLength="1" x="258" y="423" width="132" height="31" rx="4" fill="none"/>
-
-    <!-- 4. Moon quiz -->
-    <g class="a pop" style="--t:9.3s">
-      <image href="shots/game-quiz.png" x="662" y="372" width="384" height="179" clip-path="url(#s6-c4)" preserveAspectRatio="xMidYMid slice"/>
-      <rect class="shot-frame" x="662" y="372" width="384" height="179" rx="8"/>
+    <!-- card 4: Moon quiz -->
+    <g class="a pop" style="--t:3.4s">
+      <rect class="cardbg" x="986" y="16" width="300" height="170" rx="10"/>
+      <svg x="986" y="52" width="300" height="98" viewBox="12 81 368 120" preserveAspectRatio="xMidYMid slice"><image href="shots/game-quiz.png" width="720" height="335"/></svg>
+      <rect class="shot-frame" x="986" y="16" width="300" height="170" rx="10"/>
+      <text class="gname" x="1136" y="228">Moon quiz</text>
+      <text class="ln" x="1136" y="262">real sites, real days</text>
     </g>
-    <g transform="translate(1112 378)"><g class="hop" style="--t:9.6s"><g class="bob" style="animation-delay:-.7s"><g class="tip" style="--t:19.05s"><g class="sc" transform="scale(.66)">
-      <g class="bot" data-hat="kazakh" data-type="lander" data-color="#c9b8f5" data-faces="ok:0,happy:18.5"></g>
-    </g></g></g></g></g>
-    <text class="tag a" style="--t:9.8s" x="1178" y="518">Almaty-4</text>
-    <text class="gname a" style="--t:9.8s" x="1178" y="550">Moon quiz</text>
-    <text class="ln a" style="--t:10s" x="664" y="581">Five questions from 25. Ten use real sites and days,<tspan x="664" dy="26">answered by the app's own rule. Every answer says why.</tspan></text>
-    <rect class="hl a draw" style="--t:10.5s;--d:.7s" pathLength="1" x="670" y="417" width="114" height="17" rx="4" fill="none"/>
 
-    <!-- the rule -->
-    <g class="banner a" style="--t:12.6s"><rect x="106" y="626" width="1100" height="44" rx="12"/><text x="656" y="657">Every survived and lost in the games comes from <tspan class="rule">the same rule</tspan> as the calendar.</text></g>
+    <!-- the four landers, each dropping in under its own card -->
+    <g transform="translate(76 424)"><g class="drop" style="--t:.4s"><g class="jump">
+      <g class="bot" data-hat="kyrgyz" data-type="lander" data-color="#e9edf4" data-faces="ok:0,happy:4.8"></g>
+    </g></g></g>
+    <g transform="translate(396 424)"><g class="drop" style="--t:1.4s"><g class="jump">
+      <g class="bot" data-hat="uzbek" data-type="rover" data-color="#7db3ff" data-faces="ok:0,happy:6.2"></g>
+    </g></g></g>
+    <g transform="translate(716 424)"><g class="drop" style="--t:2.4s"><g class="jump">
+      <g class="bot" data-hat="tajik" data-type="hopper" data-color="#f2c98a" data-faces="ok:0,happy:7.2"></g>
+    </g></g></g>
+    <g transform="translate(1036 424)"><g class="drop" style="--t:3.4s"><g class="jump">
+      <g class="bot" data-hat="kazakh" data-type="lander" data-color="#c9b8f5" data-faces="ok:0,happy:7.2"></g>
+    </g></g></g>
+    <text class="tag a" style="--t:1s" x="176" y="646">Naryn-1</text>
+    <text class="tag a" style="--t:2s" x="496" y="646">Samarkand-2</text>
+    <text class="tag a" style="--t:3s" x="816" y="646">Khujand-3</text>
+    <text class="tag a" style="--t:4s" x="1136" y="646">Almaty-4</text>
 
+    <!-- the joke -->
+    <g class="say a" style="--t:4.8s" transform="translate(120 284)" data-w="290" data-tail="bl" data-say="A Central Asian hat|for every lander."></g>
+    <g class="say a aside" style="--t:6.2s" transform="translate(440 284)" data-w="340" data-tail="bl" data-say="(The Moon does not care.|We do.)"></g>
 
-    <rect class="bar" style="--dur:26s" x="0" y="684" width="1312" height="6"/>
+    <rect class="bar" style="--dur:13s" x="0" y="684" width="1312" height="6"/>
   </svg>
   <p class="notes">My lander, Keep me alive and the quiz take every survived and lost from the same rule as the calendar; Ice hunter uses the same NASA terrain and Sun model but asks a different question (does the Sun ever reach this spot). Each has a browser test that compares what the student sees with the model. Hats: Kyrgyz ak kalpak, Kazakh kalpak, Uzbek doppi, Tajik toqi, drawn in code, no photos. Ice hunter does not detect ice: it says water ice "could" hide where our model never sees the Sun; NASA's LCROSS found water in the shadowed crater Cabeus in 2009. Keep me alive is a teaching rule, not a real power system. A first visit explains itself: a tour of five steps, and a "How to play" card on the first press of each game.</p>
   <div class="foot"><span>6 / 7</span><span>Made with AI (SI) tools: Claude. Screenshots show our live app; the drawings are made with AI tools.</span></div>
 </section>
 
-<section id="s7" data-dur="26">
-  <h2>Free for every student, starting in Central Asia</h2>
+<section id="s7" data-dur="13">
+  <h2>Free for every student, in a browser</h2>
   <button class="replay" type="button">Replay</button>
   <svg class="scene" viewBox="0 0 1312 690" role="img" aria-labelledby="s7-t s7-d">
-    <title id="s7-t">Who the project is for, what exists, what is not done yet, where to open it</title>
-    <desc id="s7-d">The team's lesson page next to four landers, each saying one thing. Khujand-3: students can learn how real Moon missions are planned, in Kyrgyz, Russian or English. Samarkand-2: teachers get a 45 minute lesson plan, but no lesson has been held yet and the first lessons are planned in Naryn schools. Almaty-4: anyone can open it with a browser on a laptop or a phone, no login, open source. Naryn-1: next come those first lessons and a check of the Russian and Kyrgyz texts by native speakers. Below are the three links, then the four landers stand together, happy, under the line: Your turn: drop a lander and see if it survives.</desc>
-    <clipPath id="s7-c1"><rect x="36" y="24" width="640" height="376" rx="10"/></clipPath>
+    <title id="s7-t">Free for every student, in a browser</title>
+    <desc id="s7-d">Four landers land in a row on the Moon, happy. Above them: Kyrgyz, Russian, English; No login; Open source. The app link lunar-navigator-404.web.app and the code link github.com/pathmaker7/404-llsn. Almaty-4 says the first lessons are planned in Naryn schools. Naryn-1 says: your turn, drop a lander.</desc>
+    <g class="star"><circle cx="90" cy="60" r="1.6"/><circle cx="250" cy="150" r="1.2"/><circle cx="420" cy="215" r="1.8"/><circle cx="610" cy="250" r="1.2"/><circle cx="800" cy="236" r="1.6"/><circle cx="960" cy="260" r="1.3"/><circle cx="1240" cy="70" r="1.7"/><circle cx="1250" cy="230" r="1.2"/><circle cx="60" cy="300" r="1.1"/><circle cx="160" cy="220" r="1.1"/><circle cx="1150" cy="170" r="1.4"/><circle cx="330" cy="110" r="1.2"/><circle cx="1070" cy="260" r="1.1"/><circle cx="520" cy="130" r="1.3"/></g>
+    <!-- the Moon's ground -->
+    <path class="ground2" d="M0 560 L40 520 L120 500 L220 560 L1060 560 L1170 508 L1250 498 L1312 540 L1312 690 L0 690 Z"/>
+    <path class="ground" d="M0 572 L1312 572 L1312 690 L0 690 Z"/>
+    <g fill="#23262b"><ellipse cx="90" cy="654" rx="60" ry="11"/><ellipse cx="376" cy="656" rx="44" ry="9"/><ellipse cx="656" cy="652" rx="56" ry="10"/><ellipse cx="936" cy="656" rx="44" ry="9"/><ellipse cx="1226" cy="654" rx="64" ry="11"/></g>
 
-    <!-- the team's real lesson page -->
-    <image class="a fade" style="--t:.2s" href="shots/lesson.png" x="36" y="24" width="640" height="396" clip-path="url(#s7-c1)" preserveAspectRatio="xMidYMid slice"/>
-    <rect class="shot-frame a draw" style="--t:.2s;--d:.9s" pathLength="1" x="36" y="24" width="640" height="376" rx="10"/>
+    <!-- three chips -->
+    <g class="a pop" style="--t:1.2s"><rect class="chip" x="190" y="28" width="450" height="58" rx="14"/><text class="chip-t" x="415" y="68">Kyrgyz, Russian, English</text></g>
+    <g class="a pop" style="--t:1.9s"><rect class="chip" x="670" y="28" width="190" height="58" rx="14"/><text class="chip-t" x="765" y="68">No login</text></g>
+    <g class="a pop" style="--t:2.6s"><rect class="chip" x="890" y="28" width="232" height="58" rx="14"/><text class="chip-t" x="1006" y="68">Open source</text></g>
 
-    <!-- teal outlines on the part of the page each lander talks about -->
-    <g class="z" style="--e:4.2s"><rect class="hl a draw" style="--t:1.7s;--d:.8s" pathLength="1" x="47.8" y="241.3" width="603" height="47.2" rx="6" fill="none"/></g>
-    <g class="z" style="--e:7.4s"><rect class="hl a draw" style="--t:4.7s;--d:.7s" pathLength="1" x="47.8" y="199.2" width="136.4" height="27" rx="6" fill="none"/><rect class="hl a draw" style="--t:5.4s;--d:.7s" pathLength="1" x="47.8" y="83" width="153.3" height="25.3" rx="6" fill="none"/></g>
-    <g class="z" style="--e:10.4s"><rect class="hl a draw" style="--t:7.9s;--d:.8s" pathLength="1" x="524.4" y="83" width="121.3" height="25.3" rx="6" fill="none"/></g>
+    <!-- the two real links: text to read and copy, and a link too -->
+    <g class="lnk a pop" style="--t:3.6s"><a href="https://lunar-navigator-404.web.app" target="_blank" rel="noopener"><text class="l1" x="656" y="178">lunar-navigator-404.web.app</text></a></g>
+    <g class="lnk a pop" style="--t:4.6s"><a href="https://github.com/pathmaker7/404-llsn" target="_blank" rel="noopener"><text class="l2" x="656" y="232">github.com/pathmaker7/404-llsn</text></a></g>
 
-    <!-- one speech bubble per fact; the tail points at the speaker and goes when the speaker leaves -->
-    <g class="bubble a" style="--t:1.5s" transform="translate(790 24)">
-      <path class="z" style="--e:14.1s" d="M2 32 L-8 44 L2 56 Z"/>
-      <rect x="0" y="0" width="496" height="88" rx="14"/>
-      <text x="20" y="40">Students can learn how real Moon missions</text>
-      <text x="20" y="70">are planned, in Kyrgyz, Russian or English.</text>
-    </g>
-    <g class="bubble a" style="--t:4.5s" transform="translate(790 124)">
-      <path class="z" style="--e:13.6s" d="M2 47 L-8 59 L2 71 Z"/>
-      <rect x="0" y="0" width="496" height="118" rx="14"/>
-      <text x="20" y="40">Teachers get a 45 minute lesson plan.</text>
-      <text x="20" y="70"><tspan class="strong">No lesson has been held yet:</tspan> the first</text>
-      <text x="20" y="100">lessons are planned in Naryn schools.</text>
-    </g>
-    <g class="bubble a" style="--t:7.7s" transform="translate(790 254)">
-      <path class="z" style="--e:13.1s" d="M2 32 L-8 44 L2 56 Z"/>
-      <rect x="0" y="0" width="496" height="88" rx="14"/>
-      <text x="20" y="40">Anyone can open it: a browser on a laptop</text>
-      <text x="20" y="70">or a phone, no login, open source.</text>
-    </g>
-    <g class="bubble a" style="--t:10.7s" transform="translate(790 354)">
-      <path class="z" style="--e:12.6s" d="M2 32 L-8 44 L2 56 Z"/>
-      <rect x="0" y="0" width="496" height="88" rx="14"/>
-      <text x="20" y="40">Next: those first lessons, and a check of the</text>
-      <text x="20" y="70">Russian and Kyrgyz texts by native speakers.</text>
-    </g>
+    <!-- name tags, each when its lander has landed -->
+    <text class="tag a" style="--t:1.1s" x="236" y="640">Naryn-1</text>
+    <text class="tag a" style="--t:1.65s" x="516" y="640">Almaty-4</text>
+    <text class="tag a" style="--t:2.2s" x="796" y="640">Samarkand-2</text>
+    <text class="tag a" style="--t:2.7s" x="1076" y="640">Khujand-3</text>
 
-    <!-- the three links: text a judge can read and copy, and a real link too -->
-    <g class="a" style="--t:15.3s"><text class="cap" x="36" y="476">App</text><a class="lnk" href="https://lunar-navigator-404.web.app" target="_blank" rel="noopener"><text x="36" y="508">lunar-navigator-404.web.app</text></a></g>
-    <path class="a draw" style="--t:15.5s;--d:.6s" pathLength="1" d="M36 518 H336" stroke="#46e0c8" stroke-width="2" fill="none"/>
-    <g class="a" style="--t:15.7s"><text class="cap" x="393" y="476">Code</text><a class="lnk" href="https://github.com/pathmaker7/404-llsn" target="_blank" rel="noopener"><text x="393" y="508">github.com/pathmaker7/404-llsn</text></a></g>
-    <path class="a draw" style="--t:15.9s;--d:.6s" pathLength="1" d="M393 518 H729" stroke="#46e0c8" stroke-width="2" fill="none"/>
-    <g class="a" style="--t:16.1s"><text class="cap" x="786" y="476">Lesson plan</text><a class="lnk" href="https://lunar-navigator-explained.web.app/lesson.html" target="_blank" rel="noopener"><text x="786" y="508">lunar-navigator-explained.web.app/lesson.html</text></a></g>
-    <path class="a draw" style="--t:16.3s;--d:.6s" pathLength="1" d="M786 518 H1266" stroke="#46e0c8" stroke-width="2" fill="none"/>
+    <!-- the four landers: each drops in, lands with a small bounce, and all hop once at 7.2 s -->
+    <g transform="translate(151 432)"><g class="drop" style="--t:.4s"><g class="hop"><g transform="scale(.85)"><g class="bot" data-hat="kyrgyz" data-type="lander" data-color="#e9edf4" data-faces="happy"></g></g></g></g></g>
+    <g transform="translate(431 432)"><g class="drop" style="--t:.95s"><g class="hop"><g transform="scale(.85)"><g class="bot" data-hat="kazakh" data-type="lander" data-color="#c9b8f5" data-faces="happy"></g></g></g></g></g>
+    <g transform="translate(711 432)"><g class="drop" style="--t:1.5s"><g class="hop"><g transform="scale(.85)"><g class="bot" data-hat="uzbek" data-type="rover" data-color="#7db3ff" data-faces="happy"></g></g></g></g></g>
+    <g transform="translate(991 432)"><g class="drop" style="--t:2s"><g class="hop"><g transform="scale(.85)"><g class="bot" data-hat="tajik" data-type="hopper" data-color="#f2c98a" data-faces="happy"></g></g></g></g></g>
 
-    <!-- the closing row -->
-    <g class="banner a fade" style="--t:12.6s"><rect x="24" y="528" width="1264" height="148" rx="12"/></g>
-    <text class="tag a fade" style="--t:14.7s" x="130" y="668">Naryn-1</text>
-    <text class="tag a fade" style="--t:15.2s" x="290" y="668">Almaty-4</text>
-    <text class="tag a fade" style="--t:15.7s" x="450" y="668">Samarkand-2</text>
-    <text class="tag a fade" style="--t:16.2s" x="610" y="668">Khujand-3</text>
-    <text class="close a" style="--t:17s" x="980" y="592"><tspan x="980"><tspan fill="#46e0c8">Your turn:</tspan> drop a lander</tspan><tspan x="980" dy="48">and see if it survives.</tspan></text>
+    <!-- two bubbles -->
+    <g class="say a pop" style="--t:5.4s" transform="translate(457 276)" data-w="340" data-tail="bl" data-say="First lessons: planned|in Naryn schools."></g>
+    <g class="say a pop" style="--t:6.6s" transform="translate(177 276)" data-w="250" data-tail="bl" data-say="Your turn:|drop a lander!"></g>
 
-    <!-- Naryn-1: speaks fourth, lands first at the far left -->
-    <g transform="translate(30 497)"><g class="jump"><g class="go" style="--dx:605px;--dy:-197px;--g:12.6s"><g class="arc" style="--g:12.6s"><g class="in" style="--t:10.2s"><g class="bob"><g transform="scale(.58)"><g class="bot" data-hat="kyrgyz" data-type="lander" data-color="#e9edf4" data-faces="ok:0,happy:13.6"></g></g></g></g></g></g></g></g>
-    <!-- Almaty-4: speaks third -->
-    <g transform="translate(190 497)"><g class="jump"><g class="go" style="--dx:445px;--dy:-297px;--g:13.1s"><g class="arc" style="--g:13.1s"><g class="in" style="--t:7.2s"><g class="bob" style="animation-delay:-.8s"><g transform="scale(.58)"><g class="bot" data-hat="kazakh" data-type="lander" data-color="#c9b8f5" data-faces="ok:0,happy:14.1"></g></g></g></g></g></g></g></g>
-    <!-- Samarkand-2: speaks second -->
-    <g transform="translate(350 497)"><g class="jump"><g class="go" style="--dx:285px;--dy:-412px;--g:13.6s"><g class="arc" style="--g:13.6s"><g class="in" style="--t:4s"><g class="bob" style="animation-delay:-1.6s"><g transform="scale(.58)"><g class="bot" data-hat="uzbek" data-type="rover" data-color="#7db3ff" data-faces="ok:0,happy:14.6"></g></g></g></g></g></g></g></g>
-    <!-- Khujand-3: speaks first, leaves last -->
-    <g transform="translate(510 497)"><g class="jump"><g class="go" style="--dx:125px;--dy:-527px;--g:14.1s"><g class="arc" style="--g:14.1s"><g class="in" style="--t:1s"><g class="bob" style="animation-delay:-2.4s"><g transform="scale(.58)"><g class="bot" data-hat="tajik" data-type="hopper" data-color="#f2c98a" data-faces="ok:0,happy:15.1"></g></g></g></g></g></g></g></g>
-
-    <rect class="bar" style="--dur:26s" x="0" y="684" width="1312" height="6"/>
+    <rect class="bar" style="--dur:13s" x="0" y="684" width="1312" height="6"/>
   </svg>
   <p class="notes">The lessons are a plan: no lesson has been held yet. The Russian and Kyrgyz texts were drafted with AI and still need a check by native speakers. Free in the browser, no login, works on a phone, code under Apache-2.0. End on the app link and invite the jury to drop their own lander.</p>
   <div class="foot"><span>7 / 7</span><span>Made with AI (SI) tools: Claude. Screenshots show our live app; the drawings are made with AI tools.</span></div>
 </section>
-
 <!--/SLIDES-->
 
 <div class="nav"><button type="button" id="back">Back</button><button type="button" id="next">Next</button></div>

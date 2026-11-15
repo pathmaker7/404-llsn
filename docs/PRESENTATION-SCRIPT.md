@@ -28,7 +28,7 @@ three games, 7 who it is for.
 
 ## 1 minute cut
 
-Slide 1 line, slide 2 "We built it so ..." sentence, then the app: **Next year** (one sentence on the two cycles),
+Slide 1 line, slide 2 "Where and when is it safe to land?" question, then the app: **Next year** (one sentence on the two cycles),
 click a green day ("mission survived, eleven checks"), drop a lander with a hat (the joke), Chandrayaan-3 replay
 ("our sunset is the day India put it to sleep"), slide 7 line.
 
