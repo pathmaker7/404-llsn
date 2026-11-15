@@ -21,3 +21,6 @@
 /* Calendar days whose answer a re-check overturns: yellow (one of four) to deep orange (all four). */
 .days .day.ok.unsure, .days .day.bad.unsure { background: hsl(calc(52 - 30 * var(--f, 0)) 96% 56%); }
 .v-key i.uns { background: linear-gradient(90deg, #fbe024, #fb7a24); }
+/* A dot on the Moon is yellow when a landing a day earlier or later gives the other answer there. */
+.pin.pin[data-u="1"]::before { background: #fbe024; box-shadow: none; }
+#sitelist .v-key i.uns { background: linear-gradient(90deg, #fbe024, #fb7a24); box-shadow: none; }

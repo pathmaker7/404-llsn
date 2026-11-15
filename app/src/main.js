@@ -151,6 +151,8 @@ async function addCustom(lat, lon, name) {
 }
 
 function placePins() {
+  const vk = document.querySelector('#sitelist .v-key'); // the legend of the dots gains the third answer
+  if (vk && !vk.querySelector('.uns') && vk.querySelector('i.bad')) vk.querySelector('i.bad').insertAdjacentHTML('beforebegin', `<i class="uns"></i>${globalThis.I18n.t('xGUnsure')} `);
   const w = window.innerWidth, h = window.innerHeight;
   const show = S.mode === 'overview' && !overview.anim && overview.dist < 2.2e6; // labels only when close enough to tell the sites apart
   const items = [];
@@ -163,6 +165,10 @@ function placePins() {
     // With the line outside the period: green for at least one safe landing day in the period.
     s.st = S.all?.stateAt(s.id, S.mapT) ?? (row && row.good >= 0 ? (row.good > 0 ? 'ok' : 'bad') : '');
     if (s.el.dataset.s !== s.st) s.el.dataset.s = s.st;
+    // Not sure on the map: a landing one day earlier or one day later gives the other answer here, so the dot is yellow.
+    // (The answer panel also re-checks the terrain 0.2 degrees higher and lower for the chosen site and day.)
+    const dA = S.all?.stateAt(s.id, S.mapT - 86400), dB = S.all?.stateAt(s.id, S.mapT + 86400), un = (s.st === 'ok' || s.st === 'bad') && ((dA && dA !== s.st) || (dB && dB !== s.st)) ? '1' : '';
+    if ((s.el.dataset.u || '') !== un) { if (un) s.el.dataset.u = un; else delete s.el.dataset.u; }
     s.el.classList.toggle('hot', S.hot === s.id);
     if (p) items.push({ s, p, g, x: p.x, y: p.y, wd: s.el.offsetWidth || 120 });
   }
