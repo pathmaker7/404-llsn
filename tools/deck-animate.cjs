@@ -1,32 +1,54 @@
 // Makes explainer/deck.pdf play: the scenes of slides 2 to 7 move inside the PDF itself, in a PDF viewer that runs
-// PDF scripts (Chrome and Edge do; Safari, Preview and phones do not, they show the still last frame).
+// PDF scripts (Chrome's does; Safari, Preview and phones do not, they show the still last frame).
 // Run after tools/deck-pdf.cjs (npm run deck does both).
 //
-// How: a PDF cannot hold an SVG animation, but it can hold buttons with a picture each and a script that shows and
-// hides them on a timer. So each scene is filmed frame by frame from deck.html, every frame becomes a hidden button
-// lying exactly over the scene on its page, and a small script flips them: a flipbook. Under the buttons the page is
-// untouched: the drawn last frame, sharp at any zoom, which is what shows while the film holds, in a viewer without
-// scripts, and on paper. A scene restarts when its page is opened, and repeats.
+// How: a PDF cannot hold an SVG animation, but it can hold buttons with a picture each and a script that shows them
+// on a timer. So each scene is filmed step by step from deck.html. The first step is a picture of the whole scene;
+// every later step is a picture of only the rectangle that changed since the step before. Each picture is a hidden
+// button lying exactly over its place on the page, and a small script shows them one after another, each on top of
+// the ones before: a flipbook made of patches. Under the buttons the page is untouched: the drawn last frame, sharp
+// at any zoom, which is what shows while the film holds (all buttons hidden again), in a viewer without scripts,
+// and on paper. A scene restarts when its page is opened, and repeats.
 //
 //   node tools/deck-animate.cjs [pdf to change, default explainer/deck.pdf]
-//   STEP=0.25 seconds between frames, Q=68 JPEG quality, SCALE=0.9 pixels per CSS pixel (smaller numbers, smaller file)
-const fs = require('fs'), path = require('path');
+//   STEP=0.25 seconds between steps, Q=0.72 JPEG quality of photo-like patches, SCALE=1 pixels per CSS pixel
+const fs = require('fs'), path = require('path'), zlib = require('zlib');
 const { serve, launch } = require('./smoke.cjs');
 const ROOT = path.join(__dirname, '..');
 const PDF = process.argv[2] || path.join(ROOT, 'explainer', 'deck.pdf');
-const STEP = +(process.env.STEP || 0.25), Q = +(process.env.Q || 68), SCALE = +(process.env.SCALE || 0.9);
+const STEP = +(process.env.STEP || 0.25), Q = +(process.env.Q || 0.72), SCALE = +(process.env.SCALE || 1);
 
-// 1. Film every scene: one JPEG per moment at which the picture differs from the moment before.
+// Runs in a blank helper page: decodes a screenshot, finds the rectangle that differs from the screenshot before,
+// and hands back that rectangle's pixels twice: exact (RGB bytes) and as a JPEG. Node keeps whichever is smaller enough.
+const DIFF = async ([b64, q]) => {
+  const bmp = await createImageBitmap(await (await fetch('data:image/png;base64,' + b64)).blob());
+  const w = bmp.width, h = bmp.height, cv = new OffscreenCanvas(w, h), cx = cv.getContext('2d', { willReadFrequently: true });
+  cx.drawImage(bmp, 0, 0); const now = cx.getImageData(0, 0, w, h).data, was = window.was;
+  let x0 = w, y0 = h, x1 = -1, y1 = -1;
+  if (!was) { x0 = 0; y0 = 0; x1 = w - 1; y1 = h - 1; }
+  else for (let y = 0, i = 0; y < h; y++) for (let x = 0; x < w; x++, i += 4)
+    if (now[i] !== was[i] || now[i + 1] !== was[i + 1] || now[i + 2] !== was[i + 2]) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+  window.was = now;
+  if (x1 < 0) return null;
+  const pw = x1 - x0 + 1, ph = y1 - y0 + 1, rgb = new Uint8Array(pw * ph * 3);
+  for (let y = 0, o = 0; y < ph; y++) for (let x = 0, i = ((y0 + y) * w + x0) * 4; x < pw; x++, i += 4) { rgb[o++] = now[i]; rgb[o++] = now[i + 1]; rgb[o++] = now[i + 2]; }
+  const pc = new OffscreenCanvas(pw, ph); pc.getContext('2d').drawImage(cv, x0, y0, pw, ph, 0, 0, pw, ph);
+  const b64of = async (blob) => { const u = new Uint8Array(await blob.arrayBuffer()); let s = ''; for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return btoa(s); };
+  return { x: x0, y: y0, w: pw, h: ph, rgb: await b64of(new Blob([rgb])), jpg: await b64of(await pc.convertToBlob({ type: 'image/jpeg', quality: q })) };
+};
+
+// 1. Film every scene.
 async function film() {
   const srv = await serve(path.join(ROOT, 'explainer')), browser = await launch();
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: SCALE });
+  const helper = await browser.newPage(); await helper.goto(`http://127.0.0.1:${srv.address().port}/texts.html`); // any same-origin page: it only lends its canvas
   await page.goto(`http://127.0.0.1:${srv.address().port}/deck.html`); await page.waitForLoadState('networkidle');
   const ids = await page.evaluate(() => [...document.querySelectorAll('section')].map((s) => ({ id: s.id, dur: +s.dataset.dur || 0 })));
   // Where each scene sits on its printed page (the PDF was printed from this layout).
   await page.emulateMedia({ media: 'print' });
-  const box = (id) => page.evaluate((id) => { const s = document.getElementById(id), a = s.getBoundingClientRect(), b = s.querySelector('.scene').getBoundingClientRect();
-    return { x: b.left - a.left, y: b.top - a.top, w: b.width, h: b.height }; }, id);
-  const printed = {}; for (const s of ids) if (s.dur) printed[s.id] = await box(s.id);
+  const printed = {};
+  for (const s of ids) if (s.dur) printed[s.id] = await page.evaluate((id) => { const el = document.getElementById(id), a = el.getBoundingClientRect(), b = el.querySelector('.scene').getBoundingClientRect();
+    return { x: b.left - a.left, y: b.top - a.top, w: b.width, h: b.height }; }, s.id);
   await page.emulateMedia({ media: 'screen' });
   // The film has no Replay button and no endless motion (bobbing, radio waves, the progress line): the printed page has none either.
   await page.addStyleTag({ content: '.replay, .nav { display: none !important; } html { scroll-snap-type: none !important; } .play .bob, .play .wave { animation: none !important; } .bar { display: none !important; }' });
@@ -40,34 +62,42 @@ async function film() {
       return { end: end / 1000, top: sr.top + scrollY, x: b.left - sr.left, y: b.top - sr.top, w: b.width, h: b.height }; }, [id, t]);
     const at = await seek(0), p = printed[id];
     if (Math.abs(at.x - p.x) > 0.5 || Math.abs(at.y - p.y) > 0.5 || Math.abs(at.w - p.w) > 0.5 || Math.abs(at.h - p.h) > 0.5)
-      throw new Error(`${id}: the scene sits elsewhere on screen (${JSON.stringify(at)}) than in print (${JSON.stringify(p)}), the frames would not lie over it`);
+      throw new Error(`${id}: the scene sits elsewhere on screen (${JSON.stringify(at)}) than in print (${JSON.stringify(p)}), the pictures would not lie over it`);
     if (at.end > dur) throw new Error(`${id}: the film (${at.end} s) is longer than its loop (${dur} s)`);
-    // whole pixels, so the picture and its place on the page agree exactly
+    // whole pixels, so a picture and its place on the page agree exactly
     const clip = { x: Math.floor(p.x), y: Math.floor(p.y), w: Math.ceil(p.x + p.w) - Math.floor(p.x), h: Math.ceil(p.y + p.h) - Math.floor(p.y) };
-    const frames = [], times = []; let last = null;
+    await helper.evaluate(() => { window.was = null; });
+    const patches = []; let exact = 0;
     for (let t = 0; t < at.end + STEP; t += STEP) {
       const tt = Math.min(t, at.end); await seek(tt);
-      const jpg = await page.screenshot({ type: 'jpeg', quality: Q, fullPage: true, clip: { x: clip.x, y: at.top + clip.y, width: clip.w, height: clip.h } });
-      if (!last || !jpg.equals(last)) { frames.push(jpg); times.push(Math.round(tt * 1000)); last = jpg; }
+      const png = await page.screenshot({ type: 'png', fullPage: true, clip: { x: clip.x, y: at.top + clip.y, width: clip.w, height: clip.h } });
+      const d = await helper.evaluate(DIFF, [png.toString('base64'), Q]);
+      if (!d) continue;
+      const flate = zlib.deflateSync(Buffer.from(d.rgb, 'base64'), { level: 9 }), jpg = Buffer.from(d.jpg, 'base64');
+      // exact pixels unless the JPEG is much smaller (a patch of photo: a screenshot fading in)
+      const keepExact = flate.length <= jpg.length * 1.6; if (keepExact) exact++;
+      patches.push({ t: Math.round(tt * 1000), x: d.x, y: d.y, w: d.w, h: d.h, data: keepExact ? flate : jpg, filter: keepExact ? '/FlateDecode' : '/DCTDecode' });
     }
-    // The last picture of the film is the printed page itself, so it is not kept: from its moment on, no button shows.
-    const end = times.pop(); frames.pop();
-    slides.push({ id, pageIndex: n, dur: Math.round(dur * 1000), end, times, frames, clip });
-    console.log(`${id}: film ${at.end.toFixed(1)} s of a ${dur} s loop, ${frames.length} different frames, ${(frames.reduce((a, f) => a + f.length, 0) / 1e6).toFixed(1)} MB`);
+    // The last step ends on the printed page itself: from the film's end on, no button shows.
+    const end = Math.round(at.end * 1000);
+    slides.push({ id, pageIndex: n, dur: Math.round(dur * 1000), end, patches, clip });
+    console.log(`${id}: film ${at.end.toFixed(1)} s of a ${dur} s loop, ${patches.length} steps (${exact} exact, ${patches.length - exact} JPEG), ${(patches.reduce((a, f) => a + f.data.length, 0) / 1e6).toFixed(2)} MB`);
   }
   await browser.close(); srv.close();
   return slides;
 }
 
-// 2. The script inside the PDF. P: one entry per moving page. Each page calls deckOpen when it is opened (its /AA /O action),
-// so its film starts from the beginning; a viewer that does not tell, just keeps every film looping.
-const script = (slides) => `var P=${JSON.stringify(slides.map((s) => ({ p: s.pageIndex, n: s.id, d: s.dur, e: s.end, t: s.times })))};
+// 2. The script inside the PDF. P: one entry per moving page; t: the moment (ms) each patch appears; c: how many show now.
+// Each page calls deckOpen when it is opened (its /AA /O action), so its film starts from the beginning; in a viewer
+// that does not tell, every film just keeps looping.
+const script = (slides) => `var P=${JSON.stringify(slides.map((s) => ({ p: s.pageIndex, n: s.id, d: s.dur, e: s.end, t: s.patches.map((f) => f.t) })))};
 var i,j;
-for(i=0;i<P.length;i++){P[i].f=[];P[i].c=-1;P[i].s=Date.now();for(j=0;j<P[i].t.length;j++)P[i].f.push(this.getField(P[i].n+"_"+j));}
+for(i=0;i<P.length;i++){P[i].f=[];P[i].c=0;P[i].s=Date.now();for(j=0;j<P[i].t.length;j++)P[i].f.push(this.getField(P[i].n+"_"+j));}
 function deckOpen(p){for(var a=0;a<P.length;a++)if(P[a].p===p)P[a].s=Date.now();deckTick();}
 function deckTick(){var now=Date.now(),a,x,k,m;
-for(a=0;a<P.length;a++){m=P[a];x=(now-m.s)%m.d;k=-1;if(x<m.e){k=0;while(k+1<m.t.length&&m.t[k+1]<=x)k++;}
-if(k!==m.c){if(k>=0&&m.f[k])m.f[k].display=display.visible;if(m.c>=0&&m.f[m.c])m.f[m.c].display=display.hidden;m.c=k;}}}
+for(a=0;a<P.length;a++){m=P[a];x=(now-m.s)%m.d;k=0;if(x<m.e)while(k<m.t.length&&m.t[k]<=x)k++;
+while(m.c<k){if(m.f[m.c])m.f[m.c].display=display.visible;m.c++;}
+while(m.c>k){m.c--;if(m.f[m.c])m.f[m.c].display=display.hidden;}}}
 app.setInterval("deckTick()",${Math.round(STEP * 500)});`;
 
 // 3. Add the buttons and the script to the PDF as an appended update: nothing Chrome wrote is rewritten.
@@ -81,19 +111,19 @@ function append(slides) {
   const out = [], changed = new Map(); let next = size; // changed: object number -> bytes
   const add = (bytes) => { changed.set(next, Buffer.isBuffer(bytes) ? bytes : Buffer.from(bytes, 'latin1')); return next++; };
   const stream = (dict, data) => Buffer.concat([Buffer.from(`<<${dict} /Length ${data.length}>>\nstream\n`, 'latin1'), data, Buffer.from('\nendstream', 'latin1')]);
-  const fields = [];
+  const num = (v) => +v.toFixed(3), fields = [];
   for (const s of slides) {
     const pageObj = kids[s.pageIndex], dict = body(pageObj), box = dict.match(/\/MediaBox \[([^\]]*)\]/)[1].trim().split(/\s+/).map(Number);
-    const k = box[2] / 1440, W = s.clip.w * k, H = s.clip.h * k, x = s.clip.x * k, y = box[3] - (s.clip.y + s.clip.h) * k; // CSS pixels to points, y from the bottom
-    const rect = [x, y, x + W, y + H].map((v) => +v.toFixed(3)).join(' '), mine = [];
-    s.frames.forEach((jpg, i) => {
-      const img = add(stream(`/Type /XObject /Subtype /Image /Width ${Math.round(s.clip.w * SCALE)} /Height ${Math.round(s.clip.h * SCALE)} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode`, jpg));
-      const ap = add(stream(`/Type /XObject /Subtype /Form /BBox [0 0 ${+W.toFixed(3)} ${+H.toFixed(3)}] /Resources <</XObject <</I ${img} 0 R>>>>`, Buffer.from(`q ${+W.toFixed(3)} 0 0 ${+H.toFixed(3)} 0 0 cm /I Do Q`, 'latin1')));
+    const k = box[2] / 1440, mine = []; // CSS pixels to points
+    s.patches.forEach((f, i) => {
+      const W = f.w / SCALE * k, H = f.h / SCALE * k, x = (s.clip.x + f.x / SCALE) * k, y = box[3] - (s.clip.y + (f.y + f.h) / SCALE) * k; // y from the bottom
+      const img = add(stream(`/Type /XObject /Subtype /Image /Width ${f.w} /Height ${f.h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter ${f.filter}`, f.data));
+      const ap = add(stream(`/Type /XObject /Subtype /Form /BBox [0 0 ${num(W)} ${num(H)}] /Resources <</XObject <</I ${img} 0 R>>>>`, Buffer.from(`q ${num(W)} 0 0 ${num(H)} 0 0 cm /I Do Q`, 'latin1')));
       // a read only push button, hidden (F 2) until the script shows it; a viewer without scripts never shows it
-      mine.push(add(`<</Type /Annot /Subtype /Widget /FT /Btn /Ff 65537 /T (${s.id}_${i}) /Rect [${rect}] /F 2 /P ${pageObj} 0 R /AP <</N ${ap} 0 R>>>>`));
+      mine.push(add(`<</Type /Annot /Subtype /Widget /FT /Btn /Ff 65537 /T (${s.id}_${i}) /Rect [${num(x)} ${num(y)} ${num(x + W)} ${num(y + H)}] /F 2 /P ${pageObj} 0 R /AP <</N ${ap} 0 R>>>>`));
     });
     fields.push(...mine);
-    const refs = mine.map((n) => `${n} 0 R`).join(' ');
+    const refs = mine.map((n) => `${n} 0 R`).join(' '); // in order: a later patch is drawn over the earlier ones
     const withAnnots = /\/Annots \[/.test(dict) ? dict.replace(/\/Annots \[([^\]]*)\]/, (m, a) => `/Annots [${a} ${refs}]`) : dict.replace(/>>\s*$/, `/Annots [${refs}]>>`);
     if (withAnnots === dict || /\/AA\b/.test(dict)) throw new Error('could not add the buttons to page ' + (s.pageIndex + 1));
     const open = add(`<</S /JavaScript /JS (deckOpen\\(${s.pageIndex}\\);)>>`); // runs when a viewer opens this page
@@ -104,8 +134,8 @@ function append(slides) {
   const cat = body(root); if (/\/Names|\/OpenAction/.test(cat)) throw new Error('the catalog already has /Names or /OpenAction');
   changed.set(root, Buffer.from(cat.replace(/>>\s*$/, `\n/AcroForm <</Fields [${fields.map((n) => `${n} 0 R`).join(' ')}]>>\n/Names <</JavaScript <</Names [(deck) ${act} 0 R]>>>>>>`), 'latin1'));
   // objects, then a cross reference section for exactly the changed and new ones, then a trailer that points back
-  let pos = pdf.length; const off = new Map(); const nl = Buffer.from('\n', 'latin1');
-  if (pdf[pdf.length - 1] !== 10) { out.push(nl); pos += 1; }
+  let pos = pdf.length; const off = new Map();
+  if (pdf[pdf.length - 1] !== 10) { out.push(Buffer.from('\n', 'latin1')); pos += 1; }
   for (const [n, bytes] of [...changed].sort((a, b) => a[0] - b[0])) { const b = Buffer.concat([Buffer.from(`${n} 0 obj\n`, 'latin1'), bytes, Buffer.from('\nendobj\n', 'latin1')]); off.set(n, pos); out.push(b); pos += b.length; }
   const nums = [...off.keys()].sort((a, b) => a - b); let xref = 'xref\n';
   for (let i = 0; i < nums.length;) { let j = i; while (j + 1 < nums.length && nums[j + 1] === nums[j] + 1) j++;
@@ -118,5 +148,5 @@ function append(slides) {
 (async () => {
   const slides = await film();
   const n = append(slides);
-  console.log(`wrote ${PDF}: ${n} frames on ${slides.length} pages, ${(fs.statSync(PDF).size / 1e6).toFixed(1)} MB`);
+  console.log(`wrote ${PDF}: ${n} patches on ${slides.length} pages, ${(fs.statSync(PDF).size / 1e6).toFixed(1)} MB`);
 })().catch((e) => { console.error(e.message); process.exit(1); });
