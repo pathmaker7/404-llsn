@@ -9,3 +9,12 @@
 .rb.borderline .rb-mark { background: transparent; }
 .rb .rb-colon, .rb .rb-text { color: var(--text); }
 .rb .rb-text { overflow-wrap: anywhere; }
+
+/* Go, not sure, do not go: one of three answers under the verdict sentence. Not sure runs from yellow (one re-check of
+   four disagrees, --f 0) to deep orange (all four, --f 1). The word and the percent say it; the colour repeats it. */
+.gng { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 2px 0 12px; font-size: 13px; line-height: 1.35; color: var(--text); }
+.gng .gng-word b { display: inline-block; padding: 4px 12px; border: 2px solid currentColor; border-radius: 999px; font-weight: 700; letter-spacing: .04em; white-space: nowrap; }
+.gng.go .gng-word { color: #5fd38d; }
+.gng.nogo .gng-word { color: #ff6b6b; }
+.gng.unsure .gng-word { color: hsl(calc(52 - 30 * var(--f, 0)) 96% 56%); }
+.gng.unsure .gng-word b { background: hsl(calc(52 - 30 * var(--f, 0)) 96% 56% / .14); }

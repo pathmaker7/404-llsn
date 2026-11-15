@@ -70,7 +70,17 @@ export function words(a, e) {
   // A solid mark against a hollow mark, the same size, plus the word: the state never rests on colour or size.
   line.innerHTML = `<span class="tip rb-word" tabindex="0" data-tip="${esc(w.tip)}"><i class="rb-mark" aria-hidden="true"></i><b>${esc(w.word)}</b></span><span class="rb-colon">:</span> <span class="rb-text">${esc(w.text)}</span>`;
   box.appendChild(line);
+  // Go, not sure, do not go: the same four re-checks as one of three answers, shown right under the verdict sentence.
+  // GO: it survives and every re-check agrees. DON'T GO: it is lost and every re-check agrees. NOT SURE: some re-check
+  // gives the other answer; its rate is the share of re-checks that disagree (25, 50, 75 or 100% with four re-checks),
+  // drawn from yellow (low) to deep orange (high). The word and the percent carry the state, the colour only repeats it.
+  const done = Object.values(a.tests).filter(Boolean).length, n = a.bad.length, rate = Math.round(100 * n / done);
+  const kind = n ? 'unsure' : e.ok ? 'go' : 'nogo', top = box.parentElement, g = document.createElement('div');
+  g.id = 'gng'; g.className = 'gng ' + kind; g.setAttribute('role', 'note'); if (n) g.style.setProperty('--f', String((rate - 25) / 75));
+  g.innerHTML = `<span class="tip gng-word" tabindex="0" data-tip="${esc(T('xGTip'))}"><b>${esc(T(n ? 'xGUnsure' : e.ok ? 'xGGo' : 'xGNo'))}${n ? ' ' + rate + '%' : ''}</b></span><span class="gng-why">${esc(n ? T('xGSome', { n, m: done }) : T('xGAll', { m: done }))}</span>`;
+  const old = top.querySelector('#gng'); if (old) old.remove();
+  top.insertBefore(g, top.querySelector('.v-date') || box);
   const flips = {}; for (const k in a.tests) flips[k] = a.tests[k] ? a.tests[k].flips : null; // null: not tested
-  globalThis.__robust = { date: iso(ctx.t), ok: e.ok, state, borderline: a.borderline, flips, oks: Object.fromEntries(Object.entries(a.tests).map(([k, v]) => [k, v ? v.ok : null])),
+  globalThis.__robust = { date: iso(ctx.t), ok: e.ok, state, borderline: a.borderline, answer: kind, rate, flips, oks: Object.fromEntries(Object.entries(a.tests).map(([k, v]) => [k, v ? v.ok : null])),
     bad: a.bad, terrainDeg: DEG, margins: a.margins, ms: a.ms, word: w.word, text: w.text, tip: w.tip };
 });
