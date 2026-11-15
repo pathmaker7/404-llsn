@@ -92,7 +92,10 @@ export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}
       for (let d = st.a; d < st.b; d++) {
         const x0 = Math.round(xOf(d, w)), x1 = Math.round(xOf(d + 1, w)) - gap;
         const y0 = 0, lost = s.v[d] !== 0, bw = x1 - x0, t = Math.max(1, Math.round(1.25 * dpr));
-        if (lost && bw >= 4 * t) { // hollow: a faint fill and an outline
+        // Not sure: a landing a day earlier or a day later gives the other answer, so the block is yellow.
+        const un = (d > 0 && (s.v[d - 1] !== 0) !== lost) || (d + 1 < s.v.length && (s.v[d + 1] !== 0) !== lost);
+        if (un) { g.fillStyle = 'rgb(251,222,36)'; g.fillRect(x0, 0, bw, h); }
+        else if (lost && bw >= 4 * t) { // hollow: a faint fill and an outline
           g.fillStyle = `rgba(${BAD.join(',')},.3)`; g.fillRect(x0, 0, bw, h);
           g.strokeStyle = `rgb(${EDGE.join(',')})`; g.lineWidth = t; g.strokeRect(x0 + t / 2, t / 2, bw - t, h - t);
         } else { g.fillStyle = `rgb(${(lost ? BAD : OK).join(',')})`; g.fillRect(x0, 0, bw, h); }
