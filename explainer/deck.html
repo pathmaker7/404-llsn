@@ -85,6 +85,7 @@
      bottom, and the four landers fall onto it and say hello. The picture as drawn is the last frame. */
   #s1 .q { font-size: 44px; font-weight: 700; letter-spacing: -.01em; text-anchor: middle; }
   #s1 .fine { font-size: 17px; fill: #9aa4b2; }
+  #s1 .why { font-size: 28px; font-weight: 600; fill: var(--accent); text-anchor: middle; }
   #s1.play .mroll { animation: s1-roll 2s cubic-bezier(.25, .6, .3, 1) both .8s; }
   #s1.play .mspin { animation: s1-spin 2s cubic-bezier(.25, .6, .3, 1) both .8s; }
   #s1.play .mfall { animation: s1-fall .95s both 3.1s; }
@@ -131,6 +132,7 @@
   #s3 .num { font-size: 64px; font-weight: 700; letter-spacing: -.02em; fill: #5fd38d; }
   #s3 .numcap { font-size: 26px; font-weight: 600; fill: var(--body); }
   #s3 .moon { fill: #2a2d33; }
+  #s3 .rankcap { font-size: 24px; font-weight: 600; fill: var(--body); }
   #s3 .today { stroke: #ffb547; stroke-width: 3; stroke-linecap: round; }
   #s3.play .sweep { animation: s3-sweep 2.5s linear both 1s; }
   #s3.play .fly { animation: s3-fly 1.4s cubic-bezier(.2,.7,.3,1) both .8s; }
@@ -158,7 +160,7 @@
   #s4 .pill-t.ok { fill: #5fd38d; }
   #s4 .pill-t.bad { fill: #ff6b6b; }
   #s4.play .drop { animation: s4-drop .8s cubic-bezier(.2,.7,.3,1) both .8s; }
-  #s4.play .hop { animation: s4-hop .7s ease-in-out both 5.4s; }
+  #s4.play .hop { animation: s4-hop .7s ease-in-out both 6s; }
   @keyframes s4-drop { from { translate: 0 -760px; } }
   @keyframes s4-hop { 40% { translate: 0 -30px; } }
   /*END s4*/
@@ -252,7 +254,7 @@
   <button class="replay" type="button">Replay</button>
   <svg class="scene" viewBox="0 0 1312 690" role="img" aria-labelledby="s1-t s1-d">
     <title id="s1-t">Team 404 agents introduce Lunar Landing Site Navigator</title>
-    <desc id="s1-d">The Sun shines at the upper left and the Earth hangs at the upper right. The Moon, a real NASA picture, rolls in from the right, stops in the middle and drops to the bottom of the picture. Four small landers with Central Asian hats fall onto it and stand on top. Two of them say hello and that six short animations show what the team built. The question on top asks which days a Moon mission can survive.</desc>
+    <desc id="s1-d">The Sun shines at the upper left and the Earth hangs at the upper right. The Moon, a real NASA picture, rolls in from the right, stops in the middle and drops to the bottom of the picture. Four small landers with Central Asian hats fall onto it and stand on top. Two of them say hello and that six short animations show what the team built. The line on top says the app is for students of Central Asia, in their languages, and asks which days a Moon mission can survive.</desc>
     <defs>
       <radialGradient id="s1-sunglow"><stop offset="0" stop-color="#ffd27a" stop-opacity=".5"/><stop offset=".45" stop-color="#ffb547" stop-opacity=".16"/><stop offset="1" stop-color="#ffb547" stop-opacity="0"/></radialGradient>
       <radialGradient id="s1-corona"><stop offset=".55" stop-color="#fff1c2" stop-opacity=".95"/><stop offset=".72" stop-color="#ffb23d" stop-opacity=".5"/><stop offset="1" stop-color="#ff8a1f" stop-opacity="0"/></radialGradient>
@@ -288,7 +290,9 @@
     <g transform="translate(626.3 330.4)"><g class="drop" style="--t:5.4s"><g transform="rotate(12)"><g transform="scale(.62)"><g class="bot" data-hat="tajik" data-type="hopper" data-color="#f2c98a" data-faces="ok:0,happy:6.1"></g></g></g></g></g>
     <g transform="translate(753.5 389.2)"><g class="drop" style="--t:5.9s"><g transform="rotate(36)"><g transform="scale(.62)"><g class="bot" data-hat="kazakh" data-type="lander" data-color="#c9b8f5" data-faces="ok:0,happy:6.6"></g></g></g></g></g>
 
-    <text class="q a pop" style="--t:4.2s" x="656" y="140">Which days can a Moon mission survive?</text>
+    <!-- why, before what -->
+    <text class="why a pop" style="--t:3.9s" x="656" y="84">For students of Central Asia, in their languages:</text>
+    <text class="q a pop" style="--t:4.3s" x="656" y="140">Which days can a Moon mission survive?</text>
     <g class="say a" style="--t:6.8s" transform="translate(240 300)" data-w="240" data-tail="br" data-say="Hi! We are|team 404 agents."></g>
     <g class="say a" style="--t:7.7s" transform="translate(832 300)" data-w="290" data-tail="bl" data-say="Six short animations|show what we built."></g>
 
@@ -355,7 +359,7 @@
   <button class="replay" type="button">Replay</button>
   <svg class="scene" viewBox="0 0 1312 690" role="img" aria-labelledby="s3-t s3-d">
     <title id="s3-t">Green days survive, red days do not</title>
-    <desc id="s3-d">The app's calendar for five landing sites over one year: each block is one landing day, green if a landing survives, red if not. The best site has 76 good days of 365. Khujand-3, the hopper, says good days are rare and that the app finds the next good day when a launch is late.</desc>
+    <desc id="s3-d">The app's calendar for five landing sites over one year: each block is one landing day, green if a landing survives, red if not. The best site has 76 good days of 365. A second crop of the live app shows the first five sites in order, each row ending in its good days, its rank and its score: the first reads 11 of 30, rank 1, score 37. Khujand-3, the hopper, says good days are rare and that the app finds the next good day when a launch is late.</desc>
     <g class="star"><circle cx="1180" cy="170" r="1.6"/><circle cx="1010" cy="214" r="1.3"/><circle cx="860" cy="168" r="1.8"/><circle cx="1250" cy="262" r="1.2"/><circle cx="700" cy="196" r="1.3"/><circle cx="1100" cy="300" r="1.1"/><circle cx="560" cy="150" r="1.2"/><circle cx="940" cy="270" r="1.5"/></g>
     <path class="moon" d="M0 612 L1312 612 L1312 690 L0 690 Z"/>
 
@@ -377,6 +381,14 @@
     <g class="a pop" style="--t:3.8s">
       <text class="num" x="26" y="376">76 of 365</text>
       <text class="numcap" x="26" y="418">good days at the best site, next year</text>
+    </g>
+
+    <!-- the same calendar for the next month, live: the sites in order, each row ending in good days, rank and score -->
+    <g class="a pop" style="--t:5.2s">
+      <text class="rankcap" x="26" y="468">Sites are ranked by a score:</text>
+      <svg x="26" y="482" width="227.4" height="120" viewBox="56 0 360 190" preserveAspectRatio="xMidYMid slice"><image href="shots/rank.png" width="2880" height="190"/></svg>
+      <svg x="259" y="482" width="149" height="120" viewBox="2600 0 236 190" preserveAspectRatio="xMidYMid slice"><image href="shots/rank.png" width="2880" height="190"/></svg>
+      <rect class="shot-frame" x="26" y="482" width="382" height="120" rx="8"/>
     </g>
 
     <!-- Khujand-3 flies in from the left, lands under the calendar, hops to the right -->
@@ -402,15 +414,23 @@
   <button class="replay" type="button">Replay</button>
   <svg class="scene" viewBox="0 0 1312 690" role="img" aria-labelledby="s4-t s4-d">
     <title id="s4-t">Click a day: survived or lost, and why</title>
-    <desc id="s4-d">A crop of the app shows the Sun and Earth positions and the green MISSION SURVIVED box. Naryn-1, the lander, lands beside it. Four checks decide survival: night 2 days at most, radio gap 3 days at most, first sunlight within 24 hours, slope under 10 degrees. Naryn-1 says Earth rises in 2 days, so he survives. The answer is either MISSION SURVIVED or MISSION LOST.</desc>
+    <desc id="s4-d">A crop of the live app shows the green MISSION SURVIVED box for a landing on 12 December 2026. Under it a second crop shows three lines the app adds: Solid, the answer holds one day earlier or later and with the terrain 0.2 degrees higher or lower; Dish on Earth, a dish can see the Moon for over 99 percent of the hours Earth is in view; and a small compass, 2 of 8 spots 1 km around also survive. Naryn-1, the lander, lands on the right. Four checks decide survival: night 2 days at most, radio gap 3 days at most, first sunlight within 24 hours, slope under 10 degrees. Naryn-1 says that if he lands a day late he still survives.</desc>
 
-    <!-- the real app: only the Sun and Earth numbers and the verdict box -->
-    <clipPath id="s4-c1"><rect x="30" y="36" width="620" height="403.3" rx="10"/></clipPath>
+    <!-- the real app, landing 12 December 2026 at the top ranked site: the verdict box -->
+    <clipPath id="s4-c1"><rect x="30" y="30" width="620" height="179" rx="10"/></clipPath>
     <g class="a pop" style="--t:.3s">
-      <g clip-path="url(#s4-c1)"><svg x="30" y="36" width="620" height="403.3" viewBox="0 182 372 242" preserveAspectRatio="xMidYMid slice">
-        <image href="shots/site.png" width="1000" height="660"/>
+      <g clip-path="url(#s4-c1)"><svg x="30" y="30" width="620" height="179" viewBox="0 0 744 215" preserveAspectRatio="xMidYMid slice">
+        <image href="shots/site-top.png" width="744" height="370"/>
       </svg></g>
-      <rect class="shot-frame" x="30" y="36" width="620" height="403.3" rx="10"/>
+      <rect class="shot-frame" x="30" y="30" width="620" height="179" rx="10"/>
+    </g>
+    <!-- under the checks the app also says: how sure, which dish on Earth, and what a 1 km miss does -->
+    <clipPath id="s4-c2"><rect x="30" y="222" width="620" height="358" rx="10"/></clipPath>
+    <g class="a pop" style="--t:4.9s">
+      <g clip-path="url(#s4-c2)"><svg x="30" y="222" width="620" height="358" viewBox="0 0 744 430" preserveAspectRatio="xMidYMid slice">
+        <image href="shots/site-new.png" width="744" height="430"/>
+      </svg></g>
+      <rect class="shot-frame" x="30" y="222" width="620" height="358" rx="10"/>
     </g>
 
     <!-- four checks, right -->
@@ -422,20 +442,16 @@
     <text class="cap2 a" style="--t:4.6s" x="692" y="404">Night and radio limits can be changed.</text>
     <text class="cap2 a" style="--t:4.6s" x="692" y="436">Slope is a NASA Artemis III rule.</text>
 
-    <!-- Naryn-1 drops in under the crop, worried until Earth is explained, hops once when he speaks -->
-    <g transform="translate(40 484)">
-      <g class="drop"><g class="hop"><g transform="scale(.8)" style="transform-box:view-box;transform-origin:0 0"><g class="bot" data-hat="kyrgyz" data-type="lander" data-color="#e9edf4" data-faces="worry:0,happy:5.4"></g></g></g></g>
+    <!-- Naryn-1 drops in under the checks, worried until the answer is called solid, hops once when he speaks -->
+    <g transform="translate(700 476)">
+      <g class="drop"><g class="hop"><g transform="scale(.8)" style="transform-box:view-box;transform-origin:0 0"><g class="bot" data-hat="kyrgyz" data-type="lander" data-color="#e9edf4" data-faces="worry:0,happy:6"></g></g></g></g>
       <text class="tag" x="80" y="178">Naryn-1</text>
     </g>
-    <g class="say a pop" style="--t:5.4s" transform="translate(246 500)" data-w="362" data-tail="none" data-say="Earth rises in 2 days:|I survive!"><path d="M2 36 l-26 14 l26 14 Z"/></g>
-
-    <!-- the two possible answers -->
-    <g class="a pop" style="--t:6.6s"><rect class="pill pill-ok" x="692" y="520" width="330" height="58" rx="29"/><text class="pill-t ok" x="857" y="558">MISSION SURVIVED</text></g>
-    <g class="a pop" style="--t:7s"><rect class="pill pill-bad" x="1046" y="520" width="240" height="58" rx="29"/><text class="pill-t bad" x="1166" y="558">MISSION LOST</text></g>
+    <g class="say a pop" style="--t:6s" transform="translate(906 492)" data-w="362" data-tail="none" data-say="Land a day late?|I still survive."><path d="M2 36 l-26 14 l26 14 Z"/></g>
 
     <rect class="bar" style="--dur:13s" x="0" y="684" width="1312" height="6"/>
   </svg>
-  <p class="notes">Click a green day live, then Look at Sun and press play. "Sunset in" and "Earthset in" count down. Slope, slope within 2 km and distance from the pole are NASA Artemis III rules. Night (2 days), radio (3 days) and first sun (24 hours) are our teaching values; NASA says VIPER cannot endure more than 50 hours of darkness, so 2 days is in that range. A spot you pick yourself uses 320 m terrain, coarser than the 80 m of our fifteen sites. The table downloads as CSV and the page address keeps your sites and limits, so a comparison can be shared as a link.</p>
+  <p class="notes">New tonight, under the checks: Solid or Borderline (the landing is judged again a day earlier, a day later, and with the terrain 0.2 degrees higher and lower; 0.2 is our own test value), Dish on Earth (geometry only, never changes the verdict) and the compass of 8 spots 1 km around (judged on 320 m terrain). Click a green day live, then Look at Sun and press play. "Sunset in" and "Earthset in" count down. Slope, slope within 2 km and distance from the pole are NASA Artemis III rules. Night (2 days), radio (3 days) and first sun (24 hours) are our teaching values; NASA says VIPER cannot endure more than 50 hours of darkness, so 2 days is in that range. A spot you pick yourself uses 320 m terrain, coarser than the 80 m of our fifteen sites. The table downloads as CSV and the page address keeps your sites and limits, so a comparison can be shared as a link.</p>
   <div class="foot"><span>4 / 7</span><span>Made with AI (SI) tools: Claude. Screenshots show our live app; the drawings are made with AI tools.</span></div>
 </section>
 
