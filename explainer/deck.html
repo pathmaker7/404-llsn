@@ -40,6 +40,12 @@
   .g-wing rect { fill: #3d8bff; stroke: #6fa0e8; stroke-width: 2; } .g-wing path { stroke: #9cc3ff; stroke-width: 1.5; fill: none; }
   .g-wave { fill: none; stroke: var(--earth); stroke-width: 3; stroke-linecap: round; }
   .replay { position: absolute; top: 30px; right: 64px; font: inherit; font-size: 15px; font-weight: 600; color: var(--accent); background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 7px 14px; cursor: pointer; }
+  /* The loading screen: covers the page until every picture is decoded. */
+  #wait { position: fixed; inset: 0; z-index: 99; display: grid; place-content: center; justify-items: center; gap: 14px; background: #07090d; color: #e9edf4; font-size: 20px; }
+  #wait span { width: 46px; height: 46px; border-radius: 50%; border: 4px solid rgba(255,255,255,.16); border-top-color: var(--accent); animation: wait-spin .9s linear infinite; }
+  #wait em { font-style: normal; font-size: 15px; opacity: .6; }
+  @keyframes wait-spin { to { transform: rotate(360deg); } }
+  @media print { #wait { display: none; } }
   .replay:hover, .replay:focus-visible { border-color: var(--accent); outline: none; }
   .foot { position: absolute; left: 64px; right: 64px; bottom: 18px; display: flex; justify-content: space-between; color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
   .nav { position: fixed; left: max(124px, calc(50vw - 596px)); bottom: 10px; display: flex; gap: 8px; z-index: 2; }
@@ -717,7 +723,13 @@
   const stop = (s) => { clearTimeout(s._again); s.classList.remove('play'); };
   const play = (s) => { stop(s); if (still || !s.dataset.dur) return; void s.getBoundingClientRect(); s.classList.add('play'); s._again = setTimeout(() => play(s), s.dataset.dur * 1000); };
   const seen = new IntersectionObserver((es) => es.forEach((e) => (e.isIntersecting ? play : stop)(e.target)), { threshold: 0.6 });
-  slides.forEach((s) => seen.observe(s));
+  // Nothing plays until every picture is downloaded and decoded: a scene that starts while NASA's Moon is half loaded
+  // shows half a Moon. A loading screen covers the page until then (at most 30 seconds, so a lost picture cannot block it).
+  const pics = [...new Set([...document.querySelectorAll('image')].map((i) => i.getAttribute('href')).filter(Boolean))];
+  const wait = document.createElement('div'); wait.id = 'wait'; wait.setAttribute('role', 'status');
+  wait.innerHTML = '<span></span><b>Loading the slides\u2026</b><em>0 / ' + pics.length + '</em>'; document.body.append(wait);
+  let got = 0; const one = (u) => { const i = new Image(); i.src = u; return i.decode().catch(() => {}).then(() => { wait.lastChild.textContent = ++got + ' / ' + pics.length; }); };
+  Promise.race([Promise.all(pics.map(one)), new Promise((r) => setTimeout(r, 30000))]).then(() => requestAnimationFrame(() => requestAnimationFrame(() => { wait.remove(); slides.forEach((s) => seen.observe(s)); })));
   for (const b of document.querySelectorAll('.replay')) b.onclick = () => play(b.closest('section'));
   // N shows speaker notes; Next, Back, the arrow keys and PageUp/PageDown move one slide.
   const cur = () => slides.reduce((b, s, i) => Math.abs(s.getBoundingClientRect().top) < Math.abs(slides[b].getBoundingClientRect().top) ? i : b, 0);
