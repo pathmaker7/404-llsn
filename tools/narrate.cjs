@@ -10,7 +10,7 @@ const { execFileSync } = require('child_process');
 const FFMPEG = '/opt/homebrew/bin/ffmpeg', FFPROBE = '/opt/homebrew/bin/ffprobe';
 const ROOT = path.join(__dirname, '..'), TMP = fs.mkdtempSync(path.join(require('os').tmpdir(), 'narrate-'));
 const ARG = process.argv[2] || 'Daniel (English (UK))', TAKE = /\.(mp3|m4a|wav|aac|ogg)$/i.test(ARG) && fs.existsSync(ARG) ? ARG : null;
-const VOICE = TAKE ? process.argv[3] || 'recorded take' : ARG, BASE_WPM = 185, MAX_WPM = 215, GAP = 0.2;
+const VOICE = TAKE ? process.argv[3] || 'recorded take' : ARG, BASE_WPM = 185, MAX_WPM = 215, GAP = +(process.env.GAP || 0.2); // GAP: silence kept free before the next caption (a recorded take already carries about 0.2 s around each line)
 
 const caps = JSON.parse(fs.readFileSync(path.join(ROOT, 'docs', 'demo-captions.json'), 'utf8'));
 const dur = (f) => +execFileSync(FFPROBE, ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', f]).toString();

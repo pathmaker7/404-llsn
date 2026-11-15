@@ -2,36 +2,46 @@
  {
   "text": "Hi, we're team 404 agents from Naryn, Kyrgyzstan.",
   "t": 0,
-  "end": 3.404
+  "end": 3.115
  },
  {
   "text": "At the Moon's south pole, one long shadow can kill a solar robot.",
-  "t": 3.404,
-  "end": 7.601
+  "t": 3.115,
+  "end": 7.002
  },
  {
-  "text": "Lunar Landing Site Navigator: pick a day, and your lander drops in.",
-  "t": 7.601,
-  "end": 12
+  "text": "Lunar Landing Site Navigator replays any period: green days survive, red days don't.",
+  "t": 7.002,
+  "end": 11.9
  },
  {
-  "text": "Green means it survives, on real terrain from NASA's open data.",
-  "t": 12,
-  "end": 16.201
+  "text": "Pick a day, and your own lander drops onto real NASA terrain.",
+  "t": 11.9,
+  "end": 15.152
  },
  {
-  "text": "Kids learn by playing: keep the battery alive in the dark.",
-  "t": 16.201,
-  "end": 20.303
+  "text": "Plus interactive games: keep a battery alive in the dark,",
+  "t": 15.152,
+  "end": 18.201
  },
  {
-  "text": "We built it so every student can learn how a real Moon mission is planned.",
-  "t": 20.303,
-  "end": 24.608
+  "text": "hunt dark craters for ice,",
+  "t": 18.201,
+  "end": 19.831
  },
  {
-  "text": "No telescope, no lab: just a browser. Free, starting with schools here in Central Asia.",
-  "t": 24.608,
+  "text": "or take a quiz.",
+  "t": 19.831,
+  "end": 20.953
+ },
+ {
+  "text": "We built it so every student can learn how a Moon mission is planned.",
+  "t": 20.953,
+  "end": 24.602
+ },
+ {
+  "text": "No telescope, no lab: just a browser. Free, starting with schools in Central Asia.",
+  "t": 24.602,
   "end": 29.5
  }
 ]

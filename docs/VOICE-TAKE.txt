@@ -2,12 +2,12 @@ Hi, we're team four oh four agents from Naryn, Kyrgyzstan.
 
 At the Moon's south pole, one long shadow can kill a solar robot.
 
-Lunar Landing Site Navigator: pick a day, and your lander drops in.
+Lunar Landing Site Navigator replays any period: green days survive, red days don't.
 
-Green means it survives, on real terrain from NASA's open data.
+Pick a day, and your own lander drops onto real NASA terrain.
 
-Kids learn by playing: keep the battery alive in the dark.
+Plus interactive games: keep a battery alive in the dark, hunt dark craters for ice, or take a quiz.
 
-We built it so every student can learn how a real Moon mission is planned.
+We built it so every student can learn how a Moon mission is planned.
 
-No telescope, no lab: just a browser. Free, starting with schools here in Central Asia.
+No telescope, no lab: just a browser. Free, starting with schools in Central Asia.
