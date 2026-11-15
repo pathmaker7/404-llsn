@@ -1,0 +1,26 @@
+/* Site score and rank (src/score.js): "#1 39" at the end of every site row, the column title "Score" with its tooltip in the axis row, one line in the answer panel. */
+.sc { display: inline-flex; align-items: baseline; gap: 5px; margin-left: 10px; font: 500 11px var(--mono); white-space: nowrap; vertical-align: baseline; }
+.sc-r { min-width: 3ch; text-align: right; color: var(--muted); }
+.sc-r.top { color: var(--teal); }
+.sc-s { min-width: 3ch; text-align: right; color: var(--text); font-weight: 600; }
+
+/* the column title sits in the empty last cell of the axis row; its tooltip opens leftwards so it stays inside the panel */
+.a-axis > :last-child { text-align: right; white-space: nowrap; }
+.sc-head { font: 400 11px var(--sans); color: var(--muted); }
+.sc-head:hover, .sc-head:focus { color: var(--text); }
+.sc-head:hover::after, .sc-head:focus::after { left: auto; right: 0; text-align: left; white-space: normal; }
+
+/* room for the mark: the last column of every row (and of the axis row, so the day bars keep one width) */
+#sitelist .a-row { grid-template-columns: 190px 1fr 140px; }
+@media (max-width: 760px) {
+  /* the host hides the last column on a phone; it now holds only the mark (the raw count is cut by font-size 0) */
+  #sitelist .a-row { grid-template-columns: 104px 1fr 48px; }
+  #sitelist .a-row > :last-child { display: block; }
+  #sitelist .cnt { font-size: 0; }
+  #sitelist .cnt .sc { font-size: 11px; margin-left: 0; }
+}
+
+/* the answer panel line */
+.verdict .sc-line { margin: 10px 0 4px; font-size: 13px; line-height: 1.4; color: var(--muted); }
+.sc-line b { color: var(--text); font-weight: 600; font-family: var(--mono); font-size: 12px; }
+.sc-line .tip { border: 0; margin-right: 2px; }

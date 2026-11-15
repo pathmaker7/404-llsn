@@ -1,0 +1,11 @@
+/* Solid or borderline verdict: one compact line under the checks. A solid mark against a hollow mark, the same size, plus the word. */
+.rb { margin: 10px 0 4px; padding-top: 8px; border-top: 1px solid var(--line); font-size: 13px; line-height: 1.4; color: var(--text); }
+.rb .rb-word { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.rb .rb-word b { font-weight: 600; }
+.rb .rb-mark { flex: none; width: 10px; height: 10px; border: 2px solid currentColor; border-radius: 50%; box-sizing: border-box; }
+.rb.solid .rb-word { color: var(--teal); }
+.rb.solid .rb-mark { background: currentColor; }
+.rb.borderline .rb-word { color: var(--sun); }
+.rb.borderline .rb-mark { background: transparent; }
+.rb .rb-colon, .rb .rb-text { color: var(--text); }
+.rb .rb-text { overflow-wrap: anywhere; }

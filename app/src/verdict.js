@@ -81,9 +81,12 @@ export function renderVerdict(el, ctx) {
     `<p class="v-key"><i class="ok"></i>${L('mOkShort')} <i class="bad"></i>${L('mLostShort')} <i class="cur"></i>${L('calNow')}</p>` +
     `<table class="v-rows">${e.rows.map((r) => { const [v, lim] = cells(r);
       return `<tr class="${r.pri} ${r.ok === false ? 'fail' : ''}"><td><span class="tip" tabindex="0" data-tip="${lim ? L('colLimit') + ': ' + lim + '. ' : ''}${L('r' + cap(r.id) + 'Tip')}">${L('r' + cap(r.id))}</span></td><td>${v}</td><td>${r.ok === undefined ? '' : r.ok ? '✔' : '✘'}</td></tr>`; }).join('')}</table>` +
+    `<div id="v-extra"></div>` +
     `<p class="v-note"><span class="tip" tabindex="0" data-tip="${L('mNote')} ${L('m5Note')}">ⓘ</span> ${L('vHint')}</p>`;
   const clamp = (x) => Math.min(Math.max(x, ctx.p0), ctx.p1 - days * DAY);
   for (const b of el.querySelectorAll('[data-t]')) b.onclick = () => ctx.setDate(clamp(+b.dataset.t));
   el.querySelector('#v-day').onchange = (ev) => { const x = Date.parse(ev.target.value + 'T00:00:00Z') / 1000; if (Number.isFinite(x)) ctx.setDate(clamp(x)); };
   globalThis.__verdict = { date: iso(t), ok: e.ok, rows: e.rows, days: last + 1, good };
+  // Plug-ins add their own lines under the checks (score, confidence, dishes, nearby spots). Each runs alone: one that throws leaves the rest standing.
+  for (const f of globalThis.VerdictExtras || []) try { f(el.querySelector('#v-extra'), { ...ctx, t, W, at, judgeAt }, e); } catch (err) { console.error('verdict plug-in', err); }
 }

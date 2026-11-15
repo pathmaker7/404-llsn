@@ -1,0 +1,75 @@
+/* Motion: one language, taken from the subject. At the Moon's south pole the Sun never climbs: light arrives sideways,
+   low and slow, and shadows slide across the ground. So things arrive as light from the side and leave as a shadow sliding over.
+   Nothing bounces, spins or pops; nothing loops; only transform, opacity, clip-path and background-position move.
+   No rule here sets pointer-events, so nothing in motion stops a click. Every rule that moves sits inside no-preference: with reduced motion the final state shows at once. */
+
+:root {
+  --m-out: cubic-bezier(.22, .61, .36, 1);   /* arrivals: fast start, long soft stop */
+  --m-in: cubic-bezier(.55, .06, .68, .19);  /* exits: slow start, quick finish */
+  --m-warm: 255, 181, 71;                    /* the app's own Sun colour (--sun) */
+}
+
+@media (prefers-reduced-motion: no-preference) {
+
+  /* 4. small things: presses. The focus ring stays as app.css draws it: a faded ring needed a transparent outline on every
+     control, which shows as a box in forced colours. */
+  /* Buttons press in over 100 ms (app.css button:active moves them 1 px). */
+  :where(.kidbtn, .ghost, #topbar nav button, .a-range button, .a-mission button, .a-add button, .v-date button, .vt-row button, .seg button,
+         .play, #a-play, .btn, .v-hist button, #panel .close) {
+    transition: transform 100ms var(--m-out);
+  }
+
+  /* The side panel arrives from the side and fades in; it leaves faster, ease in. */
+  #panel { opacity: 0; transition: transform 150ms var(--m-in), opacity 130ms var(--m-in); }
+  #panel.open { opacity: 1; transition: transform 220ms var(--m-out), opacity 180ms var(--m-out); }
+
+  /* Lists that open (details), and tooltips: a short slide and fade. data-m-open is set by motion.js on the click that opens them. */
+  details[data-m-open][open] > :not(summary) { animation: m-rise 180ms var(--m-out) backwards; }
+  .tip:hover::after, .tip:focus::after { animation: m-rise 120ms var(--m-out) backwards; }
+  @keyframes m-rise { from { opacity: 0; transform: translateY(-4px); } }
+
+  /* 1. the verdict: light sweeps across the head, or a shadow slides over it */
+  /* motion.js puts m-lit (SURVIVED) or m-shade (LOST) on #verdict only when the verdict or the day changes, and takes it off after. */
+  #verdict.m-lit .v-head, #verdict.m-shade .v-head { position: relative; }
+  #verdict.m-lit .v-head::after, #verdict.m-shade .v-head::after {
+    content: ""; position: absolute; pointer-events: none; background-repeat: no-repeat;
+  }
+  /* a thin warm line low in the head, with a faint glow above it, moving left to right (rest position: out of sight on the right) */
+  #verdict.m-lit .v-head::after {
+    left: 0; right: 0; bottom: -3px; height: 16px;
+    background-image: linear-gradient(90deg, rgba(var(--m-warm), 0), rgba(255, 214, 150, .95) 85%, rgba(var(--m-warm), 0)),
+                      radial-gradient(ellipse 100% 100% at 60% 100%, rgba(var(--m-warm), .26), rgba(var(--m-warm), 0) 70%);
+    background-size: 38% 2px, 38% 100%;
+    background-position: 170% 100%, 170% 100%;
+    animation: m-light 420ms var(--m-out) var(--m-delay, 0ms) backwards;
+  }
+  @keyframes m-light { from { background-position: -70% 100%, -70% 100%; } to { background-position: 170% 100%, 170% 100%; } }
+  /* a soft shadow over the whole head, same direction */
+  #verdict.m-shade .v-head::after {
+    inset: -4px -8px;
+    background-image: linear-gradient(90deg, rgba(2, 4, 8, 0), rgba(2, 4, 8, .5) 50%, rgba(2, 4, 8, 0));
+    background-size: 60% 100%;
+    background-position: 250% 0;
+    animation: m-shade 420ms var(--m-out) var(--m-delay, 0ms) backwards;
+  }
+  @keyframes m-shade { from { background-position: -150% 0; } to { background-position: 250% 0; } }
+  /* the head settles as the light or the shadow passes */
+  #verdict.m-lit .v-head > b, #verdict.m-shade .v-head > b { animation: m-settle 380ms var(--m-out) var(--m-delay, 0ms) backwards; }
+  @keyframes m-settle { from { opacity: .5; transform: translateX(-8px); } }
+
+  /* 3. first arrival: the list lit once by a line of light passing from the left */
+  /* motion.js adds m-arrive to #sites once per page load, at the moment the list is ready, and takes it off after. */
+  #sites.m-arrive::after {
+    content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none; background-repeat: no-repeat;
+    background-image: linear-gradient(90deg, rgba(var(--m-warm), 0), rgba(var(--m-warm), .14) 72%, rgba(255, 214, 150, .85) 97%, rgba(255, 214, 150, 0));
+    background-size: 90px 100%;
+    background-position: calc(100% + 90px) 0;
+    animation: m-pass 640ms var(--m-out) backwards;
+  }
+  @keyframes m-pass { from { background-position: -90px 0; } to { background-position: calc(100% + 90px) 0; } }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* the panel already had a slide in app.css: with reduced motion it opens at once */
+  #panel { transition: none; }
+}

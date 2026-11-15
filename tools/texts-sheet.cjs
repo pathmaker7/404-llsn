@@ -5,7 +5,7 @@
 const fs = require('fs');
 const path = require('path');
 const I = require('../app/i18n.js');
-const PARTS = [['lander', 'My lander'], ['game', 'Keep me alive'], ['ice', 'Ice hunter'], ['quiz', 'Quiz'], ['tour', 'Help for a first visit']];
+const PARTS = [['lander', 'My lander'], ['game', 'Keep me alive'], ['ice', 'Ice hunter'], ['quiz', 'Quiz'], ['tour', 'Help for a first visit'], ['score', 'Site score and rank'], ['robust', 'Solid or borderline'], ['dsn', 'Dish on Earth'], ['nearby', 'Landing 1 km off']];
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 let n = 0, body = '';
 for (const [f, title] of PARTS) {

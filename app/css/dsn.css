@@ -1,0 +1,7 @@
+/* Dishes on Earth: one compact line under the checks of the answer panel. */
+.verdict .v-dsn { margin: 8px 0 0; font-size: 12px; line-height: 1.4; color: var(--muted); overflow-wrap: anywhere; }
+.verdict .v-dsn .tip { color: var(--earth); font-weight: 600; }
+.verdict .v-dsn[aria-busy] { opacity: .7; }
+/* The tooltip opens upwards unless dsn.js finds more room below the line (the panel scrolls and cuts a tooltip off). */
+.verdict .v-dsn .tip:hover::after, .verdict .v-dsn .tip:focus::after { top: auto; bottom: 1.6em; }
+.verdict .v-dsn .tip[data-pos="down"]:hover::after, .verdict .v-dsn .tip[data-pos="down"]:focus::after { top: 1.6em; bottom: auto; }

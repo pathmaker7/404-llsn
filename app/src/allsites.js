@@ -188,6 +188,7 @@ export function allSites(root, { sites, days, p0, p1, onPick, onHover = () => {}
     }
     // Best site for the chosen period first. Only once every row is known, so rows do not jump while loading.
     if (st.ready) for (const s of [...sites].sort((p, q) => q.good - p.good)) ol.appendChild(s.li);
+    for (const f of globalThis.SiteListExtras || []) try { f({ root, sites, a: st.a, b: st.b, ready: st.ready, p0, days }); } catch (err) { console.error('site list plug-in', err); }
     globalThis.__all = { ready: st.ready, a: st.a, b: st.b, from: from.value, to: to.value, rows: sites.map((s) => ({ id: s.id, good: s.v ? s.good : -1 /* not judged yet: its dot stays grey, not red */, total: st.b - st.a })),
       at: (id, date) => sites.find((s) => s.id === id).v[dayOf(date)] === 0 /* does a landing that day survive: what the cell's colour says */ };
   }

@@ -14,6 +14,7 @@
     "deck": "node tools/deck-pdf.cjs && cp explainer/deck.pdf explainer/deck-still.pdf && node tools/deck-animate.cjs",
     "narrate": "node tools/narrate.cjs",
     "texts": "node tools/texts-sheet.cjs",
+    "test:planner": "node tools/test-score.cjs && node tools/test-robust.cjs && node tools/test-dsn.cjs && node tools/test-nearby.cjs && node tools/test-motion.cjs",
     "test:kids": "node tools/test-kids-shell.cjs && node tools/test-lander.cjs && node tools/test-game.cjs && node tools/test-ice.cjs && node tools/test-quiz.cjs && node tools/test-tour.cjs"
   },
   "dependencies": {
