@@ -111,6 +111,12 @@ const Sky = require('../app/sky.js');
     const hit = fs.readFileSync(path.join(__dirname, '..', f), 'utf8').match(/\S\s[–—]\s\S/);
     assert.ok(!hit, `${f}: dash used as punctuation near "${hit && hit[0]}"`);
   }
+  // 8b. The project demo is seven slides, each marked as made with AI tools. The submission guide: "slide deck (up to seven slides
+  // including title and intro slides)" and "Projects that exceed these limits will not be eligible for Global Judging".
+  { const deck = fs.readFileSync(path.join(__dirname, '..', 'explainer', 'deck.html'), 'utf8'), n = (re) => (deck.match(re) || []).length;
+    assert.strictEqual(n(/<section[\s>]/g), 7, 'the deck has exactly seven slides');
+    assert.strictEqual(n(/Made with AI \(SI\) tools: Claude/g), 7, 'every slide says it was made with AI tools');
+    assert.ok(!/\b(kids?|child(ren)?)\b/i.test(deck.replace(/<script[\s\S]*<\/script>/, '')), 'the deck says students'); }
   // 9. The page a native speaker checks the Russian and Kyrgyz texts on (explainer/texts.html, written by
   // tools/texts-sheet.cjs) shows the texts the app shows now, not an older draft.
   { const sheet = fs.readFileSync(path.join(__dirname, '..', 'explainer', 'texts.html'), 'utf8'), esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));

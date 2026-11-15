@@ -35,7 +35,7 @@ const html = `<!doctype html>
 </head>
 <body>
 <h1>Texts to check: Russian and Kyrgyz</h1>
-<p class="lead">${n} texts of the children's features of the Lunar Landing Site Navigator. The Russian and Kyrgyz lines were drafted with AI and need a native speaker's eye. Names in braces, like {site} or {n}, are filled in by the app: leave them as they are. Found a wrong or clumsy line? Send its grey code (for example kTIce2) and the wording you would use to the team.</p>
+<p class="lead">${n} texts of the students' games of the Lunar Landing Site Navigator. The Russian and Kyrgyz lines were drafted with AI and need a native speaker's eye. Names in braces, like {site} or {n}, are filled in by the app: leave them as they are. Found a wrong or clumsy line? Send its grey code (for example kTIce2) and the wording you would use to the team.</p>
 <nav>${PARTS.map(([f, t]) => `<a href="#${f}">${esc(t)}</a>`).join('')}</nav>
 ${body}</body>
 </html>

@@ -583,6 +583,8 @@ async function renderValidation() {
 function renderAbout() {
   $('panel-body').innerHTML = `<h2>About</h2>
   <p>At the lunar south pole the Sun never climbs more than about two degrees above a flat horizon, and distant ridges decide whether a lander has power or a line of sight to Earth. This tool puts you <b>on the terrain</b> at a candidate site. For any date from 2021 to 2031 you see where the Sun and Earth really are against the real LOLA horizon, how much of the Sun is up, and how long until you lose power or the link home.</p>
+  <h3>Made with AI (SI) tools</h3>
+  <p>The code, the tests and the Russian and Kyrgyz texts of this app were written with Claude (Anthropic), directed and checked by team 404 agents. No picture or sound in the app is AI generated: the Moon is drawn from NASA data, the landers and hats by code.</p>
   <h3>How to read it</h3>
   <ul>
     <li><b>Disc visible</b>: share of the solar disc above the terrain. <b>Generating</b> means the whole disc is up; <b>Partial</b>, part of it.</li>

@@ -13,6 +13,13 @@ const ROOT = path.join(__dirname, '..');
   await page.waitForLoadState('networkidle');
   const broken = await page.evaluate(() => [...document.images].filter((i) => !i.naturalWidth).length);
   if (broken) { console.error(`${broken} images did not load`); process.exit(1); }
+  // A slide taller than its page is cut off without a word in the PDF, so check it in the print layout first.
+  await page.emulateMedia({ media: 'print' });
+  const cut = await page.evaluate(() => [...document.querySelectorAll('section')].filter((s) => s.scrollHeight > s.clientHeight + 1 ||
+    [...s.querySelectorAll(':scope > :not(.foot):not(.notes)')].some((e) => e.getBoundingClientRect().bottom > s.querySelector('.foot').getBoundingClientRect().top)).map((s) => s.id));
+  if (cut.length) { console.error('these slides do not fit their page: ' + cut.join(', ')); process.exit(1); }
+  const pages = await page.evaluate(() => document.querySelectorAll('section').length);
+  if (pages !== 7) { console.error(`the deck has ${pages} slides; the Space Apps limit is seven`); process.exit(1); }
   const out = path.join(ROOT, 'explainer', 'deck.pdf');
   await page.pdf({ path: out, width: '1440px', height: '900px', printBackground: true, preferCSSPageSize: true });
   await browser.close(); srv.close();

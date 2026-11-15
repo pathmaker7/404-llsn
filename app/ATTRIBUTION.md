@@ -20,6 +20,8 @@ All data are NASA/JPL products (US Government works, no copyright in the US) or 
 | Package | License | Use |
 |---|---|---|
 | three.js r170 (vendored in `web/vendor/three.module.js`, license in `web/vendor/THREE_LICENSE.txt`) | MIT | 3D rendering |
+| astronomy-engine 2.1.19, Don Cross (vendored in `app/vendor/astronomy.browser.min.js`) | MIT | Sun, Earth and Moon positions in the browser |
+| Playwright (playwright-core) | Apache-2.0 | Browser tests, screenshots, the slides' PDF |
 | Skyfield | MIT | Ephemeris computation |
 | jplephem (Skyfield dependency) | MIT | Reading SPICE kernels |
 | NumPy | BSD-3-Clause | Numerics |

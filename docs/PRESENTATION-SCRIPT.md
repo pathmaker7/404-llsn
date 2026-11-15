@@ -1,7 +1,7 @@
 # Online presentation script (Naryn local jury)
 
 The Naryn info session PDF says online teams prepare a presentation, but gives no length, format or time. This script
-runs **3 minutes 40 seconds** with the live app (about **3 minutes** if you skip the row marked "four toys"), and has a
+runs **3 minutes 40 seconds** with the live app (about **3 minutes** if you skip the clicks on slide 6), and has a
 **1 minute** cut if they ask for less. Ask the Local Lead for the real limit and cut from the bottom of each slide's
 lines.
 
@@ -10,24 +10,27 @@ https://lunar-navigator-404.web.app in a second tab, already loaded (the Moon ta
 screen, not one tab, so you can switch. Speak in English, Kyrgyz or Russian; the slides are in English, as the rules
 require. The app has a Kyrgyz and Russian button (top right) if the jury prefers.
 
-## 3 minutes
+## 3 minutes 40 seconds
+
+The slides are the same seven the judges get as the project demo (`explainer/deck.pdf`). Slide numbers below are the new
+order: 1 title, 2 problem and why, 3 calendar and cycles, 4 stand on the site, 5 NASA data and proof, 6 the lander and
+three games, 7 who it is for.
 
 | Time | Slide or screen | Say | Do |
 |---|---|---|---|
-| 0:00 | 1 | "We are team 404 agents from Naryn: Manuchehr, Aruzhan, Kairat, Arsen and Amirbek. Our challenge is Lunar Landing Site Navigator. We built a tool that answers one question: which landing days can a Moon mission survive, and we built it to teach students here how Moon landings are planned." | |
-| 0:20 | 2, then the app | "At the Moon's south pole the Sun and Earth stay near the horizon. Each row is a landing site, each block a landing day. Green: a solar mission survives 14 days. Look at one year: one short window a month: Earth is up about two weeks, then hidden about two weeks, so a 14 day stay only fits if you land in the first days Earth is up. And months with almost nothing: the Sun's dark season." | In the app press **Next year**. Point at a green window, then at the empty months |
-| 0:55 | 3, then the app | "Five years: it repeats every 354 days, twelve lunar months, so good days come about 11 days earlier each year, like Orozo. NASA chooses landing dates from cycles like these; a student sees them in one click." | Press **Next 5 years** |
-| 1:20 | 4, then the app | "Click a green day and you stand on the site, on real NASA terrain, with the Sun and Earth where they really are. The answer: mission survived, eleven checks, and why." | Press **Next month**, click a green block, press **Look at Sun**, then play ▶ for 3 seconds |
-| 1:50 | 4, then the app (four toys, skip for 3 minutes) | "For children there are four toys, all judged by the same rule as the grid. Build your own lander with a Kyrgyz ak kalpak: click a day and it drops onto the Moon, green if it survives, frozen if it is lost. In Keep me alive you watch the battery fill in sunlight and drain in shadow for 14 days. In Ice hunter you tap a dark spot: if our model never sees the Sun there, water ice could hide there. We say could, we do not detect ice. And a five question quiz." | Open the **My lander** card, pick a hat, click a red block and watch the drop. On a site press **Play: Keep me alive**, **Try a red day**, speed 4x. Back on the map press **Ice hunter** and tap a dark crater near the pole. Press **Quiz** and answer one question |
-| 2:25 | 5, then the app | "Is it right? We replay real landings. At Chandrayaan-3's site our sunset is the exact day India put the lander to sleep. And honestly: at IM-2 our model says the day was fine; the lander fell on its side. We judge the place and the day, not the touchdown." | Back to **All sites**, then **Replay a real landing → Chandrayaan-3**. Point at the box on the left |
-| 3:00 | 6 | "Everything is NASA data: LOLA terrain, the Data Book sites, JPL positions. Our Sun and Earth positions match JPL Horizons to 0.0047 degrees. On sharp ridges our sunlight is higher than NASA's map, so we call those numbers an upper estimate. A spot a child picks uses coarser terrain, 320 metres, so small shadows are missed." | |
-| 3:25 | 7 | "It is free, in Kyrgyz, Russian and English, and comes with a 45 minute lesson plan for schools in Kyrgyzstan and Central Asia. Thank you." | Leave the app link on screen |
+| 0:00 | 1 | "We are team 404 agents from Naryn: Manuchehr, Aruzhan, Kairat, Arsen and Amirbek. Our challenge is Lunar Landing Site Navigator. We built a tool that answers one question: which landing days can a Moon mission survive?" | |
+| 0:15 | 2 | "At the Moon's south pole the Sun and Earth stay near the horizon. One hill can hide the Sun, and the robot has no power. One ridge can hide Earth, and it has no radio. We built it so every student can learn how a real Moon mission is planned. No telescope, no lab: just a browser." | |
+| 0:40 | 3, then the app | "Each row is a landing site, each block a landing day. Green: a solar mission survives 14 days. Red: it is lost. Look at one year: one short window a month, because Earth is up about two weeks and hidden about two weeks. And months with almost nothing: the Sun's dark season. Five years: it repeats about every 354 days, twelve lunar months, so good days come about 11 days earlier each year, like Orozo, Ramadan." | In the app press **Next year**, point at a green window, then at the empty months. Press **Next 5 years** |
+| 1:20 | 4, then the app | "Click a green day and you stand on the site, on real NASA terrain, with the Sun and Earth where they really are. The answer: mission survived, eleven checks, and why. Click anywhere near the pole and your own lander gets its own row of days." | Press **Next month**, click a green block, press **Look at Sun**, then play for 3 seconds |
+| 1:50 | 5, then the app | "Is it right? Everything is NASA data: LOLA terrain, the Data Book sites, and our Sun and Earth positions match JPL Horizons to 0.0047 degrees. We replay real landings: at Chandrayaan-3's site our sunset is the exact day India put the lander to sleep. And honestly: at IM-2 our model says the day was fine; the lander fell on its side. We judge the place and the day, not the touchdown. On sharp ridges our sunlight is higher than NASA's map, so we call those numbers an upper estimate." | **All sites**, then **Replay a real landing**, **Chandrayaan-3**. Point at the box on the left |
+| 2:30 | 6, then the app (skip the clicks for 3 minutes) | "For students: build your own lander and play three games, all judged by the same rule as the calendar. We even packed in the soul of Central Asia: a hat for every lander. Eleven checks, none about hats. The Moon does not care. We do. Build your lander, click a day and it drops onto the Moon: green if it survives, frozen if it is lost. In Keep me alive you watch the battery fill in sunlight and drain in shadow. In Ice hunter you tap a dark crater: if our model never sees the Sun there, water ice could hide there. We say could, we do not detect ice. And a five question quiz." | Open the **My lander** card, pick a hat, click a red block and watch the drop. On a site press **Play: Keep me alive**, **Try a red day**, speed 4x. Back on the map press **Ice hunter** and tap a dark crater near the pole. Press **Quiz** and answer one question |
+| 3:15 | 7 | "It is free, in Kyrgyz, Russian and English, it works on a phone with no login, and it comes with a 45 minute lesson plan. Next: the first lessons in Naryn schools. Thank you." | Leave the app link on screen |
 
 ## 1 minute cut
 
-Slide 1 line, then the app: **Next year** (one sentence on the two cycles), **Next 5 years** ("repeats every 354
-days"), click a green day ("mission survived, eleven checks"), Chandrayaan-3 replay ("our sunset is the day India put
-it to sleep"), slide 7 line.
+Slide 1 line, slide 2 "We built it so ..." sentence, then the app: **Next year** (one sentence on the two cycles),
+click a green day ("mission survived, eleven checks"), drop a lander with a hat (the joke), Chandrayaan-3 replay
+("our sunset is the day India put it to sleep"), slide 7 line.
 
 ## Hard questions
 
@@ -41,7 +44,7 @@ it to sleep"), slide 7 line.
 | Did you use AI? | Yes, Claude as a coding assistant; every number is checked against NASA JPL Horizons and NASA maps, and the film carries an AI watermark. Details in docs/SI-usage.md. |
 | Does Ice hunter find ice? | No. It says water ice "could" hide where our model never sees the Sun from 2021 to 2031. Only a spacecraft that goes there can tell; NASA's LCROSS found water in the shadowed crater Cabeus in 2009. A spot the Sun does reach is called too warm for ice by a simple rule, not a temperature model. |
 | Is Keep me alive a real power model? | No, it is a teaching rule: a full battery lasts 2 days in the dark, one hour of Sun refills it. The 2 days and the 3 days of radio silence are our example values, not NASA's. What is real is the hourly Sun and Earth data, and the end of the game is the same verdict as the grid. |
-| A child drops a lander on the Moon: how good is that answer? | It is judged on NASA terrain averaged to 320 metres, not the 80 metres of our fifteen sites, so small shadows and small sunlit peaks are missed. The app says so on that site's panel. |
+| A student drops a lander on the Moon: how good is that answer? | It is judged on NASA terrain averaged to 320 metres, not the 80 metres of our fifteen sites, so small shadows and small sunlit peaks are missed. The app says so on that site's panel. |
 | Are the quiz answers true? Who checked the Russian and Kyrgyz? | The ten questions marked "Real data from the app" (of 25) name a real site and date and are answered by the same rule as the grid, so they are true to the app. The other fifteen are fixed facts from NASA and mission pages. The Russian and Kyrgyz texts were drafted with AI; say honestly whether your native speakers have checked them yet, and if not, call them a draft. |
 | Are the hats right? | They are simplified drawings made in code: Kyrgyz ak kalpak, Kazakh kalpak, Uzbek doppi, Tajik toqi. No photos, no real person. We welcome corrections from people who wear them. |
 
