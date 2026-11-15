@@ -17,8 +17,8 @@ Naryn event, or the project is not eligible for awards; the participation type c
 
 | What | Link |
 |---|---|
-| Slides to share on screen (N shows speaker notes, arrows move) | https://lunar-navigator-explained.web.app/deck.html |
-| The same seven slides as a PDF file: this is the link for the "Link to Project Demo" field | https://lunar-navigator-explained.web.app/deck.pdf |
+| Slides to share on screen (N shows speaker notes, arrows move): this is also the link for the "Link to Project Demo" field | https://lunar-navigator-explained.web.app/deck.html |
+| The same seven slides as a PDF file (20 MB, slow to open the first time) | https://lunar-navigator-explained.web.app/deck.pdf |
 | Live demo during the talk | https://lunar-navigator-404.web.app |
 | What to say, minute by minute, and the hard questions | `docs/PRESENTATION-SCRIPT.md` |
 
@@ -39,9 +39,9 @@ We built a free web app that answers one question for the Moon's south pole: if 
 
 ## Link to Project Demo
 
-https://lunar-navigator-explained.web.app/deck.pdf
+https://lunar-navigator-explained.web.app/deck.html
 
-(Seven slides as one PDF, in English; it opens in the browser with no login. Paste only ONE link into the field, not this note. The scenes of the seven slides move inside the PDF when it is opened in Chrome's own PDF viewer: each starts when its page is opened, and repeats. A viewer that does not run PDF scripts, such as Safari, Preview or a phone, shows the last frame of each slide. The same seven slides as a web page are at https://lunar-navigator-explained.web.app/deck.html . A copy of the PDF that never moves is at https://lunar-navigator-explained.web.app/deck-still.pdf .)
+(Seven slides as one web page, in English; it opens at once in any browser with no login, and every slide moves. Paste only ONE link into the field, not this note. The same seven slides as a PDF file, whose scenes move in Chrome's own PDF viewer and stand still in viewers that do not run PDF scripts, such as Safari, Preview or a phone: https://lunar-navigator-explained.web.app/deck.pdf . That file is 20 MB, and measured from Naryn on 15 November a first open in a browser took 100 to 200 seconds with an empty viewer, because the hosting compresses it on the way; this is why the web page is the link for the form. A copy of the PDF that never moves is at https://lunar-navigator-explained.web.app/deck-still.pdf .)
 
 ## Link to Final Project
 
