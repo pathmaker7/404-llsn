@@ -80,6 +80,17 @@ export function words(a, e) {
   g.innerHTML = `<span class="tip gng-word" tabindex="0" data-tip="${esc(T('xGTip'))}"><b>${esc(T(n ? 'xGUnsure' : e.ok ? 'xGGo' : 'xGNo'))}${n ? ' ' + rate + '%' : ''}</b></span><span class="gng-why">${esc(n ? T('xGSome', { n, m: done }) : T('xGAll', { m: done }))}</span>`;
   const old = top.querySelector('#gng'); if (old) old.remove();
   top.insertBefore(g, top.querySelector('.v-date') || box);
+  // The same re-checks for every day of the calendar strip: a day whose answer some re-check overturns is drawn yellow
+  // (one of four) to deep orange (all four) instead of green or red. Done in small batches so a click never waits.
+  const run = (globalThis.__gngRun = (globalThis.__gngRun || 0) + 1), btns = [...top.querySelectorAll('.days .day')], lastT = ctx.p1 - ctx.W * 3600;
+  const key = top.querySelector('.v-key'); if (key && !key.querySelector('.uns')) key.insertAdjacentHTML('beforeend', ` <i class="uns"></i>${esc(T('xGUnsure'))}`);
+  const paint = (i) => { if (run !== globalThis.__gngRun) return;
+    for (const end = Math.min(btns.length, i + 12); i < end; i++) { const b = btns[i], ts = +b.dataset.t, ok = b.classList.contains('ok');
+      const r = [ts - DAY, ts + DAY].map((x) => (x < ctx.p0 || x > lastT ? null : ctx.at(x).ok)).concat([DEG, -DEG].map((s) => { const x = judgeWithHorizon({ ...ctx, t: ts }, s); return x ? x.ok : null; })).filter((x) => x !== null);
+      const f = r.filter((x) => x !== ok).length; if (!f) continue; const pc = Math.round(100 * f / r.length);
+      b.classList.add('unsure'); b.style.setProperty('--f', String((pc - 25) / 75)); b.title += ` · ${T('xGUnsure')} ${pc}%`; b.setAttribute('aria-label', b.title); }
+    if (i < btns.length) setTimeout(() => paint(i), 0); else if (globalThis.__robust) globalThis.__robust.strip = btns.filter((b) => b.classList.contains('unsure')).length; };
+  setTimeout(() => paint(0), 0);
   const flips = {}; for (const k in a.tests) flips[k] = a.tests[k] ? a.tests[k].flips : null; // null: not tested
   globalThis.__robust = { date: iso(ctx.t), ok: e.ok, state, borderline: a.borderline, answer: kind, rate, flips, oks: Object.fromEntries(Object.entries(a.tests).map(([k, v]) => [k, v ? v.ok : null])),
     bad: a.bad, terrainDeg: DEG, margins: a.margins, ms: a.ms, word: w.word, text: w.text, tip: w.tip };

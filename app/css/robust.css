@@ -18,3 +18,6 @@
 .gng.nogo .gng-word { color: #ff6b6b; }
 .gng.unsure .gng-word { color: hsl(calc(52 - 30 * var(--f, 0)) 96% 56%); }
 .gng.unsure .gng-word b { background: hsl(calc(52 - 30 * var(--f, 0)) 96% 56% / .14); }
+/* Calendar days whose answer a re-check overturns: yellow (one of four) to deep orange (all four). */
+.days .day.ok.unsure, .days .day.bad.unsure { background: hsl(calc(52 - 30 * var(--f, 0)) 96% 56%); }
+.v-key i.uns { background: linear-gradient(90deg, #fbe024, #fb7a24); }
