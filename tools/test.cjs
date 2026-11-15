@@ -123,6 +123,15 @@ const Sky = require('../app/sky.js');
     for (const f of ['favicon.svg', 'favicon.png', 'apple-touch-icon.png']) assert.ok(fs.existsSync(path.join(dir, f)), `${site}/${f} missing`);
     assert.strictEqual(fs.readFileSync(path.join(dir, 'favicon.svg'), 'utf8'), fs.readFileSync(path.join(__dirname, '..', 'app', 'favicon.svg'), 'utf8'), `${site}/favicon.svg is not the app's drawing: run node tools/icon.cjs`);
     for (const f of fs.readdirSync(dir).filter((f) => f.endsWith('.html'))) assert.ok(/<link rel="icon"[^>]*href="\/favicon\.svg"/.test(fs.readFileSync(path.join(dir, f), 'utf8')), `${site}/${f} has no tab icon`); }
+  // 8d. The third answer (not sure, yellow) is drawn on every surface that draws survives and lost: the landing calendar
+  // of the first screen, the dots on the Moon with their legend, the day strip and the badge of the answer panel. It once
+  // lived only in the badge, one click deep, and the owner could not find it on the first screen.
+  {
+    const src = (f) => fs.readFileSync(path.join(APP, f), 'utf8');
+    for (const [f, mark, where] of [['src/allsites.js', "rgb(251,222,36)", 'landing calendar blocks'], ['src/main.js', 'dataset.u', 'dots on the Moon'], ['src/main.js', "'xGUnsure'", 'legend of the dots'],
+      ['src/robust.js', "classList.add('unsure')", 'day strip of the answer panel'], ['src/robust.js', "'gng '", 'badge of the answer panel'], ['css/robust.css', '.pin.pin[data-u="1"]::before', 'yellow dot style']])
+      assert.ok(src(f).includes(mark), `the not sure state is missing from the ${where} (${f})`);
+  }
   // 9. The page a native speaker checks the Russian and Kyrgyz texts on (explainer/texts.html, written by
   // tools/texts-sheet.cjs) shows the texts the app shows now, not an older draft.
   { const sheet = fs.readFileSync(path.join(__dirname, '..', 'explainer', 'texts.html'), 'utf8'), esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
