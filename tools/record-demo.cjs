@@ -28,7 +28,7 @@ const SECONDS = 29.5;
     const box = (css, text) => { const d = document.createElement('div'); d.style.cssText = 'position:fixed;z-index:99;font-family:system-ui;pointer-events:none;' + css; d.textContent = text; document.body.appendChild(d); return d; };
     box('left:50%;transform:translateX(-50%);top:12px;white-space:nowrap;font-size:16px;color:#fff;background:#000c;padding:5px 10px;border-radius:6px', `Made with AI (SI) tools: Claude. ${voiceNote}. Checked by team 404 agents`);
     window.__names = box('left:50%;transform:translateX(-50%);top:205px;font-size:26px;color:#fff;background:#000d;padding:8px 18px;border-radius:10px', 'Manuchehr, Aruzhan, Kairat, Arsen, Amirbek');
-    window.__cap = box('left:50%;transform:translateX(-50%);bottom:230px;width:max-content;max-width:1500px;text-align:center;font-size:38px;font-weight:700;color:#fff;background:#000d;padding:14px 26px;border-radius:12px', '');
+    window.__cap = box('left:50%;transform:translateX(-50%);bottom:230px;width:max-content;max-width:1500px;text-align:center;white-space:pre-line;font-size:38px;font-weight:700;color:#fff;background:#000d;padding:14px 26px;border-radius:12px', '');
   }, process.env.VOICE_NOTE || 'Synthetic voice');
   const t0 = Date.now(), frames = []; let recording = true;
   const capture = (async () => {
@@ -39,22 +39,31 @@ const SECONDS = 29.5;
   })();
   const until = async (sec) => { const wait = sec * 1000 - (Date.now() - t0); if (wait > 0) await page.waitForTimeout(wait); };
   // Where a caption sits: 'map' in the free band between the site labels and the day table (a caption at the top hid
-  // the lander at touchdown), 'high' over the battery game, 'low' on the site screen (above the time bar), 'bottom'
-  // under the quiz card. Every caption is kept with the moment it appeared: after recording, each
-  // must be readable in the time it stays on screen.
+  // the lander at touchdown), 'high' over the battery game, 'low' on the site screen (above the time bar), 'end'
+  // under the name and address of the last scene. Every caption is kept with the moment it appeared: after recording,
+  // each must be readable in the time it stays on screen.
   const caps = [];
-  const POS = { map: ['500px', 'auto', '50%', '1500px'], high: ['120px', 'auto', '50%', '1500px'], low: ['auto', '230px', '60%', '1300px'], bottom: ['auto', '24px', '50%', '1500px'] };
-  const say = (text, pos = 'map') => (caps.at(-1)?.text !== text && caps.push({ text, t: (Date.now() - t0) / 1000 }), page.evaluate(([t, p]) => { const c = window.__cap; c.textContent = t; [c.style.top, c.style.bottom, c.style.left, c.style.maxWidth] = p; }, [text, POS[pos]]));
+  const POS = { map: ['500px', 'auto', '50%', '1500px'], high: ['120px', 'auto', '50%', '1500px'], low: ['auto', '230px', '60%', '1300px'], end: ['700px', 'auto', '50%', '1500px'] };
+  const say = (text, pos = 'map') => (caps.at(-1)?.text !== text && caps.push({ text, t: (Date.now() - t0) / 1000 }), page.evaluate(([t, p]) => { const c = window.__cap; c.textContent = t.replace('. ', '.\n'); /* two sentences: one line each */ [c.style.top, c.style.bottom, c.style.left, c.style.maxWidth] = p; }, [text, POS[pos]]));
   const mark = (what) => console.log(`${((Date.now() - t0) / 1000).toFixed(1).padStart(5)} s  ${what}`);
 
   // Order follows the Space Apps project submission guide: [0:00] who we are, [0:02] the challenge, [0:05] the title and
-  // tagline, [0:10] how it works with NASA data, [0:20-0:30] what it can do for people. The voice reads each caption word
-  // for word (subtitles = speech), so each line is short enough to be spoken in the time it stays on screen.
-  await say("Hi, we're team 404 agents from Naryn, Kyrgyzstan."); await until(3.1);
-  await page.evaluate(() => window.__names.remove());
-  await say('When can a Moon landing survive?');
+  // tagline, [0:10] how it works with NASA data, [0:20-0:30] what it can do for people. One story in five scenes (the
+  // first screen, the drop, the site, the battery game, the whole Moon with the address), so a viewer with no context
+  // can follow it: an earlier film showed seven features in 26 seconds and gave "who it is for" its last 2 seconds.
+  // The last 9 seconds say why the team built it and what a student needs to use it (a browser, nothing else).
+  // The voice reads each caption word for word (subtitles = speech), and each line ends about a second before the next.
+  await say("Hi, we're team 404 agents from Naryn, Kyrgyzstan.");
   // My lander: the hats of Central Asia, tried on one after another, ending on the Kyrgyz ak kalpak.
+  await until(1.5);
   for (const h of ['kazakh', 'uzbek', 'tajik', 'kyrgyz']) { await page.click(`.kl-hat[data-hat="${h}"]`); await page.waitForTimeout(330); }
+  await until(3.4);
+  await page.evaluate(() => window.__names.remove());
+  // The problem, shown: the map's own clock plays, sunlight sweeps over the pole and the site dots turn green and red.
+  await say("At the Moon's south pole, one long shadow can kill a solar robot.");
+  await page.click('#a-play'); mark('map clock plays: sunlight sweeps the pole');
+  await until(7.1);
+  await page.click('#a-play'); await page.waitForTimeout(150);
   // The day to click: a green day (the mission survives) whose first days hold a dark stretch the battery can carry, so
   // the battery game that follows shows a real drain and a real refill. Judged with the app's own series; the first row
   // that has such a day wins, else the best site's first green day.
@@ -70,19 +79,21 @@ const SECONDS = 29.5;
     const li = rows[0]; let k = 1; while (k < n - 1 && !A.at(li.dataset.id, day(k))) k++; return at(li, k, 0);
   });
   console.log('day to click:', JSON.stringify(cell));
-  await until(5.3);
+  await until(7.6);
   await say('Lunar Landing Site Navigator: pick a day, and your lander drops in.');
   await page.mouse.move(cell.x, cell.y, { steps: 10 }); await page.waitForTimeout(250); await page.mouse.click(cell.x, cell.y); mark('day clicked: the lander drops');
-  await until(9.6);
-  await say('Green means it survives, on real NASA terrain.');
+  await until(12.0);
+  const data = "Green means it survives, on real terrain from NASA's open data.";
+  await say(data);
   const dropped = await page.evaluate(() => window.__lander.last);
   if (!dropped || !dropped.ok) errors.push('the dropped lander did not survive on the green day: ' + JSON.stringify(dropped));
   await page.waitForFunction(() => window.__verdict && document.body.classList.contains('mode-surface') && !document.getElementById('fade').classList.contains('on'), null, { timeout: 60000 }); mark('on the site');
   if (!(await page.evaluate(() => window.__verdict.ok))) errors.push('the site panel does not say the mission survived');
-  await say('Green means it survives, on real NASA terrain.', 'low'); await until(13.6);
+  if ((Date.now() - t0) / 1000 > 15.0) errors.push('the site opened later than 15.0 s: the line about NASA terrain would end before the terrain shows');
+  await say(data, 'low'); await until(16.2);
 
   // Keep me alive: the battery game on this site and this landing day, at four times speed.
-  await say('Play Keep me alive: the battery drains in real shadow.', 'high');
+  await say('Kids learn by playing: keep the battery alive in the dark.', 'high');
   await page.click('#g-open');
   // The kid picks a landing day in the game: here a day that survives although the Sun hides for a day or more early
   // in the stay, so the battery is seen draining and filling again. Found with the game's own judge on this site.
@@ -94,43 +105,27 @@ const SECONDS = 29.5;
   if (!gday) errors.push('no surviving day with a long shadow for the battery game');
   else { await page.fill('#g-day', gday.date); await page.dispatchEvent('#g-day', 'change'); console.log('game day:', JSON.stringify(gday)); }
   await page.waitForTimeout(350); await page.click('#g-start'); await page.click('.g-segbtn button[data-sp="4"]'); mark('game started');
-  await until(17.6);
+  await until(20.3);
   mark('game at ' + await page.evaluate(() => document.querySelector('.g-dayno')?.textContent));
 
-  // Ice hunter: back on the map, a tap on the floor of Shackleton crater, which the model never sees sunlit.
-  await say('Hunt dark craters where water ice could hide.');
-  await page.evaluate(() => window.__game.close()); await page.click('#back'); await page.waitForTimeout(500);
-  await page.click('#ice-btn'); await page.waitForTimeout(250);
-  const ice = await page.evaluate(() => { const ov = window.__ov, cv = document.getElementById('gl'), r = cv.getBoundingClientRect(), s = ov.sites.find((x) => x.name === 'Shackleton floor');
-    const v = s.pos.clone().project(ov.camera), sx = (v.x * 0.5 + 0.5) * r.width, sy = (-v.y * 0.5 + 0.5) * r.height;
-    for (const [dx, dy] of [[0, 0], [0, 6], [6, 0], [-6, 0], [0, -6], [8, 8], [-8, 8], [0, 12], [12, 0], [-12, 0]]) { const px = sx + dx, py = sy + dy, at = ov.pick(px, py, r.width, r.height);
-      if (at && document.elementFromPoint(r.left + px, r.top + py) === cv) return { x: r.left + px, y: r.top + py, lat: s.lat, lon: s.lon }; }
-    return { lat: s.lat, lon: s.lon, x: r.left + sx, y: r.top + sy, covered: true }; });
-  await page.mouse.move(ice.x, ice.y, { steps: 8 });
-  if (ice.covered) await page.evaluate(([la, lo]) => { window.__ice.hunt(la, lo); }, [ice.lat, ice.lon]); else await page.mouse.click(ice.x, ice.y);
-  await page.waitForFunction(() => window.__ice.phase === 'result', null, { timeout: 20000 }); mark('ice result' + (ice.covered ? ' (spot covered by a label: judged at the site point)' : ''));
-  if ((await page.evaluate(() => window.__ice.last && window.__ice.last.cls)) !== 'dark' && !(await page.evaluate(() => window.__ice.marks.at(-1)?.cls === 'dark'))) errors.push('the ice hunter spot is not dark in the model');
-  await until(21.0);
-
-  // Quiz: a live question (the answer is computed by the app for a real site and day), answered right.
-  await say('Then test yourself in the quiz.', 'bottom');
-  await page.evaluate(() => window.__ice.setMode(false)); await page.click('.kq-btn');
-  await page.evaluate(() => window.__quiz.start(['kQ16', 'kQ01', 'kQ04', 'kQ09', 'kQ11'])); await page.waitForSelector('.kq-opt'); await page.waitForTimeout(1100);
-  const right = await page.evaluate(() => window.__quiz.text(window.__quiz.state.q).options.findIndex((o) => o.correct));
-  await page.click(`.kq-opt[data-i="${right}"]`); mark('quiz answered');
-
-  // The proof shot: a real landing replayed. The box on the left shows what happened next to the model's sunrise and sunset.
-  // The site loads behind the open quiz (the quiz lies above the app's fade to black), so the film cuts from the answered
-  // question straight to the site and never shows a black screen.
-  await until(22.5);
-  await page.selectOption('#a-famous', { label: 'Chandrayaan-3 (2023)' }, { force: true });
-  await page.waitForFunction(() => window.__history && document.body.classList.contains('mode-surface') && !document.getElementById('fade').classList.contains('on'), null, { timeout: 60000 }); mark('Chandrayaan-3 site ready behind the quiz');
-  if ((Date.now() - t0) / 1000 > 23.6) errors.push('the Chandrayaan-3 site was not ready behind the quiz by 23.6 s: the cut would come late');
-  await until(23.6);
-  const real = 'For Chandrayaan-3, our sunset is the day India put it to sleep.';
-  await page.evaluate(() => window.__quiz.close()); await say(real, 'low'); mark('Chandrayaan-3 site');
-  await until(27.5);
-  await say('Free for schools across Central Asia.', 'low'); await until(SECONDS);
+  // Why we built it: back on the first screen, the sunlight plays again and the view pulls out to the whole Moon.
+  await say('We built it so every student can learn how a real Moon mission is planned.');
+  await page.evaluate(() => window.__game.close()); await page.click('#back'); await page.click('#a-play');
+  const free = await page.evaluate(() => { const cv = document.getElementById('gl'); // a point of the Moon view that no label or card covers
+    for (const [x, y] of [[1500, 430], [1650, 380], [1350, 470], [700, 430], [960, 520]]) if (document.elementFromPoint(x, y) === cv) return { x, y }; return null; });
+  if (!free) errors.push('no free point on the Moon view to scroll out from');
+  else { await page.mouse.move(free.x, free.y); for (let i = 0; i < 16; i++) { await page.mouse.wheel(0, 120); await page.waitForTimeout(90); } mark('scrolled out to the whole Moon'); }
+  await until(24.6);
+  // The last scene: the project's name and address over the whole Moon, what it needs and who it is for.
+  await page.evaluate(() => {
+    const el = (css, text, into) => { const d = document.createElement('div'); d.style.cssText = css; d.textContent = text; into.appendChild(d); return d; };
+    const dim = el('position:fixed;inset:0;z-index:98;pointer-events:none;font-family:system-ui;background:rgba(2,5,10,.8);display:flex;flex-direction:column;align-items:center;gap:30px;padding-top:255px;opacity:0;transition:opacity .45s', '', document.body);
+    el('font-size:78px;font-weight:800;color:#fff', 'Lunar Landing Site Navigator', dim);
+    el('font-size:60px;font-weight:700;color:#46e0c8', 'lunar-navigator-404.web.app', dim);
+    el('font-size:34px;color:#e3e9f3', 'Free  ·  Any browser  ·  English, Russian, Kyrgyz', dim);
+    requestAnimationFrame(() => { dim.style.opacity = 1; });
+  });
+  await say('No telescope, no lab: just a browser. Free, starting with schools here in Central Asia.', 'end'); await until(SECONDS);
   // Readable: at most 3.7 words a second for the time each caption really stayed on screen.
   caps.forEach((c, i) => { const on = (caps[i + 1]?.t ?? SECONDS) - c.t, w = c.text.split(/\s+/).length;
     console.log(`${c.t.toFixed(1).padStart(5)} s  ${(w / on).toFixed(1)} words/s  ${c.text}`);

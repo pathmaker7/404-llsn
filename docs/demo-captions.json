@@ -2,46 +2,36 @@
  {
   "text": "Hi, we're team 404 agents from Naryn, Kyrgyzstan.",
   "t": 0,
-  "end": 3.103
+  "end": 3.404
  },
  {
-  "text": "When can a Moon landing survive?",
-  "t": 3.103,
-  "end": 5.301
+  "text": "At the Moon's south pole, one long shadow can kill a solar robot.",
+  "t": 3.404,
+  "end": 7.601
  },
  {
   "text": "Lunar Landing Site Navigator: pick a day, and your lander drops in.",
-  "t": 5.301,
-  "end": 9.601
+  "t": 7.601,
+  "end": 12
  },
  {
-  "text": "Green means it survives, on real NASA terrain.",
-  "t": 9.601,
-  "end": 13.602
+  "text": "Green means it survives, on real terrain from NASA's open data.",
+  "t": 12,
+  "end": 16.201
  },
  {
-  "text": "Play Keep me alive: the battery drains in real shadow.",
-  "t": 13.602,
-  "end": 17.602
+  "text": "Kids learn by playing: keep the battery alive in the dark.",
+  "t": 16.201,
+  "end": 20.303
  },
  {
-  "text": "Hunt dark craters where water ice could hide.",
-  "t": 17.602,
-  "end": 21.001
+  "text": "We built it so every student can learn how a real Moon mission is planned.",
+  "t": 20.303,
+  "end": 24.608
  },
  {
-  "text": "Then test yourself in the quiz.",
-  "t": 21.001,
-  "end": 23.603
- },
- {
-  "text": "For Chandrayaan-3, our sunset is the day India put it to sleep.",
-  "t": 23.603,
-  "end": 27.5
- },
- {
-  "text": "Free for schools across Central Asia.",
-  "t": 27.5,
+  "text": "No telescope, no lab: just a browser. Free, starting with schools here in Central Asia.",
+  "t": 24.608,
   "end": 29.5
  }
 ]

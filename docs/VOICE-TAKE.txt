@@ -1,17 +1,13 @@
 Hi, we're team four oh four agents from Naryn, Kyrgyzstan.
 
-When can a Moon landing survive?
+At the Moon's south pole, one long shadow can kill a solar robot.
 
 Lunar Landing Site Navigator: pick a day, and your lander drops in.
 
-Green means it survives, on real NASA terrain.
+Green means it survives, on real terrain from NASA's open data.
 
-Play Keep me alive: the battery drains in real shadow.
+Kids learn by playing: keep the battery alive in the dark.
 
-Hunt dark craters where water ice could hide.
+We built it so every student can learn how a real Moon mission is planned.
 
-Then test yourself in the quiz.
-
-For Chandrayaan three, our sunset is the day India put it to sleep.
-
-Free for schools across Central Asia.
+No telescope, no lab: just a browser. Free, starting with schools here in Central Asia.
