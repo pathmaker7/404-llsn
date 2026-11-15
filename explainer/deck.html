@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/png" sizes="64x64" href="/favicon.png">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <title>Lunar Landing Site Navigator: 7 slides</title>
 <meta name="description" content="Project demo in seven slides: Lunar Landing Site Navigator by team 404 agents, Naryn, NASA Space Apps Challenge 2026.">
 <style>
@@ -78,21 +81,34 @@
   /* Slide 2: the Sun slides behind a hill, the shadow reaches the lander, the battery empties; then Earth sets behind a ridge. */
     /*PART s1*/
 #s1 { grid-template-columns: 1fr; gap: 10px; }
-  /* Slide 1: an intro. The Sun and Earth rise, four landers drop in one after another, bounce once and say hello. */
+  /* Slide 1, the intro: the Sun and the Earth light up, the real Moon rolls in from the right, stops, drops to the
+     bottom, and the four landers fall onto it and say hello. The picture as drawn is the last frame. */
   #s1 .q { font-size: 44px; font-weight: 700; letter-spacing: -.01em; text-anchor: middle; }
-  #s1 .tag { font-size: 24px; font-weight: 600; fill: var(--text); }
-  #s1 .fine { font-size: 19px; fill: #9aa4b2; text-anchor: middle; }
-  #s1.play .sun, #s1.play .earth { animation: s1-rise 1.5s cubic-bezier(.2,.7,.3,1) both .3s; }
-  #s1.play .drop { animation: s1-drop 1.15s both; animation-delay: var(--t, 0s); }
-  @keyframes s1-rise { from { translate: 0 150px; } }
-  @keyframes s1-drop {
-    0% { translate: 0 -600px; animation-timing-function: cubic-bezier(.5, 0, .9, .6); }
-    72% { translate: 0 0; animation-timing-function: cubic-bezier(.2, .7, .4, 1); }
-    82% { translate: 0 -22px; animation-timing-function: cubic-bezier(.6, 0, .9, .5); }
+  #s1 .fine { font-size: 17px; fill: #9aa4b2; }
+  #s1.play .mroll { animation: s1-roll 2s cubic-bezier(.25, .6, .3, 1) both .8s; }
+  #s1.play .mspin { animation: s1-spin 2s cubic-bezier(.25, .6, .3, 1) both .8s; }
+  #s1.play .mfall { animation: s1-fall .95s both 3.1s; }
+  #s1.play .drop { animation: s1-drop .95s both; animation-delay: var(--t, 0s); }
+  #s1.play .glow { animation: s1-glow 1.2s ease-out both .2s; }
+  @keyframes s1-roll { from { translate: 1150px 0; } }
+  @keyframes s1-spin { from { rotate: 220deg; } }
+  @keyframes s1-fall {
+    0% { translate: 0 -430px; animation-timing-function: cubic-bezier(.55, 0, .9, .55); }
+    62% { translate: 0 0; animation-timing-function: cubic-bezier(.2, .7, .4, 1); }
+    78% { translate: 0 -26px; animation-timing-function: cubic-bezier(.6, 0, .9, .5); }
     92% { translate: 0 0; animation-timing-function: cubic-bezier(.2, .7, .4, 1); }
-    96% { translate: 0 -6px; animation-timing-function: cubic-bezier(.6, 0, .9, .5); }
+    96% { translate: 0 -6px; }
     100% { translate: 0 0; }
   }
+  @keyframes s1-drop {
+    0% { translate: 0 -620px; animation-timing-function: cubic-bezier(.5, 0, .9, .6); }
+    66% { translate: 0 0; animation-timing-function: cubic-bezier(.2, .7, .4, 1); }
+    80% { translate: 0 -20px; animation-timing-function: cubic-bezier(.6, 0, .9, .5); }
+    93% { translate: 0 0; }
+    97% { translate: 0 -5px; }
+    100% { translate: 0 0; }
+  }
+  @keyframes s1-glow { from { scale: .3; opacity: 0; } }
   /*END s1*/
   /*PART s2*/
 /* Slide 2: the Sun sinks behind the hill, its shadow reaches Naryn-1, the battery empties; then Earth sets behind the ridge. */
@@ -231,35 +247,61 @@
 <body>
 
 <!--SLIDES-->
-<section id="s1" data-dur="13">
+<section id="s1" data-dur="14">
   <h2>Lunar Landing Site Navigator</h2>
   <button class="replay" type="button">Replay</button>
   <svg class="scene" viewBox="0 0 1312 690" role="img" aria-labelledby="s1-t s1-d">
     <title id="s1-t">Team 404 agents introduce Lunar Landing Site Navigator</title>
-    <desc id="s1-d">The Sun and Earth rise over the Moon's grey ground. Four small landers with Central Asian hats drop in, land in a row and smile. Two of them say hello and that six short animations show what the team built. The question on top asks which days a Moon mission can survive; the team's names and the challenge are written along the bottom.</desc>
-    <g class="star"><circle cx="90" cy="60" r="1.6"/><circle cx="250" cy="170" r="1.2"/><circle cx="420" cy="215" r="1.8"/><circle cx="610" cy="200" r="1.2"/><circle cx="800" cy="215" r="1.6"/><circle cx="960" cy="190" r="1.3"/><circle cx="1240" cy="70" r="1.7"/><circle cx="1250" cy="240" r="1.2"/><circle cx="60" cy="300" r="1.1"/><circle cx="170" cy="230" r="1.1"/><circle cx="1130" cy="40" r="1.3"/><circle cx="330" cy="40" r="1.2"/><circle cx="1180" cy="330" r="1.2"/><circle cx="700" cy="40" r="1.1"/></g>
-    <!-- the Sun and Earth rise from behind the ridge: drawn before the ground so it covers them -->
-    <g class="sun"><circle cx="110" cy="468" r="72" fill="#ffb547" opacity=".08"/><circle cx="110" cy="468" r="54" fill="#ffb547" opacity=".16"/><circle cx="110" cy="468" r="36" fill="#ffb547"/></g>
-    <g transform="translate(1214 478)"><g class="earth"><g transform="scale(1.4)"><circle r="24" fill="#5fb4ff"/><path d="M-16 -8 q10 -8 18 0 q8 8 16 2" stroke="#d8f0ff" stroke-width="4" fill="none" stroke-linecap="round"/></g></g></g>
-    <path class="ground2" d="M0 524 L1312 524 L1312 690 L0 690 Z"/>
-    <path class="ground" d="M0 548 L1312 548 L1312 690 L0 690 Z"/>
-    <g fill="#23262b"><ellipse cx="90" cy="610" rx="60" ry="9"/><ellipse cx="1220" cy="620" rx="70" ry="10"/><ellipse cx="1150" cy="672" rx="50" ry="6"/></g>
-    <!-- landing shadows, then the four landers (feet at y 561), each dropping in, bouncing once and smiling -->
-    <g fill="#16181c"><ellipse class="a fade" style="--t:2.4s" cx="290" cy="562" rx="72" ry="9"/><ellipse class="a fade" style="--t:3.2s" cx="540" cy="562" rx="72" ry="9"/><ellipse class="a fade" style="--t:4s" cx="790" cy="562" rx="72" ry="9"/><ellipse class="a fade" style="--t:4.8s" cx="1040" cy="562" rx="72" ry="9"/></g>
-    <g transform="translate(205 400)"><g class="drop" style="--t:1.5s"><g transform="scale(.85)"><g class="bot" data-hat="kyrgyz" data-type="lander" data-color="#e9edf4" data-faces="ok:0,happy:2.4"></g></g></g></g>
-    <g transform="translate(455 400)"><g class="drop" style="--t:2.3s"><g transform="scale(.85)"><g class="bot" data-hat="uzbek" data-type="rover" data-color="#7db3ff" data-faces="ok:0,happy:3.2"></g></g></g></g>
-    <g transform="translate(705 400)"><g class="drop" style="--t:3.1s"><g transform="scale(.85)"><g class="bot" data-hat="tajik" data-type="hopper" data-color="#f2c98a" data-faces="ok:0,happy:4"></g></g></g></g>
-    <g transform="translate(955 400)"><g class="drop" style="--t:3.9s"><g transform="scale(.85)"><g class="bot" data-hat="kazakh" data-type="lander" data-color="#c9b8f5" data-faces="ok:0,happy:4.8"></g></g></g></g>
-    <text class="tag a pop" style="--t:2.4s" x="290" y="600" text-anchor="middle">Naryn-1</text>
-    <text class="tag a pop" style="--t:3.2s" x="540" y="600" text-anchor="middle">Samarkand-2</text>
-    <text class="tag a pop" style="--t:4s" x="790" y="600" text-anchor="middle">Khujand-3</text>
-    <text class="tag a pop" style="--t:4.8s" x="1040" y="600" text-anchor="middle">Almaty-4</text>
-    <text class="q a pop" style="--t:.6s" x="656" y="150">Which days can a Moon mission survive?</text>
-    <g class="say a" style="--t:5.2s" transform="translate(234 283)" data-w="240" data-tail="bl" data-say="Hi! We are|team 404 agents."></g>
-    <g class="say a" style="--t:6.5s" transform="translate(808 283)" data-w="290" data-tail="br" data-say="Six short animations|show what we built."></g>
-    <text class="fine a pop" style="--t:7.2s" x="656" y="640">Team 404 agents, Naryn, Kyrgyzstan: Manuchehr, Aruzhan, Kairat, Arsen, Amirbek</text>
-    <text class="fine a pop" style="--t:7.2s" x="656" y="668">NASA Space Apps Challenge 2026. Challenge: Lunar Landing Site Navigator</text>
-    <rect class="bar" style="--dur:13s" x="0" y="684" width="1312" height="6"/>
+    <desc id="s1-d">The Sun shines at the upper left and the Earth hangs at the upper right. The Moon, a real NASA picture, rolls in from the right, stops in the middle and drops to the bottom of the picture. Four small landers with Central Asian hats fall onto it and stand on top. Two of them say hello and that six short animations show what the team built. The question on top asks which days a Moon mission can survive.</desc>
+    <defs>
+      <radialGradient id="s1-sunglow"><stop offset="0" stop-color="#ffd27a" stop-opacity=".5"/><stop offset=".45" stop-color="#ffb547" stop-opacity=".16"/><stop offset="1" stop-color="#ffb547" stop-opacity="0"/></radialGradient>
+      <radialGradient id="s1-corona"><stop offset=".55" stop-color="#fff1c2" stop-opacity=".95"/><stop offset=".72" stop-color="#ffb23d" stop-opacity=".5"/><stop offset="1" stop-color="#ff8a1f" stop-opacity="0"/></radialGradient>
+      <radialGradient id="s1-sun" cx=".45" cy=".42"><stop offset="0" stop-color="#fffdf2"/><stop offset=".55" stop-color="#ffe489"/><stop offset=".86" stop-color="#ffb53c"/><stop offset="1" stop-color="#f58a1c"/></radialGradient>
+      <radialGradient id="s1-air"><stop offset=".72" stop-color="#6fc3ff" stop-opacity=".55"/><stop offset="1" stop-color="#6fc3ff" stop-opacity="0"/></radialGradient>
+      <radialGradient id="s1-night" cx=".3" cy=".28" r=".8"><stop offset=".5" stop-color="#02040a" stop-opacity="0"/><stop offset="1" stop-color="#02040a" stop-opacity=".78"/></radialGradient>
+      <radialGradient id="s1-shade" cx=".32" cy=".26" r=".82"><stop offset=".5" stop-color="#02040a" stop-opacity="0"/><stop offset="1" stop-color="#02040a" stop-opacity=".7"/></radialGradient>
+    </defs>
+    <g class="star"><circle cx="60" cy="300" r="1.4"/><circle cx="250" cy="250" r="1.2"/><circle cx="330" cy="60" r="1.8"/><circle cx="470" cy="215" r="1.2"/><circle cx="560" cy="40" r="1.3"/><circle cx="760" cy="230" r="1.6"/><circle cx="900" cy="60" r="1.3"/><circle cx="1010" cy="250" r="1.7"/><circle cx="1260" cy="290" r="1.2"/><circle cx="1090" cy="420" r="1.4"/><circle cx="190" cy="430" r="1.6"/><circle cx="90" cy="540" r="1.2"/><circle cx="1230" cy="520" r="1.5"/><circle cx="1010" cy="560" r="1.1"/><circle cx="300" cy="560" r="1.2"/><circle cx="640" cy="300" r="1.1"/></g>
+
+    <!-- the Sun: a hot disc with its glow -->
+    <g class="glow">
+      <circle cx="130" cy="125" r="175" fill="url(#s1-sunglow)"/>
+      <circle cx="130" cy="125" r="92" fill="url(#s1-corona)"/>
+      <circle cx="130" cy="125" r="56" fill="url(#s1-sun)"/>
+    </g>
+    <!-- the Earth: NASA's Blue Marble on a globe, with its thin air and its night side away from the Sun -->
+    <g class="a pop" style="--t:.5s">
+      <circle cx="1182" cy="125" r="70" fill="url(#s1-air)"/>
+      <image href="shots/earth-disc.png" x="1122" y="65" width="120" height="120"/>
+      <circle cx="1182" cy="125" r="60" fill="url(#s1-night)"/>
+    </g>
+
+    <!-- the Moon: NASA's own map on a globe. It rolls in from the right, stops, then drops to the bottom. -->
+    <g class="mfall"><g class="mroll">
+      <g class="mspin"><image href="shots/moon-disc.png" x="356" y="460" width="600" height="600"/></g>
+      <circle cx="656" cy="760" r="300" fill="url(#s1-shade)"/>
+    </g></g>
+
+    <!-- the four landers fall onto the Moon and stand on it -->
+    <g transform="translate(358.5 389.2)"><g class="drop" style="--t:4.4s"><g transform="rotate(-36)"><g transform="scale(.62)"><g class="bot" data-hat="kyrgyz" data-type="lander" data-color="#e9edf4" data-faces="ok:0,happy:5.1"></g></g></g></g></g>
+    <g transform="translate(484 322.6)"><g class="drop" style="--t:4.9s"><g transform="rotate(-12)"><g transform="scale(.62)"><g class="bot" data-hat="uzbek" data-type="rover" data-color="#7db3ff" data-faces="ok:0,happy:5.6"></g></g></g></g></g>
+    <g transform="translate(626.3 330.4)"><g class="drop" style="--t:5.4s"><g transform="rotate(12)"><g transform="scale(.62)"><g class="bot" data-hat="tajik" data-type="hopper" data-color="#f2c98a" data-faces="ok:0,happy:6.1"></g></g></g></g></g>
+    <g transform="translate(753.5 389.2)"><g class="drop" style="--t:5.9s"><g transform="rotate(36)"><g transform="scale(.62)"><g class="bot" data-hat="kazakh" data-type="lander" data-color="#c9b8f5" data-faces="ok:0,happy:6.6"></g></g></g></g></g>
+
+    <text class="q a pop" style="--t:4.2s" x="656" y="140">Which days can a Moon mission survive?</text>
+    <g class="say a" style="--t:6.8s" transform="translate(240 300)" data-w="240" data-tail="br" data-say="Hi! We are|team 404 agents."></g>
+    <g class="say a" style="--t:7.7s" transform="translate(832 300)" data-w="290" data-tail="bl" data-say="Six short animations|show what we built."></g>
+
+    <!-- the lines the contest rules ask for, and the picture credit -->
+    <g class="a pop" style="--t:8.4s">
+      <text class="fine" x="22" y="622">Team 404 agents, Naryn, Kyrgyzstan</text>
+      <text class="fine" x="22" y="648">Aruzhan, Manuchehr, Kairat,</text>
+      <text class="fine" x="22" y="674">Arsen, Amirbek</text>
+      <text class="fine" x="1290" y="622" text-anchor="end">NASA Space Apps Challenge 2026</text>
+      <text class="fine" x="1290" y="648" text-anchor="end">Challenge: Lunar Landing Site Navigator</text>
+      <text class="fine" x="1290" y="674" text-anchor="end">Moon and Earth pictures: NASA</text>
+    </g>
+    <rect class="bar" style="--dur:14s" x="0" y="684" width="1312" height="6"/>
   </svg>
   <p class="notes">Team 404 agents from Naryn, Kyrgyzstan. The app: pick one of 15 sites near the Moon's south pole, or drop your own, and any day from 2021 to 2031. It shows whether a solar robot landing there is still alive after 14 days. App: https://lunar-navigator-404.web.app Code: https://github.com/pathmaker7/404-llsn</p>
   <div class="foot"><span>1 / 7</span><span>Made with AI (SI) tools: Claude. Screenshots show our live app; the drawings are made with AI tools.</span></div>
@@ -572,7 +614,7 @@
   const HAT = {
     kyrgyz: '<path d="M72 68 C70 46 80 26 100 16 C120 26 130 46 128 68 Z" fill="#f7f4ea" stroke="#cfc8b4" stroke-width="1.5"/><path d="M100 16 C96 36 94 52 94 68 M100 16 C104 36 106 52 106 68" stroke="#cfc8b4" fill="none" stroke-width="1.5"/><path d="M68 64 Q100 76 132 64 L134 76 Q100 88 66 76 Z" fill="#1a1a1a"/><path d="M80 48 q4 -8 9 0 M111 48 q4 -8 9 0" stroke="#1a1a1a" fill="none" stroke-width="2.5" stroke-linecap="round"/>',
     kazakh: '<path d="M76 68 C74 40 126 40 124 68 Z" fill="#b3202a"/><path d="M70 62 Q100 54 130 62 L132 76 Q100 84 68 76 Z" fill="#5a3a22"/><path d="M80 54 q20 -10 40 0" stroke="#e8c15a" stroke-width="2.5" fill="none"/><path d="M100 44 q-5 -13 2 -26 q6 12 -2 26 Z" fill="#fff" stroke="#222" stroke-width="1"/>',
-    uzbek: '<path d="M70 72 L78 46 Q100 38 122 46 L130 72 Z" fill="#14171d"/><path d="M73 66 H127" stroke="#fff" stroke-width="2.5"/><path d="M86 58 q4 -9 8 0 q-4 5 -8 0 Z M106 58 q4 -9 8 0 q-4 5 -8 0 Z M96 49 q4 -7 8 0 q-4 4 -8 0 Z" fill="#fff"/>',
+    uzbek: '<path d="M70 72 L78 46 Q100 38 122 46 L130 72 Z" fill="#1d2433" stroke="#e9edf4" stroke-width="3" stroke-linejoin="round"/><path d="M73 66 H127" stroke="#fff" stroke-width="2.5"/><path d="M86 58 q4 -9 8 0 q-4 5 -8 0 Z M106 58 q4 -9 8 0 q-4 5 -8 0 Z M96 49 q4 -7 8 0 q-4 4 -8 0 Z" fill="#fff"/>',
     tajik: '<path d="M72 72 C72 38 128 38 128 72 Z" fill="#0e7a4f"/><path d="M72 66 H128" stroke="#f2c14e" stroke-width="3"/><path d="M84 54 l7 -8 l7 8 l-7 8 Z M102 54 l7 -8 l7 8 l-7 8 Z" fill="none" stroke="#f2c14e" stroke-width="2"/>',
   };
   const LEGS = {

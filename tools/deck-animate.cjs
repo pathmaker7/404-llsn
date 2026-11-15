@@ -11,19 +11,20 @@
 // and on paper. A scene restarts when its page is opened, and repeats.
 //
 //   node tools/deck-animate.cjs [pdf to change, default explainer/deck.pdf]
-//   STEP=0.0667 seconds between steps (15 a second), Q=0.86 JPEG quality of photo-like patches, SCALE=2 pixels per CSS pixel
+//   STEP=0.0667 seconds between steps (15 a second), Q=0.8 JPEG quality of photo-like patches, SCALE=1.5 pixels per CSS pixel
 const fs = require('fs'), path = require('path'), zlib = require('zlib');
-const { serve, launch } = require('./smoke.cjs');
+const { serve } = require('./smoke.cjs');
 const ROOT = path.join(__dirname, '..');
 const PDF = process.argv[2] || path.join(ROOT, 'explainer', 'deck.pdf');
-const STEP = +(process.env.STEP || 1 / 15), Q = +(process.env.Q || 0.86), SCALE = +(process.env.SCALE || 2);
+const STEP = +(process.env.STEP || 1 / 15), Q = +(process.env.Q || 0.8), SCALE = +(process.env.SCALE || 1.5);
+const REDRAW_MAX = 250e3; // bytes: a JPEG place is redrawn exact only if that costs less than this
 
 // Runs in a blank helper page: decodes a screenshot, finds the rectangle that differs from the screenshot before,
 // and hands back that rectangle's pixels twice: exact (RGB bytes) and as a JPEG. Node keeps whichever is smaller enough.
 const DIFF = async ([b64, q]) => {
   const bmp = await createImageBitmap(await (await fetch('data:image/png;base64,' + b64)).blob());
   const w = bmp.width, h = bmp.height, cv = new OffscreenCanvas(w, h), cx = cv.getContext('2d', { willReadFrequently: true });
-  cx.drawImage(bmp, 0, 0); const now = cx.getImageData(0, 0, w, h).data, was = window.was; window.was = now;
+  cx.drawImage(bmp, 0, 0); const now = cx.getImageData(0, 0, w, h).data, was = window.was; window.was = now; window.wasW = w;
   // tiles of 32 pixels that hold a changed pixel, each with the box of its changed pixels
   const T = 32, gw = Math.ceil(w / T), gh = Math.ceil(h / T), box = new Array(gw * gh).fill(null);
   if (!was) box[0] = 'all';
@@ -40,7 +41,19 @@ const DIFF = async ([b64, q]) => {
         if (b[0] < r[0]) r[0] = b[0]; if (b[1] < r[1]) r[1] = b[1]; if (b[2] > r[2]) r[2] = b[2]; if (b[3] > r[3]) r[3] = b[3]; } }
     // 8 pixels of unchanged picture all round: a viewer smooths a picture's edge into what lies under it, and on a bare
     // edge that left a ghost line of the old picture; with a margin the edge blends into the same pixels
-    rects.push([Math.max(0, r[0] - 8), Math.max(0, r[1] - 8), Math.min(w - 1, r[2] + 8), Math.min(h - 1, r[3] + 8)]); }
+    const q = [Math.max(0, r[0] - 8), Math.max(0, r[1] - 8), Math.min(w - 1, r[2] + 8), Math.min(h - 1, r[3] + 8)];
+    // An edge must not cut through a letter or a drawing: a viewer lays every picture a fraction of a pixel off, and at
+    // the cut the two halves of a stroke no longer meet (a dark notch in the "o" of "Moon"). So each edge moves out, up
+    // to 48 pixels, to the first line of pixels that is flat; where there is none (a photo) it stays where it was.
+    const flat = (x0, y0, x1, y1) => { const a = (y0 * w + x0) * 4;
+      for (let y = y0; y <= y1; y++) for (let x = x0, i = (y * w + x0) * 4; x <= x1; x++, i += 4)
+        if (Math.abs(now[i] - now[a]) > 6 || Math.abs(now[i + 1] - now[a + 1]) > 6 || Math.abs(now[i + 2] - now[a + 2]) > 6) return false;
+      return true; };
+    const out = (k, step, end, line) => { for (let v = q[k], n = 0; n <= 48 && v !== end + step; v += step, n++) if (line(v)) { q[k] = v; return; } };
+    for (let pass = 0; pass < 2; pass++) {
+      out(0, -1, 0, (v) => flat(v, q[1], v, q[3])); out(2, 1, w - 1, (v) => flat(v, q[1], v, q[3]));
+      out(1, -1, 0, (v) => flat(q[0], v, q[2], v)); out(3, 1, h - 1, (v) => flat(q[0], v, q[2], v)); }
+    rects.push(q); }
   const b64of = async (blob) => { const u = new Uint8Array(await blob.arrayBuffer()); let s = ''; for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return btoa(s); };
   const out = [];
   for (const [x0, y0, x1, y1] of rects) { const pw = x1 - x0 + 1, ph = y1 - y0 + 1, rgb = new Uint8Array(pw * ph * 3);
@@ -49,54 +62,93 @@ const DIFF = async ([b64, q]) => {
     out.push({ x: x0, y: y0, w: pw, h: ph, rgb: await b64of(new Blob([rgb])), jpg: await b64of(await pc.convertToBlob({ type: 'image/jpeg', quality: q })) }); }
   return out;
 };
+// Also in the helper page: the exact pixels of given rectangles [x, y, w, h] of the screenshot DIFF saw last.
+const EXACT = (rects) => { const now = window.was, w = window.wasW;
+  return rects.map(([x0, y0, pw, ph]) => { const rgb = new Uint8Array(pw * ph * 3);
+    for (let y = 0, o = 0; y < ph; y++) for (let x = 0, i = ((y0 + y) * w + x0) * 4; x < pw; x++, i += 4) { rgb[o++] = now[i]; rgb[o++] = now[i + 1]; rgb[o++] = now[i + 2]; }
+    let s = ''; for (let i = 0; i < rgb.length; i += 32768) s += String.fromCharCode.apply(null, rgb.subarray(i, i + 32768)); return btoa(s); }); };
+const hit = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+const inside = (a, b) => a.x >= b.x && a.y >= b.y && a.x + a.w <= b.x + b.w && a.y + a.h <= b.y + b.h;
 
 // 1. Film every scene.
 async function film() {
-  const srv = await serve(path.join(ROOT, 'explainer')), browser = await launch();
-  const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: SCALE });
-  const helper = await browser.newPage(); await helper.goto(`http://127.0.0.1:${srv.address().port}/texts.html`); // any same-origin page: it only lends its canvas
-  await page.goto(`http://127.0.0.1:${srv.address().port}/deck.html`); await page.waitForLoadState('networkidle');
-  const ids = await page.evaluate(() => [...document.querySelectorAll('section')].map((s) => ({ id: s.id, dur: +s.dataset.dur || 0 })));
+  const srv = await serve(path.join(ROOT, 'explainer')), base = `http://127.0.0.1:${srv.address().port}`;
+  // A film needs every step drawn completely and the same way each time. By default Chrome may show a big picture late
+  // (it decodes it on the side), draw a tile coarse first, and move layers on another thread: a still Moon and still
+  // stars then differ from one photograph to the next. These switches turn all of that off.
+  const open = async () => { const browser = await require('playwright-core').chromium.launch({ executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+    args: (process.env.FLAGS || '--run-all-compositor-stages-before-draw --disable-checker-imaging --disable-low-res-tiling --disable-partial-raster --disable-threaded-animation --disable-threaded-scrolling --disable-new-content-rendering-timeout --disable-image-animation-resync').split(' ') });
+    const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: SCALE });
+    const helper = await browser.newPage(); await helper.goto(base + '/texts.html'); // any same-origin page: it only lends its canvas
+    await page.goto(base + '/deck.html'); await page.waitForLoadState('networkidle');
+    return { browser, page, helper }; };
+  const first = await open(), page0 = first.page;
+  const ids = await page0.evaluate(() => [...document.querySelectorAll('section')].map((s) => ({ id: s.id, dur: +s.dataset.dur || 0 })));
   // Where each scene sits on its printed page (the PDF was printed from this layout).
-  await page.emulateMedia({ media: 'print' });
+  await page0.emulateMedia({ media: 'print' });
   const printed = {};
-  for (const s of ids) if (s.dur) printed[s.id] = await page.evaluate((id) => { const el = document.getElementById(id), a = el.getBoundingClientRect(), b = el.querySelector('.scene').getBoundingClientRect();
+  for (const s of ids) if (s.dur) printed[s.id] = await page0.evaluate((id) => { const el = document.getElementById(id), a = el.getBoundingClientRect(), b = el.querySelector('.scene').getBoundingClientRect();
     return { x: b.left - a.left, y: b.top - a.top, w: b.width, h: b.height }; }, s.id);
-  await page.emulateMedia({ media: 'screen' });
-  // The film has no Replay button and no endless motion (bobbing, radio waves, the progress line): the printed page has none either.
-  await page.addStyleTag({ content: '.replay, .nav { display: none !important; } html { scroll-snap-type: none !important; } .play .bob, .play .wave { animation: none !important; } .bar { display: none !important; }' });
-  const slides = [];
-  for (let n = 0; n < ids.length; n++) {
-    const { id, dur } = ids[n]; if (!dur || (process.env.ONLY && process.env.ONLY !== id)) continue; // ONLY=s3: film one slide, to try settings
+  await first.browser.close();
+  // Drawing every step completely is slow (about 2 seconds a step), so each slide is filmed in a browser of its own, all at once.
+  const slides = (await Promise.all(ids.map(async ({ id, dur }, n) => {
+    if (!dur || (process.env.ONLY && process.env.ONLY !== id)) return null; // ONLY=s3: film one slide, to try settings
+    const { browser, page, helper } = await open();
+    // The film has no Replay button and no endless motion (bobbing, radio waves, the progress line): the printed page has none either.
+    await page.addStyleTag({ content: '.replay, .nav { display: none !important; } html { scroll-snap-type: none !important; } .play .bob, .play .wave { animation: none !important; } .bar { display: none !important; }' });
     await page.evaluate((id) => document.getElementById(id).scrollIntoView(), id);
-    const seek = (t) => page.evaluate(([id, t]) => { const s = document.getElementById(id); s.classList.remove('play'); void s.getBoundingClientRect(); s.classList.add('play');
-      let end = 0; for (const a of s.getAnimations({ subtree: true })) { const e = a.effect.getComputedTiming().endTime; if (isFinite(e)) end = Math.max(end, e); a.pause(); a.currentTime = t * 1000; }
+    await page.waitForTimeout(300); // the deck notices the slide and starts it: let that pass before taking over
+    // The scene is started ONCE and its animations are held; a step only moves their clocks, and only the window is
+    // photographed. (Starting the scene afresh for every step and photographing the whole page let the deck start the
+    // scene again in the middle of its film, by its loop timer and by its in-view watcher: a step then showed the
+    // scene's START or lacked a picture that was still being drawn, which is a flash in the film and wasted patches.)
+    const at = await page.evaluate((id) => { const s = document.getElementById(id); clearTimeout(s._again); s.classList.remove('play'); void s.getBoundingClientRect(); s.classList.add('play');
+      window.filmed = s.getAnimations({ subtree: true }); let end = 0;
+      for (const a of window.filmed) { const e = a.effect.getComputedTiming().endTime; if (isFinite(e)) end = Math.max(end, e); a.pause(); a.currentTime = 0; }
       const sr = s.getBoundingClientRect(), b = s.querySelector('.scene').getBoundingClientRect();
-      return { end: end / 1000, top: sr.top + scrollY, x: b.left - sr.left, y: b.top - sr.top, w: b.width, h: b.height }; }, [id, t]);
-    const at = await seek(0), p = printed[id];
+      return { end: end / 1000, top: sr.top, x: b.left - sr.left, y: b.top - sr.top, w: b.width, h: b.height }; }, id);
+    const seek = (t) => page.evaluate(([id, t]) => { const s = document.getElementById(id); clearTimeout(s._again);
+      if (!s.classList.contains('play') || s.getAnimations({ subtree: true }).some((a) => a.playState === 'running')) throw new Error(id + ': the deck started the scene again while it was filmed');
+      for (const a of window.filmed) a.currentTime = t * 1000;
+      return new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); }, [id, t]);
+    const p = printed[id];
     if (Math.abs(at.x - p.x) > 0.5 || Math.abs(at.y - p.y) > 0.5 || Math.abs(at.w - p.w) > 0.5 || Math.abs(at.h - p.h) > 0.5)
       throw new Error(`${id}: the scene sits elsewhere on screen (${JSON.stringify(at)}) than in print (${JSON.stringify(p)}), the pictures would not lie over it`);
     if (at.end > dur) throw new Error(`${id}: the film (${at.end} s) is longer than its loop (${dur} s)`);
     // whole pixels, so a picture and its place on the page agree exactly
     const clip = { x: Math.floor(p.x), y: Math.floor(p.y), w: Math.ceil(p.x + p.w) - Math.floor(p.x), h: Math.ceil(p.y + p.h) - Math.floor(p.y) };
+    if (at.top + clip.y < 0 || at.top + clip.y + clip.h > 900) throw new Error(`${id}: the scene does not lie inside the window (top ${at.top}), it cannot be photographed whole`);
     await helper.evaluate(() => { window.was = null; });
-    const patches = []; let exact = 0;
+    const patches = []; let exact = 0, redrawn = 0, lossy = []; // lossy: places last drawn as a JPEG
     for (let t = 0; t < at.end + STEP; t += STEP) {
       const tt = Math.min(t, at.end); await seek(tt);
-      const png = await page.screenshot({ type: 'png', fullPage: true, clip: { x: clip.x, y: at.top + clip.y, width: clip.w, height: clip.h } });
-      for (const d of await helper.evaluate(DIFF, [png.toString('base64'), Q])) {
+      const png = await page.screenshot({ type: 'png', clip: { x: clip.x, y: at.top + clip.y, width: clip.w, height: clip.h } });
+      const ds = await helper.evaluate(DIFF, [png.toString('base64'), Q]);
+      // A JPEG smears what it shows a little, and the steps after it only redraw what CHANGED, so the smear stays on
+      // screen until the film ends (soft letters in a part of a screenshot). Once nothing moves over such a place any
+      // more it is drawn once more with exact pixels, unless it is a big piece of photo, where the smear does not show.
+      const still = lossy.filter((r) => !ds.some((d) => hit(r, d))); lossy = lossy.filter((r) => ds.some((d) => hit(r, d)));
+      const calm = still.filter((r) => !still.some((o) => o !== r && inside(r, o) && !(inside(o, r) && still.indexOf(o) > still.indexOf(r))));
+      for (const d of ds) {
         const flate = zlib.deflateSync(Buffer.from(d.rgb, 'base64'), { level: 9 }), jpg = Buffer.from(d.jpg, 'base64');
         // exact pixels unless the JPEG is far smaller (a patch of photo: part of a screenshot)
         const keepExact = flate.length <= jpg.length * 2.5; if (keepExact) exact++;
+        else { lossy = lossy.filter((r) => !inside(r, d)); lossy.push({ x: d.x, y: d.y, w: d.w, h: d.h }); }
         patches.push({ t: Math.round(tt * 1000), x: d.x, y: d.y, w: d.w, h: d.h, data: keepExact ? flate : jpg, filter: keepExact ? '/FlateDecode' : '/DCTDecode' });
       }
+      if (calm.length) (await helper.evaluate(EXACT, calm.map((r) => [r.x, r.y, r.w, r.h]))).forEach((rgb, k) => {
+        const flate = zlib.deflateSync(Buffer.from(rgb, 'base64'), { level: 9 }); if (flate.length > REDRAW_MAX) return;
+        exact++; redrawn++; patches.push({ t: Math.round(tt * 1000), ...calm[k], data: flate, filter: '/FlateDecode' }); });
     }
     // The last step ends on the printed page itself: from the film's end on, no button shows.
     const end = Math.round(at.end * 1000);
-    slides.push({ id, pageIndex: n, dur: Math.round(dur * 1000), end, patches, clip });
-    console.log(`${id}: film ${at.end.toFixed(1)} s of a ${dur} s loop, ${patches.length} patches (${exact} exact, ${patches.length - exact} JPEG), ${(patches.reduce((a, f) => a + f.data.length, 0) / 1e6).toFixed(2)} MB`);
-  }
-  await browser.close(); srv.close();
+    await browser.close();
+    console.log(`${id}: film ${at.end.toFixed(1)} s of a ${dur} s loop, ${patches.length} patches (${exact} exact, ${redrawn} of them redrawn after a JPEG, ${patches.length - exact} JPEG), ${(patches.reduce((a, f) => a + f.data.length, 0) / 1e6).toFixed(2)} MB`);
+    return { id, pageIndex: n, dur: Math.round(dur * 1000), end, patches, clip };
+  }))).filter(Boolean);
+  srv.close();
+  // DUMP=file: where and when every patch lies (no pixels), to trace a wrong pixel back to its patch
+  if (process.env.DUMP) fs.writeFileSync(process.env.DUMP, JSON.stringify(slides.map((s) => ({ id: s.id, patches: s.patches.map((f) => ({ t: f.t, x: f.x, y: f.y, w: f.w, h: f.h, kind: f.filter, bytes: f.data.length })) }))));
   return slides;
 }
 

@@ -117,6 +117,12 @@ const Sky = require('../app/sky.js');
     assert.strictEqual(n(/<section[\s>]/g), 7, 'the deck has exactly seven slides');
     assert.strictEqual(n(/Made with AI \(SI\) tools: Claude/g), 7, 'every slide says it was made with AI tools');
     assert.ok(!/\b(kids?|child(ren)?)\b/i.test(deck.replace(/<script[\s\S]*<\/script>/, '')), 'the deck says students'); }
+  // 8c. Every page of both sites shows the tab icon, and the icon files are there (one drawing: app/favicon.svg, copied by
+  // tools/icon.cjs). The first icon was a dark disc that vanished on a dark tab strip, so the owner saw no logo at all.
+  for (const site of ['app', 'explainer']) { const dir = path.join(__dirname, '..', site);
+    for (const f of ['favicon.svg', 'favicon.png', 'apple-touch-icon.png']) assert.ok(fs.existsSync(path.join(dir, f)), `${site}/${f} missing`);
+    assert.strictEqual(fs.readFileSync(path.join(dir, 'favicon.svg'), 'utf8'), fs.readFileSync(path.join(__dirname, '..', 'app', 'favicon.svg'), 'utf8'), `${site}/favicon.svg is not the app's drawing: run node tools/icon.cjs`);
+    for (const f of fs.readdirSync(dir).filter((f) => f.endsWith('.html'))) assert.ok(/<link rel="icon"[^>]*href="\/favicon\.svg"/.test(fs.readFileSync(path.join(dir, f), 'utf8')), `${site}/${f} has no tab icon`); }
   // 9. The page a native speaker checks the Russian and Kyrgyz texts on (explainer/texts.html, written by
   // tools/texts-sheet.cjs) shows the texts the app shows now, not an older draft.
   { const sheet = fs.readFileSync(path.join(__dirname, '..', 'explainer', 'texts.html'), 'utf8'), esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));

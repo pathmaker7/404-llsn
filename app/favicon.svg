@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- The tab icon: the Moon with one green landing day at its south pole. Light disc with a dark rim, so it reads on a
+       dark tab strip and on a light one. Source of favicon.png and apple-touch-icon.png: node tools/icon.cjs -->
+  <circle cx="16" cy="16" r="14.6" fill="#e6eaf1" stroke="#141a26" stroke-width="1.6"/>
+  <circle cx="11" cy="10.5" r="3.9" fill="#b3bccb"/>
+  <circle cx="21.6" cy="12.6" r="2.7" fill="#b3bccb"/>
+  <circle cx="8.8" cy="19.4" r="2.1" fill="#b3bccb"/>
+  <circle cx="18.4" cy="23.6" r="5.3" fill="#141a26"/>
+  <circle cx="18.4" cy="23.6" r="3.7" fill="#3fdc8c"/>
+</svg>
